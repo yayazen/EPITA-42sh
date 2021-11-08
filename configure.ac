@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ([2.68])
+AC_PREREQ([2.69])
 AC_INIT([42sh], [1.0], [])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 
@@ -15,6 +15,7 @@ AC_CONFIG_FILES([
 
 
 # Checks for programs.
+: ${CFLAGS="-std=c99 -pedantic -Wall -Werror -Wextra"}
 AC_PROG_CC
 
 # Checks for libraries.
