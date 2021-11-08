@@ -1,1 +1,3 @@
-TODO
+* general project architecture
+* ast tree structure
+* create a new repo (without binary content & with the given files) linked to git.assistants.epita.fr whenever it becomes possible
