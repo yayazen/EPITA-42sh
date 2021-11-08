@@ -1,0 +1,16 @@
+# EPITA-42sh
+
+Code has been packaged with autotools.
+
+```bash
+# Build the application
+./autogen.sh
+# or
+autoreconf --install
+mkdir build
+cd build
+../configure && make
+
+# Build tests
+make check
+```
