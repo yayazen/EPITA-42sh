@@ -11,6 +11,12 @@ mkdir build
 cd build
 ../configure && make
 
+# Install the application
+sudo make install
+
+# Uninstall the application
+sudo make uninstall
+
 # Build tests
 make check
 ```
