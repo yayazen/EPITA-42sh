@@ -9,6 +9,7 @@ int main(void)
 
 #ifdef DEBUG
     int c = 0;
+    printf("DEBUG << %ld tokens\n", TOKEN_LIST_SIZE);
 #define TOKEN(k, s, t) \
     printf("[%2d] %s -> %s (%s)\n", c++, #k, #s, #t);
     TOKEN_LIST

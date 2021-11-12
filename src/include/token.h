@@ -26,11 +26,11 @@
  *
  */
 
-#define TOKEN_DESC_STR(T) __token_desc[T].str
-#define TOKEN_DESC_TYPE(T) __token_desc[T].type
-#define TOKEN_DESC_LEN(T) __token_desc[T].len
+#define TOKEN_STR(T) __token_desc[T].str
+#define TOKEN_TYPE(T) __token_desc[T].type
+#define TOKEN_LEN(T) __token_desc[T].len
 
-#define TOKEN_LIST_SIZE 42
+#define TOKEN_LIST_SIZE sizeof(__token_desc) / sizeof(struct token)
 #define TOKEN_LIST                                                             \
     TOKEN(AND, "&", SPECIAL)                                                   \
     TOKEN(AND_IF, "&&", SPECIAL)                                               \
@@ -102,8 +102,14 @@ struct token
 
 /*
  * @brief   internal token description table
- * @comment should not be used! use TOKEN_DESC_* macro instead
+ * @comment should not be used! use TOKEN_[MEMBER](TOKEN) macro instead.
+ *          (e.g TOKEN_STR(AND_IF))
  */
-extern const struct token __token_desc[TOKEN_LIST_SIZE];
+static const struct token __token_desc[] = {
+#define TOKEN(K, S, T)                                                         \
+    [K] = { .key = K, .type = T, .str = S, .len = sizeof(S) - 1 },
+    TOKEN_LIST
+#undef TOKEN
+};
 
 #endif /* ! SH42_TOKEN_H */
