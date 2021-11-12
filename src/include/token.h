@@ -70,7 +70,7 @@
     TOKEN(ALIAS, "alias", BUILTIN)                                             \
     TOKEN(CD, "cd", BUILTIN)                                                   \
     TOKEN(ECHO, "echo", BUILTIN)                                               \
-    TOKEN(CAT, "eval", BUILTIN)                                                \
+    TOKEN(EVAL, "eval", BUILTIN)                                               \
     TOKEN(WORD, "", DEFAULT)                                                   \
     TOKEN(ASSIGN_WORD, "", DEFAULT)                                            \
     TOKEN(HEREDOC, "", DEFAULT)
@@ -101,13 +101,9 @@ struct token
 };
 
 /*
- * @brief   token description associated array
+ * @brief   internal token description table
+ * @comment should not be used! use TOKEN_DESC_* macro instead
  */
-static const struct token __token_desc[TOKEN_LIST_SIZE] = {
-#define TOKEN(K, S, T)                                                         \
-    [K] = { .key = K, .type = T, .str = S, .len = sizeof(S) - 1 },
-    TOKEN_LIST
-#undef TOKEN
-};
+extern const struct token __token_desc[TOKEN_LIST_SIZE];
 
 #endif /* ! SH42_TOKEN_H */
