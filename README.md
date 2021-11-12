@@ -32,4 +32,4 @@ sudo install -m 0755 -o root ./42sh /usr/local/bin/
 ```
 
 ### Resources
-42sh Grammar [docs/42sh\_Grammar](docs/42sh_grammar)
+**42sh Grammar**  -->  [docs/42sh-grammar.md](doc/42sh-grammar.md)
