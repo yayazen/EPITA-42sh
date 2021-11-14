@@ -1,3 +1,3 @@
-SUBDIRS = src tests
-docdir = docs
+SUBDIRS = src tests doc
+docdir = doc
 dist_doc_DATA = README.md

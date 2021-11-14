@@ -62,6 +62,7 @@ Makefile.in
 missing
 *.cache
 aclocal.m4
+autom4te.cache
 
 # configure files
 Makefile
