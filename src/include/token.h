@@ -75,7 +75,7 @@
     TOKEN(ASSIGN_WORD, "", DEFAULT)                                            \
     TOKEN(HEREDOC, "", DEFAULT)
 
-/*
+/**
  * @brief   struct of token as described above
  */
 struct token

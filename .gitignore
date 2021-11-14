@@ -76,3 +76,6 @@ stamp-h1
 # built files
 .dirstamp
 42sh
+
+# build directory
+build
