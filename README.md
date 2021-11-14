@@ -2,6 +2,11 @@
 
 Code has been packaged with autotools.
 
+## Install dependencies (Debian, Ubuntu)
+```bash
+sudo apt install -y autogen autoconf automake libtool python
+```
+
 ### Building from source
 ```bash
 # Build the application

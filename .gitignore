@@ -50,3 +50,29 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# autogen files
+compile
+config.h.in
+configure
+depcomp
+install-sh
+ltmain.sh
+Makefile.in
+missing
+*.cache
+aclocal.m4
+
+# configure files
+Makefile
+src/.deps
+tests/.deps
+tests/Makefile
+config.h
+config.log
+config.status
+stamp-h1
+
+# built files
+.dirstamp
+42sh
