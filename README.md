@@ -7,6 +7,10 @@ Code has been packaged with autotools.
 sudo apt install -y autogen autoconf automake libtool python
 ```
 
+Install pre-commit, either:
+* Use pip: `pip install --user pre-commit`
+* Download `pyz` package from GitHub releases: https://github.com/pre-commit/pre-commit/releases/ & put it in your path, with file name `pre-commit`
+
 ### Building from source
 ```bash
 # Build the application
