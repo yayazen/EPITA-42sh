@@ -38,3 +38,18 @@ sudo install -m 0755 -o root ./42sh /usr/local/bin/
 
 ### Resources
 **42sh Grammar**  -->  [docs/42sh-grammar.md](doc/42sh-grammar.md)
+
+
+### Fix precommit
+If you get this error when attempting to commit:
+```bash
+.git/hooks/pre-commit: 2: exec: Scripts/git-pre-commit-hook: not found
+```
+
+Run these commands:
+```bash
+pre-commit install
+rm .git/hooks/pre-commit.legacy
+```
+
+And try to commit again
