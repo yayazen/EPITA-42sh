@@ -3,113 +3,89 @@
 
 #include <stddef.h>
 
-/* Tokens
+/*!
+ * \file token.h
+ * \brief Token definitions header file.
  *
- * @brief   token(KEY, STR, TYPE)
  *
- * KEY: enum value of `token`
- *
- * STR: string representation of `token`
- *
- * TYPE: type of `token`
- *      BLANK : non-visible token
- *          * '\0' -> EOF
- *          * '\r', '\n' -> separate commands
- *          * '\t'  '\s' -> discard except if in ("" | '' | HEREDOC | ...)
- *      DEFAULT : misc token subject to exp and glob
- *          * WORD | ASSIGN | HEREDOC
- *      SPECIAL : special meaning token
- *          * hold only if not in ("" | '') else OTHER
- *      KEYWORD : reserved token
- *          * hold only if KEYWORD is the first token of a command else OTHER
- *      BUILTIN : shell builtins
- *
+ * \file token.def
+ * \brief Token definitions X-Macro file
+ * \include{lineno} token.def
+ * \var   TOKEN(Key, Str, Type)
+ * \param Key The enumeration value of a token.
+ * \param Str The string representation of a token.
+ * \param Type The type of a token
+ *      * BLANK : non-visible token
+ *          - '\\0' (EOF)
+ *          - '\\r', '\\n' (separate commands)
+ *          - '\\t', '\\s', ... (discarded except in WORD)
+ *      * DEFAULT :  subject to expansion and globbing
+ *          - WORD | IONUMBER | ASSIGN | HEREDOC | ...
+ *      * SPECIAL : special meaning token
+ *          - hold only if not in ("" | '') else WORD
+ *      * KEYWORD : reserved token
+ *          - hold only if KEYWORD is the first token of a command else WORD
+ *      * BUILTIN : shell builtins
  */
 
-#define TOKEN_STR(T) __token_desc[T].str
-#define TOKEN_TYPE(T) __token_desc[T].type
-#define TOKEN_LEN(T) __token_desc[T].len
-
-#define TOKEN_LIST_SIZE sizeof(__token_desc) / sizeof(struct token)
-#define TOKEN_LIST                                                             \
-    TOKEN(AND, "&", SPECIAL)                                                   \
-    TOKEN(AND_IF, "&&", SPECIAL)                                               \
-    TOKEN(BANG, "!", KEYWORD)                                                  \
-    TOKEN(CLOBBER, ">|", SPECIAL)                                              \
-    TOKEN(CR, "\r", BLANK)                                                     \
-    TOKEN(DBANG, "!!", SPECIAL)                                                \
-    TOKEN(DGREAT, ">>", SPECIAL)                                               \
-    TOKEN(DLESS, "<<", SPECIAL)                                                \
-    TOKEN(DLESSDASH, "<<-", SPECIAL)                                           \
-    TOKEN(DPIPE, "||", SPECIAL)                                                \
-    TOKEN(DSEMI, ";;", SPECIAL)                                                \
-    TOKEN(GREAT, ">", SPECIAL)                                                 \
-    TOKEN(GREATAND, ">&", SPECIAL)                                             \
-    TOKEN(LBRACE, "{", KEYWORD)                                                \
-    TOKEN(LESS, "<", SPECIAL)                                                  \
-    TOKEN(LESSAND, "<&", SPECIAL)                                              \
-    TOKEN(LESSGREAT, "<>", SPECIAL)                                            \
-    TOKEN(LF, "\n", BLANK)                                                     \
-    TOKEN(PIPE, "|", SPECIAL)                                                  \
-    TOKEN(RBRACE, "}", KEYWORD)                                                \
-    TOKEN(SEMICOL, ";", SPECIAL)                                               \
-    TOKEN(CASE, "case", KEYWORD)                                               \
-    TOKEN(ESAC, "esac", KEYWORD)                                               \
-    TOKEN(DO, "do", KEYWORD)                                                   \
-    TOKEN(DONE, "done", KEYWORD)                                               \
-    TOKEN(ELSE, "else", KEYWORD)                                               \
-    TOKEN(ELIF, "elif", KEYWORD)                                               \
-    TOKEN(FI, "fi", KEYWORD)                                                   \
-    TOKEN(FUNC, "function", KEYWORD)                                           \
-    TOKEN(IF, "if", KEYWORD)                                                   \
-    TOKEN(IN, "in", KEYWORD)                                                   \
-    TOKEN(IONUMBER, "", DEFAULT)                                               \
-    TOKEN(UNTIL, "until", KEYWORD)                                             \
-    TOKEN(THEN, "then", KEYWORD)                                               \
-    TOKEN(WHILE, "while", KEYWORD)                                             \
-    TOKEN(ALIAS, "alias", BUILTIN)                                             \
-    TOKEN(CD, "cd", BUILTIN)                                                   \
-    TOKEN(ECHO, "echo", BUILTIN)                                               \
-    TOKEN(EVAL, "eval", BUILTIN)                                               \
-    TOKEN(WORD, "", DEFAULT)                                                   \
-    TOKEN(ASSIGN_WORD, "", DEFAULT)                                            \
-    TOKEN(HEREDOC, "", DEFAULT)
-
-/**
- * @brief   struct of token as described above
+/*!
+ * See _token_get_type().
  */
-struct token
+#define TOKEN_TYPE(Key) _token_get_type(Key)
+
+/*!
+ * See _token_get_str().
+ */
+#define TOKEN_STR(Key) _token_get_str(Key)
+
+/*!
+ * See _token_get_strlen().
+ */
+#define TOKEN_STRLEN(Key) _token_get_strlen(Key)
+
+/// \cond DEV_DOC
+enum
 {
-    enum
-    {
-#define TOKEN(K, S, T) K,
-        TOKEN_LIST
+#define TOKEN(Key, Str, Type) Key,
+#include "token.def"
 #undef TOKEN
-    } const key;
-
-    enum
-    {
-        DEFAULT = 0,
-        BLANK,
-        SPECIAL,
-        KEYWORD,
-        BUILTIN
-    } const type;
-
-    const char *str;
-    size_t len;
+    TOKEN_COUNT
 };
+/// \endcond
 
-/*
- * @brief   internal token description table
- * @comment should not be used! use TOKEN_[MEMBER](TOKEN) macro instead.
- *          (e.g TOKEN_STR(AND_IF))
+/// \cond DEV_DOC
+enum
+{
+    DEFAULT,
+    BLANK,
+    SPECIAL,
+    KEYWORD,
+    BUILTIN
+};
+/// \endcond
+
+/*!
+ * \brief Get the type of a token.
+ * \param key     A token key as described in token.def
+ * \return The associated type as defined in token.def
+ * \warning should not be used! use TOKEN_TYPE(KEY) macro instead.
  */
-static const struct token __token_desc[] = {
-#define TOKEN(K, S, T)                                                         \
-    [K] = { .key = K, .type = T, .str = S, .len = sizeof(S) - 1 },
-    TOKEN_LIST
-#undef TOKEN
-};
+int _token_get_type(register int key);
+
+/*!
+ * \brief Get the string of a token.
+ * \param key     A token key as described in token.def
+ * \return The associated string as defined in token.def
+ * \warning should not be used! use TOKEN_STR(KEY) macro instead.
+ */
+const char *_token_get_str(register int key);
+
+/*!
+ * \brief Get the string length of a token.
+ * \param key      A token key as described in token.def
+ * \return The length of the associated string as defined in token.def
+ * \warning should not be used! use TOKEN_STRLEN(KEY) macro instead.
+ */
+size_t _token_get_strlen(register int key);
 
 #endif /* ! SH42_TOKEN_H */
