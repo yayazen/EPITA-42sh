@@ -1,12 +1,12 @@
 #pragma once
 
-#include "tast.h"
+#include "ast.h"
 
 /**
  * This structure holds all the information that
  * are used alongside the AST to execute the programs
  */
-struct texec
+struct exec
 {
     // Environment variables
     // Current working directory

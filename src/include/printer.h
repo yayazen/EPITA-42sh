@@ -1,6 +1,6 @@
 #pragma once
 
-#include "tast.h"
+#include "ast.h"
 
 /**
  * Print the AST as dot format.
@@ -9,4 +9,4 @@
  * debugging, and is used when the argument
  * --print-ast is passed through the command line
  */
-void print_ast(struct tast *ast);
+void print_ast(struct ast *ast);

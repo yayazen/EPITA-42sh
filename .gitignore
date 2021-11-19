@@ -80,3 +80,7 @@ stamp-h1
 
 # build directory
 build
+
+# Documentation
+doc/doxygen
+doc/Doxyfile

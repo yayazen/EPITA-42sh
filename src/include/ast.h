@@ -1,6 +1,6 @@
 #pragma once
 
-#include "targs.h"
+#include "args.h"
 
 /**
  * The AST tree built for each command parsed.
@@ -9,7 +9,7 @@
  * then by the executor
  */
 
-struct tast
+struct ast
 {
     // TODO in team :)
 };
@@ -24,4 +24,4 @@ struct tast
  * @returns The returns value is 1 if the program panicked.
  * The exit status is 0 otherise.
  */
-int parse(struct targs *args);
+int parse(struct args *args);

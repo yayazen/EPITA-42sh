@@ -4,7 +4,7 @@
  * The structure built by the main function and passed
  * to the parser.
  */
-struct targs
+struct args
 {
     /**
      * Print the AST as tdot
