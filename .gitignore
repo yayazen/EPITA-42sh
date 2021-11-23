@@ -1,86 +1,25 @@
-# Prerequisites
+# EDITORS
+*.swp
+*~
+\#*\#
+.\#*
+.vscode
+
+# BIN
+*.o
+*.a
+*.so
 *.d
 
-# Object files
-*.o
-*.ko
-*.obj
-*.elf
 
-# Linker output
-*.ilk
-*.map
-*.exp
+# TEST SUITE
+__pycache__
+*.pyc
 
-# Precompiled Headers
-*.gch
-*.pch
 
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
+# BUILD
+/.pre-commit-config.yaml
+builddir
 
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
-
-# Executables
-*.exe
-*.out
-*.app
-*.i*86
-*.x86_64
-*.hex
-
-# Debug files
-*.dSYM/
-*.su
-*.idb
-*.pdb
-
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf
-
-# autogen files
-compile
-config.h.in
-configure
-depcomp
-install-sh
-ltmain.sh
-Makefile.in
-missing
-*.cache
-aclocal.m4
-autom4te.cache
-
-# configure files
-Makefile
-src/.deps
-tests/.deps
-tests/Makefile
-config.h
-config.log
-config.status
-stamp-h1
-
-# built files
-.dirstamp
-42sh
-
-# build directory
-build
-
-# Documentation
-doc/doxygen
-doc/Doxyfile
+# NIX
+/result
