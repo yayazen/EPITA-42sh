@@ -27,6 +27,7 @@ static enum error cstream_string_read(struct cstream *cstream_base, int *c)
 
 static enum error cstream_string_free(struct cstream *cstream_base __unused)
 {
+    free(cstream_base);
     return NO_ERROR;
 }
 

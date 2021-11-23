@@ -1,4 +1,5 @@
 #include <err.h>
+#include <getopt.h>
 #include <io/cstream.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,21 +20,62 @@ static struct cstream *parse_args(int argc, char *argv[])
         return cstream_file_create(stdin, /* fclose_on_free */ false);
     }
 
-    // 42sh FILENAME
-    if (argc == 2)
+    int err = 0;
+    int option_index = 0;
+    struct cstream *stream = stream;
+
+    // Parse arguments
+    struct option options[] = { // TODO : add long options (when there are some)
+                                { 0, 0, 0, 0 }
+    };
+
+    while (1)
     {
-        FILE *fp = fopen(argv[1], "r");
+        int c = getopt_long(argc, argv, "c:", options, &option_index);
+
+        if (c == -1)
+            break;
+
+        switch (c)
+        {
+        case 0:
+            // TODO : handle long options (when there are some)
+            break;
+
+        case 'c':
+            stream = cstream_string_create(optarg);
+            break;
+
+        default:
+            err = 1;
+        }
+    }
+
+    // Open file stream only in case of success
+    if (optind < argc && !err && stream == NULL)
+    {
+        // Handle non-option argv elements
+        FILE *fp = fopen(argv[optind++], "r");
         if (fp == NULL)
         {
             warn("failed to open input file");
             return NULL;
         }
 
-        return cstream_file_create(fp, /* fclose_on_free */ true);
+        stream = cstream_file_create(fp, /* fclose_on_free */ true);
     }
 
-    fprintf(stderr, "Usage: %s [COMMAND]\n", argv[0]);
-    return NULL;
+    if (optind < argc && !err)
+    {
+        // TODO : add support for optional arguments
+        warn("Optional arguments not supported yet!");
+    }
+
+    if (err)
+        fprintf(stderr, "Usage: %s [-c COMMAND] [SCRIPT] [ARGUMENTS ...]\n",
+                argv[0]);
+
+    return stream;
 }
 
 /**
@@ -53,7 +95,11 @@ enum error read_print_loop(struct cstream *cs, struct vec *line)
 
         // If the end of file was reached, stop right there
         if (c == EOF)
+        {
+            if (line->size > 0)
+                printf(">> last line data: %s\n", vec_cstring(line));
             break;
+        }
 
         // If a newline was met, print the line
         if (c == '\n')
