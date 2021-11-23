@@ -32,8 +32,11 @@ static enum error cstream_file_free(struct cstream *cstream_base)
     if (!cstream->fclose_on_free)
         return NO_ERROR;
 
+    FILE *fd = cstream->file;
+    free(cstream_base);
+
     // Try to close the stream, and return if this succeeds
-    if (fclose(cstream->file) != EOF)
+    if (fclose(fd) != EOF)
         return NO_ERROR;
 
     return error_warn(IO_ERROR, "failed to close file stream");
