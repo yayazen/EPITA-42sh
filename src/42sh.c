@@ -22,14 +22,13 @@ static struct cstream *parse_args(int argc, char *argv[])
 
     int err = 0;
     int option_index = 0;
-    struct cstream *stream = stream;
+    struct cstream *stream = NULL;
 
     // Parse arguments
-    struct option options[] = { // TODO : add long options (when there are some)
-                                { 0, 0, 0, 0 }
-    };
+    struct option options[] = { { "command", required_argument, 0, 'c' },
+                                { 0, 0, 0, 0 } };
 
-    while (1)
+    while (!err)
     {
         int c = getopt_long(argc, argv, "c:", options, &option_index);
 
@@ -43,7 +42,8 @@ static struct cstream *parse_args(int argc, char *argv[])
             break;
 
         case 'c':
-            stream = cstream_string_create(optarg);
+            if (stream == NULL)
+                stream = cstream_string_create(optarg);
             break;
 
         default:
@@ -74,6 +74,12 @@ static struct cstream *parse_args(int argc, char *argv[])
     if (err)
         fprintf(stderr, "Usage: %s [-c COMMAND] [SCRIPT] [ARGUMENTS ...]\n",
                 argv[0]);
+
+    if (err && stream != NULL)
+    {
+        cstream_free(stream);
+        stream = NULL;
+    }
 
     return stream;
 }
