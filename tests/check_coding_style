@@ -1,0 +1,27 @@
+#!/bin/sh
+
+TOOL_URL=https://files.communiquons.org/apps/EpitaCodingStyle/epita_c_coding_style
+TOOL_EXE="epita_c_coding_style"
+
+# Go to script location
+cd "$(dirname "$0")"
+
+# Download tool if required
+if [ ! -f "$TOOL_EXE" ];
+then
+    echo Download tool...
+    wget "$TOOL_URL" -O "$TOOL_EXE" || { rm -f "$TOOL_EXE"; echo "Failed to download tool!"; exit 1; } 
+    chmod +x "$TOOL_EXE"
+fi
+
+# Recursively check code
+for i in $(find .. | grep -E "\.(c|h)$"); do
+	./"$TOOL_EXE" "$i" 2>&1 > /dev/null;
+
+    if [ ! $? -eq 0 ];
+    then
+        echo "$i";
+        ./"$TOOL_EXE" "$i"
+    fi
+	
+done
