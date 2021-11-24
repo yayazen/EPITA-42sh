@@ -20,6 +20,11 @@ gdb -arg builddir/42sh -c 'echo test'
 tests/run_tests builddir/42sh
 ```
 
+# Check coding style
+```sh
+tests/check_coding_style
+```
+
 # Building documentation
 
 ```sh
