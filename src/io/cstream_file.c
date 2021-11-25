@@ -28,16 +28,14 @@ static enum error cstream_file_read(struct cstream *cstream_base, int *c)
 static enum error cstream_file_free(struct cstream *cstream_base)
 {
     struct cstream_file *cstream = (struct cstream_file *)cstream_base;
+    enum error err = NO_ERROR;
 
-    // Check if a stream has to be freed
-    FILE *fd = cstream->fclose_on_free ? cstream->file : NULL;
-    free(cstream_base);
+    // Try to close the stream if needed, and set an error on failure
+    if (cstream->fclose_on_free && fclose(cstream->file) == EOF)
+        err = error_warn(IO_ERROR, "failed to close file stream");
 
-    // Try to close the stream (if required), and return if this succeeds
-    if (fd == NULL || fclose(fd) != EOF)
-        return NO_ERROR;
-
-    return error_warn(IO_ERROR, "failed to close file stream");
+    free(cstream);
+    return err;
 }
 
 static const struct cstream_type cstream_file_type = {

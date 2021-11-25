@@ -34,11 +34,14 @@ clang-format:
   before_script: []
   script:
     - find . -type f -name '*.[ch]' -exec clang-format --style=file -i {} ';'
-    - git diff --exit-code > diff
+    - git diff --exit-code
+  after_script:
+    - git diff > diff
   artifacts:
     paths:
       - diff
     expose_as: clang-format diff
+    when: on_failure
 
 doc:
   stage: doc
