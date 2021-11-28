@@ -2,7 +2,7 @@
 
 #include <assert.h>
 
-static inline __check_token(register int key)
+static inline int __check_token(register int key)
 {
     return 0 <= key && key < TOKEN_COUNT;
 }
@@ -14,7 +14,7 @@ int _token_get_type(register int key)
 #include "token.def"
 #undef TOKEN
     };
-    __check_token(key);
+    assert(__check_token(key));
     return assoc[key];
 }
 
@@ -25,7 +25,7 @@ const char *_token_get_str(register int key)
 #include "token.def"
 #undef TOKEN
     };
-    __check_token(key);
+    assert(__check_token(key));
     return assoc[key];
 }
 
@@ -36,6 +36,6 @@ size_t _token_get_strlen(register int key)
 #include "token.def"
 #undef TOKEN
     };
-    __check_token(key);
+    assert(__check_token(key));
     return assoc[key];
 }

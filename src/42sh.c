@@ -1,3 +1,5 @@
+#include <ast/lexer.h>
+#include <ast/token.h>
 #include <err.h>
 #include <getopt.h>
 #include <io/cstream.h>
@@ -111,6 +113,7 @@ enum error read_print_loop(struct cstream *cs, struct vec *line)
         if (c == '\n')
         {
             printf(">> line data: %s\n", vec_cstring(line));
+
             vec_reset(line);
             continue;
         }
