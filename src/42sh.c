@@ -19,7 +19,7 @@ static void run_getopt(int argc, char **argv, struct cstream **stream, int *err)
     struct option options[] = { { "command", required_argument, 0, 'c' },
                                 { 0, 0, 0, 0 } };
 
-    while (!err)
+    while (!*err)
     {
         int c = getopt_long(argc, argv, "c:", options, &option_index);
 
@@ -70,7 +70,7 @@ static struct cstream *parse_args(int argc, char *argv[])
         FILE *fp = fopen(argv[optind++], "r");
         if (fp == NULL)
         {
-            warn("failed to open input file");
+            warn("failed to open script file");
             return NULL;
         }
 
@@ -100,37 +100,25 @@ static struct cstream *parse_args(int argc, char *argv[])
  * \brief Read and print lines on newlines until EOF
  * \return An error code
  */
-enum error read_print_loop(struct cstream *cs, struct vec *line)
+enum error read_print_loop(struct cstream *cs)
 {
-    enum error err;
+    struct state s = { .cs = cs };
+    vec_init(&s.last_token_str);
 
     while (true)
     {
-        // Read the next character
-        int c;
-        if ((err = cstream_pop(cs, &c)))
-            return err;
+        int tok = next_token(&s);
 
-        // If the end of file was reached, stop right there
-        if (c == EOF)
-        {
-            if (line->size > 0)
-                printf(">> last line data: %s\n", vec_cstring(line));
+        if (tok == T_WORD)
+            printf("\"%s\" ", vec_cstring(&s.last_token_str));
+        else
+            printf("%s ", TOKEN_STR(tok));
+
+        if (tok == T_EOF)
             break;
-        }
-
-        // If a newline was met, print the line
-        if (c == '\n')
-        {
-            printf(">> line data: %s\n", vec_cstring(line));
-
-            vec_reset(line);
-            continue;
-        }
-
-        // Otherwise, add the character to the line
-        vec_push(line, c);
     }
+
+    vec_destroy(&s.last_token_str);
 
     return NO_ERROR;
 }
@@ -147,12 +135,8 @@ int main(int argc, char *argv[])
         goto err_parse_args;
     }
 
-    // Create a vector to hold the current line
-    struct vec line;
-    vec_init(&line);
-
     // Run the test loop
-    if (read_print_loop(cs, &line) != NO_ERROR)
+    if (read_print_loop(cs) != NO_ERROR)
     {
         rc = 1;
         goto err_loop;
@@ -163,7 +147,6 @@ int main(int argc, char *argv[])
 
 err_loop:
     cstream_free(cs);
-    vec_destroy(&line);
 err_parse_args:
     return rc;
 }

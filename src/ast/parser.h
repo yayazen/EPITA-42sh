@@ -4,12 +4,15 @@
 
 #pragma once
 
+#include <io/cstream.h>
+#include <utils/vec.h>
+
 struct state
 {
     int token;
     int flags;
-    const char *s;
-    const char **saveptr;
+    struct cstream *cs;
+    struct vec last_token_str;
 };
 
 int accept(int token);
