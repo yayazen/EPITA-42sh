@@ -76,16 +76,16 @@ static void __collect_next_token(struct state *s)
 {
     enum READMODE mode = NO_QUOTE;
 
-    if (__peek_stream(s->cs) == '"' || __peek_stream(s->cs) == '\'')
-    {
-        mode = __peek_stream(s->cs) == '"' ? DOUBLE_QUOTE : SIMPLE_QUOTE;
-        __pop_stream(s->cs);
-    }
-
     if (__interrupting_char(__peek_stream(s->cs)))
     {
         vec_push(&s->last_token_str, __pop_stream(s->cs));
         return;
+    }
+
+    if (__peek_stream(s->cs) == '"' || __peek_stream(s->cs) == '\'')
+    {
+        mode = __peek_stream(s->cs) == '"' ? DOUBLE_QUOTE : SIMPLE_QUOTE;
+        __pop_stream(s->cs);
     }
 
     while (__peek_stream(s->cs) != EOF)
