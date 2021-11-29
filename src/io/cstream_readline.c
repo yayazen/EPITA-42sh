@@ -90,7 +90,7 @@ static const struct cstream_type cstream_readline_type = {
     .interactive = true,
 };
 
-struct cstream *cstream_readline_create()
+struct cstream *cstream_readline_create(void)
 {
     struct cstream_readline *cstream = xmalloc(sizeof(*cstream));
     cstream->base.type = &cstream_readline_type;

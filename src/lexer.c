@@ -42,11 +42,11 @@ int next_token(struct state *s)
 
     s->s = __eat_whitespaces(s->s);
 
-    int token = __longest_prefix_token(s);
+    int token = __longest_prefix_token(s->s);
 
     if (token == T_WORD)
     {
-        *s->saveptr = s;
+        *s->saveptr = s->s;
         // TODO
     }
 

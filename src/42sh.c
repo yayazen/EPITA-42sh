@@ -9,24 +9,13 @@
 #include <utils/vec.h>
 
 /**
- * \brief Parse the command line arguments
- * \return A character stream
+ * \brief Run getopt_long on command line arguments and take appropriate actions
+ * \return Nothing
  */
-static struct cstream *parse_args(int argc, char *argv[])
+static void run_getopt(int argc, char **argv, struct cstream **stream, int *err)
 {
-    // If launched without argument, read the standard input
-    if (argc == 1)
-    {
-        if (isatty(STDIN_FILENO))
-            return cstream_readline_create();
-        return cstream_file_create(stdin, /* fclose_on_free */ false);
-    }
-
-    int err = 0;
     int option_index = 0;
-    struct cstream *stream = NULL;
 
-    // Parse arguments
     struct option options[] = { { "command", required_argument, 0, 'c' },
                                 { 0, 0, 0, 0 } };
 
@@ -44,14 +33,35 @@ static struct cstream *parse_args(int argc, char *argv[])
             break;
 
         case 'c':
-            if (stream == NULL)
-                stream = cstream_string_create(optarg);
+            if (*stream == NULL)
+                *stream = cstream_string_create(optarg);
             break;
 
         default:
-            err = 1;
+            *err = 1;
         }
     }
+}
+
+/**
+ * \brief Parse the command line arguments
+ * \return A character stream
+ */
+static struct cstream *parse_args(int argc, char *argv[])
+{
+    // If launched without argument, read the standard input
+    if (argc == 1)
+    {
+        if (isatty(STDIN_FILENO))
+            return cstream_readline_create();
+        return cstream_file_create(stdin, /* fclose_on_free */ false);
+    }
+
+    int err = 0;
+    struct cstream *stream = NULL;
+
+    // Parse arguments
+    run_getopt(argc, argv, &stream, &err);
 
     // Open file stream only in case of success
     if (optind < argc && !err && stream == NULL)
