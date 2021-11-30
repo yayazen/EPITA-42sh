@@ -8,6 +8,14 @@
 #include <unistd.h>
 #include <utils/vec.h>
 
+enum RUN_MODE
+{
+    DEFAULT_MODE,
+    LEXER_ONLY,
+};
+
+static int mode = DEFAULT_MODE;
+
 /**
  * \brief Run getopt_long on command line arguments and take appropriate actions
  * \return Nothing
@@ -17,11 +25,12 @@ static void run_getopt(int argc, char **argv, struct cstream **stream, int *err)
     int option_index = 0;
 
     struct option options[] = { { "command", required_argument, 0, 'c' },
+                                { "lexer", no_argument, 0, 'l' },
                                 { 0, 0, 0, 0 } };
 
     while (!*err)
     {
-        int c = getopt_long(argc, argv, "c:", options, &option_index);
+        int c = getopt_long(argc, argv, "c:l", options, &option_index);
 
         if (c == -1)
             break;
@@ -37,10 +46,25 @@ static void run_getopt(int argc, char **argv, struct cstream **stream, int *err)
                 *stream = cstream_string_create(optarg);
             break;
 
+        case 'l':
+            mode = LEXER_ONLY;
+            break;
+
         default:
             *err = 1;
         }
     }
+}
+
+/**
+ * \brief Create a stream to read from stdin
+ * \return A character stream
+ */
+static struct cstream *create_stdin_stream(void)
+{
+    if (isatty(STDIN_FILENO))
+        return cstream_readline_create();
+    return cstream_file_create(stdin, /* fclose_on_free */ false);
 }
 
 /**
@@ -49,14 +73,6 @@ static void run_getopt(int argc, char **argv, struct cstream **stream, int *err)
  */
 static struct cstream *parse_args(int argc, char *argv[])
 {
-    // If launched without argument, read the standard input
-    if (argc == 1)
-    {
-        if (isatty(STDIN_FILENO))
-            return cstream_readline_create();
-        return cstream_file_create(stdin, /* fclose_on_free */ false);
-    }
-
     int err = 0;
     struct cstream *stream = NULL;
 
@@ -84,7 +100,8 @@ static struct cstream *parse_args(int argc, char *argv[])
     }
 
     if (err)
-        fprintf(stderr, "Usage: %s [-c COMMAND] [SCRIPT] [ARGUMENTS ...]\n",
+        fprintf(stderr,
+                "Usage: %s [-l] [-c COMMAND] [SCRIPT] [ARGUMENTS ...]\n",
                 argv[0]);
 
     if (err && stream != NULL)
@@ -93,17 +110,25 @@ static struct cstream *parse_args(int argc, char *argv[])
         stream = NULL;
     }
 
+    // By default, read from stdin
+    if (!err && stream == NULL)
+    {
+        return create_stdin_stream();
+    }
+
     return stream;
 }
 
 /**
- * \brief Read and print lines on newlines until EOF
+ * \brief Read and print lexer data
  * \return An error code
  */
-enum error read_print_loop(struct cstream *cs)
+enum error lexer_loop(struct cstream *cs)
 {
     struct state s = { .cs = cs };
     vec_init(&s.last_token_str);
+
+    printf("Starting in lexer-only mode...\n");
 
     while (true)
     {
@@ -111,6 +136,8 @@ enum error read_print_loop(struct cstream *cs)
 
         if (tok == T_WORD)
             printf("\"%s\" ", vec_cstring(&s.last_token_str));
+        else if (tok == T_LF)
+            printf("\n");
         else
             printf("%s ", TOKEN_STR(tok));
 
@@ -123,6 +150,21 @@ enum error read_print_loop(struct cstream *cs)
     return NO_ERROR;
 }
 
+/**
+ * \brief Main loop. Calls the parser until an error / an EOF event occur s
+ * \return An error code
+ */
+enum error default_loop(struct cstream *cs)
+{
+    printf("TODO : run parser. You might want to use the -l option to test the "
+           "lexer");
+
+    return cs != NULL ? NO_ERROR : EXECUTION_ERROR;
+}
+
+/**
+ * \brief Main function of the program
+ */
 int main(int argc, char *argv[])
 {
     int rc;
@@ -135,11 +177,21 @@ int main(int argc, char *argv[])
         goto err_parse_args;
     }
 
-    // Run the test loop
-    if (read_print_loop(cs) != NO_ERROR)
+    if (mode == LEXER_ONLY)
     {
-        rc = 1;
-        goto err_loop;
+        if (lexer_loop(cs) != NO_ERROR)
+        {
+            rc = 1;
+            goto err_loop;
+        }
+    }
+    else
+    {
+        if (default_loop(cs) != NO_ERROR)
+        {
+            rc = 1;
+            goto err_loop;
+        }
     }
 
     // Success

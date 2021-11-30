@@ -38,6 +38,10 @@ static inline int __longest_prefix_token(const char *s)
     return m;
 }
 
+/**
+ * \brief Read the next character on the stream, consuming it
+ * \return A character
+ */
 static inline int __pop_stream(struct cstream *cs)
 {
     int c;
@@ -49,6 +53,10 @@ static inline int __pop_stream(struct cstream *cs)
     return c;
 }
 
+/**
+ * \brief Read the next character on the stream without consuming it
+ * \return A character
+ */
 static inline int __peek_stream(struct cstream *cs)
 {
     int c;
@@ -60,6 +68,10 @@ static inline int __peek_stream(struct cstream *cs)
     return c;
 }
 
+/**
+ * \brief Check whether a character indicates if we reached a new token
+ * \return 1 if such token was reached
+ */
 static inline int __interrupting_char(char c)
 {
     return strchr("\n<>;|&!(){} \t\r`", c) != NULL;
@@ -72,55 +84,55 @@ enum READMODE
     DOUBLE_QUOTE
 };
 
+/**
+ * \brief Read the next character on the stream, saving
+ *        it in the `last_token_str` variable
+ */
 static void __collect_next_token(struct state *s)
 {
     enum READMODE mode = NO_QUOTE;
-
-    if (__interrupting_char(__peek_stream(s->cs)))
-    {
-        vec_push(&s->last_token_str, __pop_stream(s->cs));
-        return;
-    }
-
-    if (__peek_stream(s->cs) == '"' || __peek_stream(s->cs) == '\'')
-    {
-        mode = __peek_stream(s->cs) == '"' ? DOUBLE_QUOTE : SIMPLE_QUOTE;
-        __pop_stream(s->cs);
-    }
 
     while (__peek_stream(s->cs) != EOF)
     {
         char n = __peek_stream(s->cs);
 
+        // Switch from double quote mode to no quote
         if (mode == DOUBLE_QUOTE && n == '"')
         {
             __pop_stream(s->cs);
             mode = NO_QUOTE;
         }
 
+        // Switch from simple quote mode to no quote
         else if (mode == SIMPLE_QUOTE && n == '\'')
         {
             __pop_stream(s->cs);
             mode = NO_QUOTE;
         }
 
+        // Switch from no quote mode to double quote
         else if (mode == NO_QUOTE && n == '"')
         {
             __pop_stream(s->cs);
             mode = DOUBLE_QUOTE;
         }
 
+        // Switch from no quote mode to simple quote
         else if (mode == NO_QUOTE && n == '\'')
         {
             __pop_stream(s->cs);
             mode = SIMPLE_QUOTE;
         }
 
+        // Check if we reached an interrupting character (<>\n...)
         else if (mode == NO_QUOTE && __interrupting_char(n))
         {
+            if (s->last_token_str.size == 0)
+                vec_push(&s->last_token_str, __pop_stream(s->cs));
             break;
         }
 
+        // Save the character
         else
         {
             vec_push(&s->last_token_str, __pop_stream(s->cs));
