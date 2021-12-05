@@ -1,38 +1,35 @@
-# Building
+## EPITA-42sh
 
-```sh
-sudo apt install meson libreadline-dev
+Code has been packaged with meson/ninja.
 
-meson setup builddir
-meson compile -C builddir  # or ninja -C builddir
-builddir/42sh
+### Dependencies
+* meson
+* ninja-build
+* libreadline.so.6
+* libasan.so.6
+
+### Building from source
+```bash
+meson setup build
+# or with tests
+meson setup -Dforce_check=true build
+
+meson compile -C build
 ```
 
-# Debugging
+### Build documentation
+```bash
+meson setup -Ddoc=true build
+meson compile -C build doxygen_doc
 
-```
-gdb -arg builddir/42sh -c 'echo test'
-```
-
-# Running tests
-
-```sh
-tests/run_tests builddir/42sh
+xdg_open build/doxygen_doc/index.html
 ```
 
-# Check coding style
-```sh
-tests/check_coding_style
+### Install/Uninstall
+```bash
+meson install
+meson uninstall
 ```
 
-# Building documentation
-
-```sh
-# enable documentation support
-meson setup -Ddoc=true builddir  # --reconfigure might be needed
-# build the documentation
-meson compile -C builddir doxygen_doc
-# open the documentation in the browser
-xdg-open builddir/doxygen_doc/index.html
-```
-
+### Resources
+**42sh Grammar** --> [docs/42sh-grammar.md](doc/42sh-grammar.md)

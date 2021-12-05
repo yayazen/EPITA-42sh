@@ -115,5 +115,5 @@ static enum error check_interrupt(void)
     // let the user know what happened
     fputs("^C\n", stderr);
 
-    return KEYBOARD_INTERUPT;
+    return KEYBOARD_INTERRUPT;
 }

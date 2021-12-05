@@ -33,10 +33,10 @@ enum error
     // these aren't really errors, but behave in a similar way:
     // they interrupt normal program operation. The only difference
     // with other error kinds is that they are part of normal.
-    KEYBOARD_INTERUPT,
-    BREAK_INTERUPT,
-    CONTINUE_INTERUPT,
-    EXIT_INTERUPT,
+    KEYBOARD_INTERRUPT,
+    BREAK_INTERRUPT,
+    CONTINUE_INTERRUPT,
+    EXIT_INTERRUPT,
 };
 
 /** \brief Calls warn and return err */

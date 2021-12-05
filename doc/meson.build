@@ -1,14 +1,11 @@
 doxygen = find_program('doxygen', required: true)
 
-
 doxygen_version = run_command(doxygen, '--version').stdout().strip()
 if doxygen_version.version_compare('< 1.8')
     error('Use at least doxygen version 1.8, found ' + doxygen_version)
 endif
 
-
 doxygen_output_dir = 'doxygen_doc'
-
 doxy_conf_data = configuration_data()
 doxy_conf_data.set('PROJECT_NAME', meson.project_name())
 doxy_conf_data.set('PROJECT_VERSION', meson.project_version())

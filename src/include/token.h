@@ -1,5 +1,4 @@
-#ifndef SH42_TOKEN_H
-#define SH42_TOKEN_H
+#pragma once
 
 #include <stddef.h>
 
@@ -15,10 +14,6 @@
  * \param Key The enumeration value of a token.
  * \param Str The string representation of a token.
  * \param Type The type of a token
- *      * BLANK : non-visible token
- *          - '\\0' (EOF)
- *          - '\\r', '\\n' (separate commands)
- *          - '\\t', '\\s', ... (discarded except in WORD)
  *      * DEFAULT :  subject to expansion and globbing
  *          - WORD | IONUMBER | ASSIGN | HEREDOC | ...
  *      * SPECIAL : special meaning token
@@ -26,6 +21,7 @@
  *      * KEYWORD : reserved token
  *          - hold only if KEYWORD is the first token of a command else WORD
  *      * BUILTIN : shell builtins
+ *          - hold only if BUILTIN is the first token of a command else WORD
  */
 
 /*!
@@ -43,6 +39,11 @@
  */
 #define TOKEN_STRLEN(Key) _token_get_strlen(Key)
 
+/*!
+ * Upper bound for TOKEN_STRLEN
+ */
+#define TOKEN_UBLEN 32
+
 /// \cond DEV_DOC
 enum
 {
@@ -53,16 +54,13 @@ enum
 };
 /// \endcond
 
-/// \cond DEV_DOC
 enum
 {
     DEFAULT,
-    BLANK,
     SPECIAL,
     KEYWORD,
     BUILTIN
 };
-/// \endcond
 
 /*!
  * \brief Get the type of a token.
@@ -87,5 +85,3 @@ const char *_token_get_str(register int key);
  * \warning should not be used! use TOKEN_STRLEN(KEY) macro instead.
  */
 size_t _token_get_strlen(register int key);
-
-#endif /* ! SH42_TOKEN_H */

@@ -34,20 +34,21 @@ add_project_arguments(cflags, language: 'c')
 
 # interpret the meson.build in this directory
 all_sources = []
+include_dirs = ['src']
 subdir('src')
 
 
 # find readline, which some of the modules below link with
 cc = meson.get_compiler('c')
 readline_dep = cc.find_library('readline', required: true)
-
+asan_dep = cc.find_library('asan', required: true)
 
 bin = executable(
     '42sh',
     all_sources,
-    include_directories: 'src',
+    include_directories: include_dirs,
     install: true,
-    dependencies: [readline_dep],
+    dependencies: [readline_dep, asan_dep],
 )
 
 
