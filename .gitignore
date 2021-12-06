@@ -20,6 +20,7 @@ __pycache__
 # BUILD
 /.pre-commit-config.yaml
 builddir
+build
 
 # NIX
 /result

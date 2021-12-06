@@ -44,14 +44,12 @@ funcdec:     ['function'] WORD '(' ')' ('\n')* shell_command
 redirection: [IONUMBER] '>' WORD
          |   [IONUMBER] '<' WORD
          |   [IONUMBER] '>>' WORD
-         |   [IONUMBER] '<<' HEREDOC
-         |   [IONUMBER] '<<-' HEREDOC
          |   [IONUMBER] '>&' WORD
          |   [IONUMBER] '<&' WORD
          |   [IONUMBER] '>|' WORD
          |   [IONUMBER] '<>' WORD
 
- prefix:     ASSIGNEMENT_WORD
+prefix:     ASSIGNEMENT_WORD
          |   redirection
 
 element:     WORD

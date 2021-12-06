@@ -8,6 +8,11 @@ Code has been packaged with meson/ninja.
 * libreadline.so.6
 * libasan.so.6
 
+On Ubuntu 20.04, run the following command to install dependencies:
+```bash
+sudo apt install meson libreadline-dev
+```
+
 ### Building from source
 ```bash
 meson setup build
@@ -15,6 +20,10 @@ meson setup build
 meson setup -Dforce_check=true build
 
 meson compile -C build
+
+# On Ubuntu 20.04, this command will not work if
+# using meson from packages. Use this command instead:
+ninja -C builddir
 ```
 
 ### Build documentation
