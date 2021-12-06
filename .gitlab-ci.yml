@@ -15,7 +15,8 @@ stages:
 build:
   stage: build
   script:
-    - meson compile -C builddir
+    #- meson compile -C builddir
+    - ninja -C builddir
   artifacts:
     paths:
       - builddir/42sh
