@@ -33,37 +33,39 @@ static inline int __is_meta(int c)
 
 int cs_lex(struct cstream *cs, struct token *token, int flag)
 {
-    struct vec word;
     int state = DFA_ENTRY_STATE;
-    int t = -1;
-    int c;
     int rc;
+    int c;
+    struct vec word;
 
     vec_init(&word);
+    token->key = EOF;
     __eat_whitespaces(cs);
-    while (t != T_LF && (rc = cstream_peek(cs, &c)) == NO_ERROR && c != EOF)
+    while ((rc = cstream_peek(cs, &c)) == NO_ERROR && c != EOF)
     {
-        int ns = dfa_eval(c, state);
-        if (ns == DFA_ERR_STATE || t == T_WORD)
+        state = dfa_eval(c, state);
+        if (state == DFA_ERR_STATE)
         {
-            if (t != -1 && (TOKEN_TYPE(t) == SPECIAL || __is_meta(c)))
+            if (token->key != EOF && TOKEN_TYPE(token->key) == SPECIAL)
                 break;
-            t = T_WORD;
-        }
-        else if (dfa_term(ns))
-        {
-            t = dfa_token(ns);
-            if (TOKEN_TYPE(t) != SPECIAL && !(flag & LEXER_LINE_START))
-                t = T_WORD;
+            token->key = T_WORD;
+            state = DFA_ENTRY_STATE;
         }
 
-        state = (ns != DFA_ERR_STATE) ? ns : DFA_ENTRY_STATE;
+        if (token->key == T_WORD && state != dfa_eval(c, state) && __is_meta(c))
+            break;
+        else if (dfa_term(state))
+        {
+            token->key = dfa_token(state);
+            if (TOKEN_TYPE(token->key) != SPECIAL && !(flag & LEX_LINE_START))
+                token->key = T_WORD;
+        }
+
         vec_push(&word, c);
-        if ((rc = cstream_pop(cs, &c)) != NO_ERROR)
+        if ((rc = cstream_pop(cs, &c)) != NO_ERROR || token->key == T_LF)
             break;
     }
 
-    token->key = t;
     token->str = vec_cstring(&word);
     return rc;
 }
