@@ -40,12 +40,11 @@ int cs_parse(struct cstream *cs, int flag)
     struct token token = { .key = 0, .str = NULL };
     while (1)
     {
-        int rc = cs_lex(cs, &token, LEXER_LINE_START);
+        int rc = cs_lex(cs, &token, LEX_LINE_START);
 
         /* --debug */
         if (flag & 2)
             __debug(&token);
-        /*! --debug */
 
         free(token.str);
 
