@@ -13,7 +13,7 @@
  */
 #define DFA_NSYM 256
 /*!
- *  Upper-boud for the number of state
+ *  Upper-bound for the number of state
  */
 #define DFA_NSTATE 512
 /*!
