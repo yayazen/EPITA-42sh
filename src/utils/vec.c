@@ -47,5 +47,6 @@ char *vec_cstring(struct vec *vec)
 {
     if (vec->size == 0 || vec->data[vec->size - 1] != '\0')
         vec_push(vec, '\0');
+    vec->size--;
     return vec->data;
 }

@@ -9,15 +9,8 @@
 #include "parser.h"
 
 #define PACKAGE "42sh"
+#define VERSION "0.1.0"
 
-static const char *__usages =
-    PACKAGE ", version 0.1.0\n"
-            "Usage: " PACKAGE " [OPTIONS] [FILE] [ARGUMENTS...]\n"
-            "Long options:\n"
-            "       --help          shows the help menu\n"
-            "       --debug         enable debug output\n"
-            "Shell options:\n"
-            "       -c command      evaluates argument as command";
 enum
 {
     /* pow_2 */
@@ -25,15 +18,24 @@ enum
     OPT_DEBUG = 2,
 };
 
+static const char *__usages =
+    PACKAGE ", version " VERSION "\n"
+            "Usage: " PACKAGE " [OPTIONS] [FILE] [ARGUMENTS...]\n"
+            "Long options:\n"
+            "       --help          shows the help menu\n"
+            "       --debug         enable debug output\n"
+            "Shell options:\n"
+            "       -c command      evaluates argument as command";
+
+static int optflag;
+static const struct option long_opts[] = {
+    { "help", no_argument, &optflag, OPT_HELP },
+    { "debug", no_argument, &optflag, OPT_DEBUG },
+    { NULL, 0, NULL, 0 }
+};
+
 static int __parse_opts(int optc, char **optv, struct cstream **cs, int *flag)
 {
-    static int optflag;
-    static const struct option long_opts[] = {
-        { "help", no_argument, &optflag, OPT_HELP },
-        { "debug", no_argument, &optflag, OPT_DEBUG },
-        { NULL, 0, NULL, 0 }
-    };
-
     *cs = NULL;
     while (1)
     {
@@ -59,10 +61,11 @@ static int __parse_opts(int optc, char **optv, struct cstream **cs, int *flag)
         }
     }
 
-    *cs = (*cs)           ? *cs
-        : (optind < optc) ? cstream_file_create(fopen(optv[optind], "r"), true)
-        : (isatty(STDIN_FILENO)) ? cstream_readline_create()
-                                 : cstream_file_create(stdin, false);
+    *cs = (*cs) ? *cs
+                : (optind < optc)
+            ? cstream_file_create(fopen(optv[optind], "r"), true)
+            : (isatty(STDIN_FILENO)) ? cstream_readline_create()
+                                     : cstream_file_create(stdin, false);
 
     return *cs == NULL;
 }
