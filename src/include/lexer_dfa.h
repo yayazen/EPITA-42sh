@@ -8,18 +8,6 @@
  * Error state for DFA (failed transition)
  */
 #define DFA_ERR_STATE -1
-/*!
- * Number of grammar symbols (Ascii Table)
- */
-#define DFA_NSYM 256
-/*!
- *  Upper-bound for the number of state
- */
-#define DFA_NSTATE 512
-/*!
- *  DFA state key index
- */
-#define DFA_TOKEN DFA_NSYM
 
 /*!
  * \brief   The token associated with the state `s`

@@ -4,13 +4,10 @@
 #include "token.h"
 
 /* For debugging purposes */
-static inline void __debug(struct token *t)
+static inline void __debug(int token, struct vec *word)
 {
-    if (t->key == EOF)
-        return;
-
     const char *type;
-    switch (TOKEN_TYPE(t->key))
+    switch (TOKEN_TYPE(token))
     {
     case SPECIAL:
         type = "SPECIAL";
@@ -24,35 +21,38 @@ static inline void __debug(struct token *t)
     }
 
     printf("%s ", type);
-
-    if (t->key == T_LF)
+    if (token == T_LF)
         printf("['\\n']\n");
-    else if (t->key == T_WORD)
-        printf("['%s']\n", t->str);
+    else if (token == T_WORD)
+        printf("['%s']\n", vec_cstring(word));
     else
-        printf("['%s']\n", TOKEN_STR(t->key));
+        printf("['%s']\n", TOKEN_STR(token));
 }
 
 int cs_parse(struct cstream *cs, int flag)
 {
-    int rc = 0;
+    int rc = NO_ERROR;
+    int lex_flag = LEX_LINE_START;
+    struct vec word;
+    vec_init(&word);
 
-    struct token token = { .key = 0, .str = NULL };
     while (1)
     {
-        int rc = cs_lex(cs, &token, LEX_LINE_START);
+        int token = cs_lex(cs, &word, lex_flag);
 
-        /* --debug */
-        if (flag & 2)
-            __debug(&token);
+        if ((flag & 2) && token >= 0)
+            __debug(token, &word);
+        vec_reset(&word);
 
-        free(token.str);
-
-        if (rc == KEYBOARD_INTERRUPT)
-            continue;
-        if (token.key == EOF)
+        if (token < 0)
+        {
+            if ((rc = -token) == KEYBOARD_INTERRUPT)
+                continue;
             break;
-    }
+        }
 
+        lex_flag = (token == T_LF) ? LEX_LINE_START : 0;
+    }
+    vec_destroy(&word);
     return rc;
 }

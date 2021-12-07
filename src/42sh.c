@@ -2,8 +2,6 @@
 #include <getopt.h>
 #include <io/cstream.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
 
 #include "parser.h"
@@ -80,10 +78,10 @@ int main(int argc, char *argv[])
     err = cs_parse(cs, flag);
 
     goto end_loop;
-
 err_parse_args:
     puts(__usages);
 end_loop:
+    perror(PACKAGE);
     if (cs)
         cstream_free(cs);
     return err;

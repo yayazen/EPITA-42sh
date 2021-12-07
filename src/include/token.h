@@ -59,7 +59,6 @@ enum
     DEFAULT,
     SPECIAL,
     KEYWORD,
-    BUILTIN
 };
 
 /*!

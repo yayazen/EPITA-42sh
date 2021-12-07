@@ -5,6 +5,19 @@
 #include "token.h"
 
 /*!
+ * Number of grammar symbols (Ascii Table)
+ */
+#define DFA_NSYM 256
+/*!
+ *  Upper-bound for the number of state
+ */
+#define DFA_NSTATE 512
+/*!
+ *  DFA state key index
+ */
+#define DFA_TOKEN DFA_NSYM
+
+/*!
  * \brief    The DFA 2D array
  *  dfa[S][DFA_NSYM] holds the token for exit states.
  */
@@ -45,6 +58,7 @@ static void __dfa_init(void)
 {
     it = DFA_ENTRY_STATE + 1;
     __wmemset(dfa, DFA_ERR_STATE, DFA_NSTATE * (DFA_NSYM + 1));
+
     for (int key = 0; key < TOKEN_COUNT; key++)
     {
         int i = DFA_ENTRY_STATE;
