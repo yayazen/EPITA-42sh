@@ -47,6 +47,7 @@ int cs_lex(struct cstream *cs, struct vec *word, int flag)
     __eat_whitespaces(cs);
     while ((rc = cstream_peek(cs, &c)) == NO_ERROR && c != EOF)
     {
+        cs->line_start = false;
         s = DFA(c, s);
 
         if (s == DFA_ERR_STATE)
@@ -70,6 +71,8 @@ int cs_lex(struct cstream *cs, struct vec *word, int flag)
         if ((rc = cstream_pop(cs, &c)) != NO_ERROR || t == T_LF)
             break;
     }
+
+    cs->line_start = true;
 
     return (rc != NO_ERROR) ? -rc : (c != EOF) ? t : EOF;
 }

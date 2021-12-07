@@ -10,8 +10,6 @@ struct cstream_readline
 {
     struct cstream base;
 
-    bool line_start;
-
     char *current_line;
     // offset in current_line
     size_t line_position;
@@ -19,7 +17,7 @@ struct cstream_readline
 
 static char *prompt_get(struct cstream_readline *cs)
 {
-    if (cs->line_start)
+    if (cs->base.line_start)
         return strdup("42sh$ ");
     return strdup("> ");
 }
@@ -80,7 +78,7 @@ static void cstream_readline_reset(struct cstream *base_cs)
     free(cs->current_line);
     cs->current_line = NULL;
     cs->line_position = 0;
-    cs->line_start = true;
+    cs->base.line_start = true;
 }
 
 static const struct cstream_type cstream_readline_type = {
@@ -96,7 +94,7 @@ struct cstream *cstream_readline_create(void)
     cstream->base.type = &cstream_readline_type;
     cstream->current_line = NULL;
     cstream->line_position = 0;
-    cstream->line_start = true;
+    cstream->base.line_start = true;
     interruptible_readline_setup();
     return &cstream->base;
 }

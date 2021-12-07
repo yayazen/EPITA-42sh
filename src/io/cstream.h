@@ -28,6 +28,10 @@ struct cstream
     bool has_buffer;
     /** The next character in the stream, if has_buffer is true */
     int buffer;
+
+    /** If the lexer is not waiting for some additional characters to fullfill
+     * its current token, this will be true */
+    bool line_start;
 };
 
 struct cstream_type
