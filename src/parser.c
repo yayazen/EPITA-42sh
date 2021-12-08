@@ -35,22 +35,20 @@ int cs_parse(struct cstream *cs, int flag)
     int lex_flag = LEX_LINE_START;
     int token;
     struct vec word;
+
     vec_init(&word);
-
-    while (token != T_EOF)
+    while ((token = cs_lex(cs, &word, lex_flag)) != T_EOF)
     {
-        token = cs_lex(cs, &word, lex_flag);
-
-        if ((flag & 2) && token >= 0)
-            __debug(token, &word);
-        vec_reset(&word);
-
         if (token < 0)
         {
             if ((rc = -token) == KEYBOARD_INTERRUPT)
                 continue;
             break;
         }
+
+        if ((flag & 2))
+            __debug(token, &word);
+        vec_reset(&word);
 
         lex_flag = (token == T_LF) ? LEX_LINE_START : 0;
     }

@@ -81,7 +81,8 @@ int main(int argc, char *argv[])
 err_parse_args:
     puts(__usages);
 end_loop:
-    perror(PACKAGE);
+    if (err)
+        perror(PACKAGE);
     if (cs)
         cstream_free(cs);
     return err;
