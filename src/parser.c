@@ -33,12 +33,13 @@ int cs_parse(struct cstream *cs, int flag)
 {
     int rc = NO_ERROR;
     int lex_flag = LEX_LINE_START;
+    int token;
     struct vec word;
     vec_init(&word);
 
-    while (1)
+    while (token != T_EOF)
     {
-        int token = cs_lex(cs, &word, lex_flag);
+        token = cs_lex(cs, &word, lex_flag);
 
         if ((flag & 2) && token >= 0)
             __debug(token, &word);

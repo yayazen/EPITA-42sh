@@ -74,5 +74,5 @@ int cs_lex(struct cstream *cs, struct vec *word, int flag)
 
     cs->line_start = true;
 
-    return (rc != NO_ERROR) ? -rc : (c != EOF) ? t : EOF;
+    return (rc != NO_ERROR) ? -rc : (c != EOF) ? t : T_EOF;
 }

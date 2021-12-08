@@ -104,6 +104,9 @@ static enum error check_interrupt(void)
         return NO_ERROR;
     interrupted = false;
 
+    // let the user know what happened
+    fputs("^C\n", stderr);
+    
     // reset the prompt, eventhough the user input isn't complete
     rl_free_line_state();
     rl_cleanup_after_signal();
@@ -111,9 +114,7 @@ static enum error check_interrupt(void)
                   | RL_STATE_NUMERICARG | RL_STATE_MULTIKEY);
     rl_done = 1;
     rl_callback_handler_remove();
-
-    // let the user know what happened
-    fputs("^C\n", stderr);
+    interruptible_readline_setup();
 
     return KEYBOARD_INTERRUPT;
 }
