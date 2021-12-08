@@ -74,10 +74,15 @@ static void __dfa_init(void)
         dfa[i][DFA_TOKEN] = key;
     }
 
-    // DQUOTE LOOP
+    // IONUMBER
+    for (int n = 0; n < 10; n++)
+        dfa[DFA_ENTRY_STATE][n + '0'] = it;
+    dfa[it++][DFA_TOKEN] = T_IONUMBER;
+
+    // DOUBLE QUOTE LOOP
     __dfa_loop_init('"', T_WORD);
 
-    // SQUOTE LOOP
+    // SINGLE QUOTE LOOP
     __dfa_loop_init('\'', T_WORD);
 }
 

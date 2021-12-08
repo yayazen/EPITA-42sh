@@ -2,22 +2,34 @@
 #include "stdio.h"
 #include "token.h"
 
-static const char *__type_str(int token)
+static void __debug(struct rl_state *s)
 {
-    const char *type;
-    switch (TOKEN_TYPE(token))
+    if (!(s->flag & 2))
+        return;
+
+    switch (TOKEN_TYPE(s->token))
     {
     case SPECIAL:
-        type = "SPECIAL";
+        printf("SPECIAL");
         break;
     case KEYWORD:
-        type = "KEYWORD";
+        printf("KEYWORD");
         break;
     default:
-        type = "DEFAULT";
+        printf("DEFAULT");
         break;
     }
-    return type;
+
+#define TOKEN(Key, Str, Type)                                                  \
+    if (Key == s->token)                                                       \
+        printf(" | " #Key);
+#include "token.def"
+#undef TOKEN
+
+    if (s->token == T_LF)
+        printf(" | ['\\n']\n");
+    else
+        printf(" | ['%s']\n", vec_cstring(&s->word));
 }
 
 /* Match anything you give it for debug purposes */
@@ -25,22 +37,22 @@ int rl_input(struct rl_state *s)
 {
     int rc;
 
-    s->flag = 1;
+    s->flag |= 1;
     while ((rc = rl_accept(s, T_EOF)) != 1)
     {
         if (rc < 0)
         {
-            break;
             perror("rl_input");
+            break;
         }
 
-        printf("%s ", __type_str(s->token));
-        if (s->token == T_LF)
-            printf("['\\n']\n");
-        else
-            printf("['%s']\n", vec_cstring(&s->word));
+        __debug(s);
 
-        s->flag = (s->token == T_LF || s->token == T_SEMICOL);
+        if (s->token == T_LF || s->token == T_SEMICOL)
+            s->flag |= 1;
+        else
+            s->flag &= ~1;
+
         rl_accept(s, s->token);
     }
     return rc;
