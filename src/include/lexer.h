@@ -8,9 +8,10 @@
 /*!
  * \brief lexer entry function
  * \param a file stream
- * \param a pointer to a token struct where the result is stored
+ * \param a vector to store the matching substring
  * \param flags for the lexer
- * \return an error code defined in utils/error.h
+ * \return a token (a positive value) or an negative error value
+ *          as defined in utils/error.h
  * \see token.h
  */
-int cs_lex(struct cstream *cs, struct vec *word, int flags);
+int cs_lex(struct cstream *cs, struct vec *word, int flag);

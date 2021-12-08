@@ -2,9 +2,12 @@
 
 #include <assert.h>
 #include <io/cstream.h>
+#include <utils/vec.h>
 
 #include "lexer_dfa.h"
 #include "token.h"
+
+#define CMDSTART 1
 
 #define DFA(C, S) dfa_eval((C), (S))
 #define DFA_TERM(S) dfa_term((S))
@@ -63,7 +66,7 @@ int cs_lex(struct cstream *cs, struct vec *word, int flag)
         else if (DFA_TERM(s))
         {
             t = DFA_TOKEN(s);
-            if (TOKEN_TYPE(t) == KEYWORD && !(flag & LEX_LINE_START))
+            if (TOKEN_TYPE(t) == KEYWORD && !(flag & CMDSTART))
                 t = T_WORD;
         }
 

@@ -7,5 +7,8 @@ all_sources += files(
     'token.c',
     'lexer_dfa.c',
     'lexer.c',
-    'parser.c'
+    'parser.c',
+    'rl_accept.c',
+    'rl_expect.c',
+    'rl_input.c'
 )
