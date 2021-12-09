@@ -44,9 +44,8 @@ static inline int __is_meta(int c)
  * \brief continue an IONUMBER or WORD
  *        and set state for next iteration
  */
-static inline int __reset_state(int c, int *t)
+static inline int __reset_state(int c)
 {
-    *t = (*t == T_IONUMBER && IS_DIGIT(c)) ? T_IONUMBER : T_WORD;
     int ns = DFA(c, DFA_ENTRY_STATE);
     return (ns != DFA_ERR_STATE) ? ns : DFA_ENTRY_STATE;
 }
@@ -77,13 +76,14 @@ int cs_lex(struct cstream *cs, struct vec *word, int flag)
         {
             if (TOKEN_TYPE(t) == SPECIAL || __is_meta(c))
                 break;
-            s = __reset_state(c, &t);
+            s = __reset_state(c);
+            t = (t == T_IONUMBER && IS_DIGIT(c)) ? T_IONUMBER : T_WORD;
         }
 
         else if (t == T_WORD && word->size && __break_word(c, s))
             break;
 
-        else if (DFA_TERM(s) && (t != T_WORD || word->size == 0))
+        else if (DFA_TERM(s) && (DFA_TOKEN(s) != T_IONUMBER || !word->size))
         {
             t = DFA_TOKEN(s);
             if (TOKEN_TYPE(t) == KEYWORD && !(flag & CMDSTART))
