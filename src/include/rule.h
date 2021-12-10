@@ -3,17 +3,50 @@
 #include <io/cstream.h>
 #include <utils/vec.h>
 
+enum
+{
+#define RULE(Rule, Str) Rule,
+#include "rule.def"
+#undef RULE
+};
+
+struct rl_ast
+{
+    int type;
+    char *word;
+    struct rl_ast *child;
+    struct rl_ast *sibling;
+};
+
+static inline void rl_ast_free(struct rl_ast *ast)
+{
+    if (!ast)
+        return;
+
+    rl_ast_free(ast->child);
+    rl_ast_free(ast->sibling);
+
+    if (ast->word)
+        free(ast->word);
+    free(ast);
+}
+
 struct rl_state
 {
     int flag;
     int token;
     struct vec word;
     struct cstream *cs;
+    struct rl_ast *ast;
 };
 
-int rl_accept(struct rl_state *s, int token);
+int rl_accept(struct rl_state *s, int token, int rl_type);
 
-int rl_expect(struct rl_state *s, int token);
+int rl_expect(struct rl_state *s, int token, int rl_type);
+
+/* WORD* */
+int rl_simple_cmd(struct rl_state *s);
+int rl_exec_simple_cmd(struct rl_ast *ast);
 
 /*   list
  * | list EOF

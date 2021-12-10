@@ -13,8 +13,6 @@
 #define DFA_TERM(S) (dfa_term((S)))
 #define DFA_TOKEN(S) (dfa_token((S)))
 
-#define IS_DIGIT(X) ('0' <= (X) && (X) <= '9')
-
 /**
  * \brief    move `stream` to the next non-blank character
  * \brief stream
@@ -40,28 +38,10 @@ static inline int __is_meta(int c)
     return 0;
 }
 
-/*
- * \brief continue an IONUMBER or WORD
- *        and set state for next iteration
- */
-static inline int __reset_state(int c)
-{
-    int ns = DFA(c, DFA_ENTRY_STATE);
-    return (ns != DFA_ERR_STATE) ? ns : DFA_ENTRY_STATE;
-}
-
-/*
- * \brief true if `c` interrupt a word in state `s`
- */
-static inline int __break_word(int c, int s)
-{
-    return s != DFA(c, s) && __is_meta(c);
-}
-
 int cs_lex(struct cstream *cs, struct vec *word, int flag)
 {
     int s = DFA_ENTRY_STATE;
-    int t = T_WORD;
+    int t = T_EOF;
     int c;
     int rc;
 
@@ -71,19 +51,21 @@ int cs_lex(struct cstream *cs, struct vec *word, int flag)
     while ((rc = cstream_peek(cs, &c)) == NO_ERROR && c != EOF)
     {
         s = DFA(c, s);
-
         if (s == DFA_ERR_STATE)
         {
             if (TOKEN_TYPE(t) == SPECIAL || __is_meta(c))
                 break;
-            s = __reset_state(c);
-            t = (t == T_IONUMBER && IS_DIGIT(c)) ? T_IONUMBER : T_WORD;
+            int ns = DFA(c, DFA_ENTRY_STATE);
+            s = (ns != DFA_ERR_STATE) ? ns : DFA_ENTRY_STATE;
+            t = T_WORD;
         }
 
-        else if (t == T_WORD && word->size && __break_word(c, s))
-            break;
-
-        else if (DFA_TERM(s) && (DFA_TOKEN(s) != T_IONUMBER || !word->size))
+        if (t == T_WORD)
+        {
+            if (s != DFA(c, s) && __is_meta(c))
+                break;
+        }
+        else if (DFA_TERM(s))
         {
             t = DFA_TOKEN(s);
             if (TOKEN_TYPE(t) == KEYWORD && !(flag & CMDSTART))
@@ -96,5 +78,5 @@ int cs_lex(struct cstream *cs, struct vec *word, int flag)
             break;
     }
 
-    return (rc != NO_ERROR) ? -rc : (c == EOF && !word->size) ? T_EOF : t;
+    return (rc != NO_ERROR) ? -rc : t;
 }

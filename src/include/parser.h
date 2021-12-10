@@ -4,7 +4,7 @@
 
 /*!
  * \brief parser entry function
- * \param stream a character stream
- * \return int
+ * \param a character stream
+ * \return zero or a negative value in case of erroro
  */
 int cs_parse(struct cstream *cs, int flag);

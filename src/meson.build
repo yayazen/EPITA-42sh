@@ -10,5 +10,5 @@ all_sources += files(
     'parser.c',
     'rl_accept.c',
     'rl_expect.c',
-    'rl_input.c'
+    'rl_simple_cmd.c',
 )
