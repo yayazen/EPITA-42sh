@@ -1,3 +1,4 @@
+RULE(RL_VOID, "void")
 RULE(RL_WORD, "word")
 RULE(RL_SIMPLE_CMD, "cmd")
 RULE(RL_LIST, "list")

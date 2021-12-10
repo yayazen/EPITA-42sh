@@ -3,6 +3,7 @@
 #include <io/cstream.h>
 #include <utils/vec.h>
 
+
 enum
 {
 #define RULE(Rule, Str) Rule,
@@ -17,6 +18,7 @@ struct rl_ast
     struct rl_ast *child;
     struct rl_ast *sibling;
 };
+
 
 static inline void rl_ast_free(struct rl_ast *ast)
 {
@@ -48,6 +50,10 @@ int rl_expect(struct rl_state *s, int token, int rl_type);
 int rl_simple_cmd(struct rl_state *s);
 int rl_exec_simple_cmd(struct rl_ast *ast);
 
+/* command: simple_command */
+int rl_cmd(struct rl_state *s);
+int rl_exec_cmd(struct rl_ast *ast);
+
 /*   list
  * | list EOF
  * | '\n'
@@ -57,6 +63,7 @@ int rl_input(struct rl_state *s);
 
 /* and_or ((';'|'&') and_or)* [';'|'&'] */
 int rl_list(struct rl_state *s);
+int rl_exec_list(struct rl_ast *s);
 
 /* pipeline (('&&'|'||') ('\n')* pipeline)* */
 int rl_and_or(struct rl_state *s);

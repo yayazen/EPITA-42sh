@@ -118,8 +118,8 @@ int cs_parse(struct cstream *cs, int flag)
     }
     else
     {
-        rl_simple_cmd(&s);
-        rc = rl_exec_simple_cmd(s.ast);
+        rc = rl_list(&s);
+        rc = rc <= 0 ? rc : rl_exec_list(s.ast);
     }
 
     if (rc >= 0)

@@ -11,4 +11,6 @@ all_sources += files(
     'rl_accept.c',
     'rl_expect.c',
     'rl_simple_cmd.c',
+    'rl_list.c',
+    'rl_cmd.c',
 )

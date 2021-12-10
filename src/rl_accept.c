@@ -16,13 +16,16 @@ int rl_accept(struct rl_state *s, int token, int rl_type)
 
     if (s->token == token)
     {
-        s->ast = calloc(1, sizeof(struct rl_ast));
-        if (!s->ast || !(s->ast->word = strdup(vec_cstring(&s->word))))
+        if (rl_type != RL_VOID)
         {
-            rl_ast_free(s->ast);
-            return -1;
+            s->ast = calloc(1, sizeof(struct rl_ast));
+            if (!s->ast || !(s->ast->word = strdup(vec_cstring(&s->word))))
+            {
+                rl_ast_free(s->ast);
+                return -1;
+            }
+            s->ast->type = rl_type;
         }
-        s->ast->type = rl_type;
         s->token = cs_lex(s->cs, &s->word, s->flag);
         return 1;
     }

@@ -1,5 +1,7 @@
 #include <assert.h>
 #include <stdlib.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 #include "rule.h"
@@ -9,17 +11,18 @@ int rl_simple_cmd(struct rl_state *s)
 {
     int rc;
     struct rl_ast *node;
-    struct rl_ast **pos;
+    if ((rc = rl_expect(s, T_WORD, RL_WORD)) <= 0)
+        return rc;
 
-    if (!(node = calloc(1, sizeof(struct rl_ast))))
-        return -1;
+    node = calloc(1, sizeof(struct rl_ast));
     node->type = RL_SIMPLE_CMD;
+    node->child = s->ast;
 
-    pos = &node->child;
+    struct rl_ast *n = node->child;
     while ((rc = rl_accept(s, T_WORD, RL_WORD)) == 1)
     {
-        *pos = s->ast;
-        pos = &(*pos)->sibling;
+        n->sibling = s->ast;
+        n = n->sibling;
     }
 
     s->ast = node;
@@ -29,12 +32,10 @@ int rl_simple_cmd(struct rl_state *s)
 int rl_exec_simple_cmd(struct rl_ast *ast)
 {
     assert(ast && ast->type == RL_SIMPLE_CMD);
-    if (!(ast = ast->child))
-        return 0;
 
-    char *pathname = ast->word;
     char *argv[10];
-    argv[0] = pathname;
+    ast = ast->child;
+    argv[0] = ast->word;
 
     int i = 1;
     while ((ast = ast->sibling))
@@ -43,5 +44,10 @@ int rl_exec_simple_cmd(struct rl_ast *ast)
     }
     argv[i] = NULL;
 
-    return execvp(pathname, argv);
+    if (fork() == 0)
+        execvp(argv[0], argv);
+    else
+        wait(0);
+
+    return 0;
 }
