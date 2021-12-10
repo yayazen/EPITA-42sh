@@ -29,6 +29,7 @@ enum error
     LEXER_ERROR,
     PARSER_ERROR,
     EXECUTION_ERROR,
+    UNKNOWN_ERROR,
 
     // these aren't really errors, but behave in a similar way:
     // they interrupt normal program operation. The only difference

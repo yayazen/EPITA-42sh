@@ -59,11 +59,10 @@ static int __parse_opts(int optc, char **optv, struct cstream **cs, int *flag)
         }
     }
 
-    *cs = (*cs) ? *cs
-                : (optind < optc)
-            ? cstream_file_create(fopen(optv[optind], "r"), true)
-            : (isatty(STDIN_FILENO)) ? cstream_readline_create()
-                                     : cstream_file_create(stdin, false);
+    *cs = (*cs)           ? *cs
+        : (optind < optc) ? cstream_file_create(fopen(optv[optind], "r"), true)
+        : (isatty(STDIN_FILENO)) ? cstream_readline_create()
+                                 : cstream_file_create(stdin, false);
 
     return *cs == NULL;
 }
@@ -76,7 +75,8 @@ int main(int argc, char *argv[])
     if (err || (flag & OPT_HELP))
         goto err_parse_args;
 
-    err = cs_parse(cs, flag);
+    while ((err = cs_parse(cs, flag)) == NO_ERROR && !(flag & OPT_HELP))
+        ;
 
     goto end_loop;
 err_parse_args:

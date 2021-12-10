@@ -4,20 +4,25 @@
 #include <io/cstream.h>
 #include <utils/vec.h>
 
-#include "lexer_dfa.h"
+#include "rule.h"
 #include "token.h"
 
-#define CMDSTART 1
+#define LEX_MODE_SQUOTE (1 << 0)
+#define LEX_MODE_DQUOTE (1 << 1)
+#define LEX_MODE_DOLLAR (1 << 2)
+#define LEX_MODE_CMD_SUB (1 << 3)
+#define LEX_MODE_PARAM_EXP (1 << 4)
+#define LEX_MODE_ARITH_EXP (1 << 5)
 
 #define DFA(C, S) (dfa_eval((C), (S)))
 #define DFA_TERM(S) (dfa_term((S)))
 #define DFA_TOKEN(S) (dfa_token((S)))
 
 /**
- * \brief    move `stream` to the next non-blank character
- * \brief stream
+ * \brief  move `stream` to the next non-blank character
+ * \param  a cstream
  */
-static inline struct cstream *__eat_whitespaces(struct cstream *cs)
+static inline struct cstream *__eatwhitespaces(struct cstream *cs)
 {
     int c;
     while (cstream_peek(cs, &c) == NO_ERROR && (c == ' ' || c == '\t'))
@@ -26,10 +31,10 @@ static inline struct cstream *__eat_whitespaces(struct cstream *cs)
 }
 
 /*
- * \brief  True if `c` is a meta character
+ * \brief  true if `c` is a meta character
  *         i.e a one char token marked as SPECIAL.
  */
-static inline int __is_meta(int c)
+static inline int __ismeta(int c)
 {
     int s = DFA(c, DFA_ENTRY_STATE);
     if (s != DFA_ERR_STATE && DFA_TERM(s)
@@ -38,45 +43,75 @@ static inline int __is_meta(int c)
     return 0;
 }
 
-int cs_lex(struct cstream *cs, struct vec *word, int flag)
+/*
+ * \brief set mode for the lexer depending on `c`
+ */
+static inline int __lexmode(int mode, int c)
 {
-    int s = DFA_ENTRY_STATE;
-    int t = T_EOF;
+    static int oldc = -1;
+
+    if (c == '\'' && !(mode & LEX_MODE_DQUOTE))
+        mode ^= LEX_MODE_SQUOTE;
+
+    if (c == '"' && !(mode & LEX_MODE_SQUOTE))
+        mode ^= LEX_MODE_DQUOTE;
+
+    if (c == '`' && !(mode & LEX_MODE_SQUOTE))
+        mode ^= LEX_MODE_CMD_SUB;
+
+    if (oldc == '$' && c == '(')
+        mode |= LEX_MODE_CMD_SUB;
+    if (c == ')' && (mode & LEX_MODE_PARAM_EXP))
+        mode &= ~LEX_MODE_CMD_SUB;
+
+    if (oldc == '$' && c == '{')
+        mode |= LEX_MODE_PARAM_EXP;
+    if (c == '}' && (mode & LEX_MODE_PARAM_EXP))
+        mode &= ~LEX_MODE_PARAM_EXP;
+
+    oldc = c;
+    return mode;
+}
+
+/*
+ * \brief recursively collect a token
+ * \return NO_ERROR or an error code as deined in utils/error.h
+ */
+static int __lexer(struct rl_state *rls, int s, int mode)
+{
     int c;
-    int rc;
+    if ((rls->err = cstream_peek(rls->cs, &c)) != NO_ERROR || c == EOF)
+        return rls->err;
 
-    __eat_whitespaces(cs);
-    vec_reset(word);
-
-    while ((rc = cstream_peek(cs, &c)) == NO_ERROR && c != EOF)
+    s = DFA(c, s);
+    if (s == DFA_ERR_STATE || rls->token == T_WORD)
     {
-        s = DFA(c, s);
-        if (s == DFA_ERR_STATE)
-        {
-            if (TOKEN_TYPE(t) == SPECIAL || __is_meta(c))
-                break;
-            int ns = DFA(c, DFA_ENTRY_STATE);
-            s = (ns != DFA_ERR_STATE) ? ns : DFA_ENTRY_STATE;
-            t = T_WORD;
-        }
-
-        if (t == T_WORD)
-        {
-            if (s != DFA(c, s) && __is_meta(c))
-                break;
-        }
-        else if (DFA_TERM(s))
-        {
-            t = DFA_TOKEN(s);
-            if (TOKEN_TYPE(t) == KEYWORD && !(flag & CMDSTART))
-                t = T_WORD;
-        }
-
-        vec_push(word, c);
-        cs->line_start = DFA('\n', s) != s;
-        if ((rc = cstream_pop(cs, &c)) != NO_ERROR || t == T_LF)
-            break;
+        if (TOKEN_TYPE(rls->token) == SPECIAL
+            || (!(mode = __lexmode(mode, c)) && __ismeta(c)))
+            return rls->err;
+        s = DFA_ENTRY_STATE;
+        rls->token = T_WORD;
+    }
+    else if (DFA_TERM(s))
+    {
+        rls->token = DFA_TOKEN(s);
+        if (TOKEN_TYPE(rls->token) == KEYWORD && !(rls->flag & 1))
+            rls->token = T_WORD;
     }
 
-    return (rc != NO_ERROR) ? -rc : t;
+    vec_push(&rls->word, c);
+    rls->cs->line_start = !mode;
+    if ((rls->err = cstream_pop(rls->cs, &c)) != NO_ERROR || rls->token == T_LF)
+        return rls->err;
+
+    return __lexer(rls, s, mode);
+}
+
+int lexer(struct rl_state *rls)
+{
+    rls->token = T_EOF;
+    vec_reset(&rls->word);
+    __eatwhitespaces(rls->cs);
+
+    return __lexer(rls, DFA_ENTRY_STATE, 0);
 }

@@ -11,18 +11,20 @@ int rl_simple_cmd(struct rl_state *s)
 {
     int rc;
     struct rl_ast *node;
+
+    /* WORD */
     if ((rc = rl_expect(s, T_WORD, RL_WORD)) <= 0)
         return rc;
-
     node = calloc(1, sizeof(struct rl_ast));
     node->type = RL_SIMPLE_CMD;
     node->child = s->ast;
 
-    struct rl_ast *n = node->child;
-    while ((rc = rl_accept(s, T_WORD, RL_WORD)) == 1)
+    /* WORD* */
+    struct rl_ast *child = node->child;
+    while ((rc = rl_accept(s, T_WORD, RL_WORD)) == true)
     {
-        n->sibling = s->ast;
-        n = n->sibling;
+        child->sibling = s->ast;
+        child = child->sibling;
     }
 
     s->ast = node;
@@ -39,15 +41,11 @@ int rl_exec_simple_cmd(struct rl_ast *ast)
 
     int i = 1;
     while ((ast = ast->sibling))
-    {
         argv[i++] = ast->word;
-    }
     argv[i] = NULL;
 
     if (fork() == 0)
-        execvp(argv[0], argv);
-    else
-        wait(0);
-
+        return execvp(argv[0], argv);
+    wait(0);
     return 0;
 }

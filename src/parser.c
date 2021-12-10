@@ -71,6 +71,7 @@ __attribute__((unused)) static void __dbg_ast_aux(struct rl_ast *ast)
 
 __attribute__((unused)) static void __dbg_ast(struct rl_ast *ast)
 {
+    printf("DBG << ");
     __dbg_ast_aux(ast);
     printf("\n");
 }
@@ -100,15 +101,15 @@ __attribute__((unused)) static int rl_all(struct rl_state *s)
         rl_ast_free(s->ast);
     }
 
-    return rc;
+    return rc < 0 ? rc : 0;
 }
 
 int cs_parse(struct cstream *cs, int flag)
 {
     int rc;
-    struct rl_state s = { .cs = cs,
-                          .flag = flag | 1,
-                          .token = -KEYBOARD_INTERRUPT };
+    struct rl_state s = {
+        .err = KEYBOARD_INTERRUPT, .cs = cs, .flag = flag | 1, .token = T_EOF
+    };
 
     vec_init(&s.word);
 
@@ -116,17 +117,16 @@ int cs_parse(struct cstream *cs, int flag)
     {
         rc = rl_all(&s);
     }
-    else
+    else if ((rc = rl_list(&s)) == true)
     {
-        rc = rl_list(&s);
-        rc = rc <= 0 ? rc : rl_exec_list(s.ast);
+        rl_exec_list(s.ast);
     }
 
-    if (rc >= 0)
+    if (rc > 0)
         __dbg_ast(s.ast);
 
     rl_ast_free(s.ast);
     vec_destroy(&s.word);
 
-    return rc;
+    return s.token == T_EOF ? PARSER_ERROR : NO_ERROR;
 }

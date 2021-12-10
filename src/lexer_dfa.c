@@ -1,7 +1,6 @@
-#include "lexer_dfa.h"
-
 #include <assert.h>
 
+#include "lexer.h"
 #include "token.h"
 
 /*!
@@ -35,21 +34,6 @@ static inline void *__wmemset(void *s, int c, size_t n)
     return m;
 }
 
-/*
- * \brief create a loop in the DFA
- *      i.e with c = '"' match "*"
- */
-static void __dfa_loop_init(int c, int key)
-{
-    assert(0 <= key && key < TOKEN_COUNT);
-    dfa[DFA_ENTRY_STATE][c] = it;
-    __wmemset(dfa[it], it, DFA_NSYM);
-    dfa[it][c] = it + 1;
-    dfa[it + 1][c] = it;
-    dfa[it + 1][DFA_TOKEN] = key;
-    it += 2;
-}
-
 /*!
  * \brief initialize the DFA for the lexer (Kind-Of Thread safe)
  * \see token.h
@@ -73,12 +57,6 @@ static void __dfa_init(void)
         dfa[i]['\0'] = i;
         dfa[i][DFA_TOKEN] = key;
     }
-
-    // DOUBLE QUOTE LOOP
-    __dfa_loop_init('"', T_WORD);
-
-    // SINGLE QUOTE LOOP
-    __dfa_loop_init('\'', T_WORD);
 }
 
 int dfa_term(int state)

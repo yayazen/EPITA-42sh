@@ -9,19 +9,21 @@ int rl_list(struct rl_state *s)
 {
     int rc;
     struct rl_ast *node;
+
+    /* command */
     if ((rc = rl_cmd(s)) <= 0)
         return rc;
-
     node = calloc(1, sizeof(struct rl_ast));
     node->type = RL_LIST;
     node->child = s->ast;
 
-    struct rl_ast *n = node->child;
-    while ((rc = rl_accept(s, T_SEMICOL, RL_VOID)) == true
+    /* (';' command)* */
+    struct rl_ast *child = node->child;
+    while ((rc = rl_accept(s, T_SEMICOL, RL_NORULE)) == true
            && (rc = rl_cmd(s)) == true)
     {
-        n->sibling = s->ast;
-        n = n->sibling;
+        child->sibling = s->ast;
+        child = child->sibling;
     }
 
     s->ast = node;

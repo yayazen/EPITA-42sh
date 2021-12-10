@@ -8,25 +8,25 @@
 
 int rl_accept(struct rl_state *s, int token, int rl_type)
 {
-    while (s->token == -KEYBOARD_INTERRUPT)
-        s->token = cs_lex(s->cs, &s->word, s->flag);
+    while (s->err == KEYBOARD_INTERRUPT)
+        lexer(s);
 
-    if (s->token < 0)
-        return s->token;
+    if (s->err)
+        return -s->err;
 
     if (s->token == token)
     {
-        if (rl_type != RL_VOID)
+        if (rl_type != RL_NORULE)
         {
             s->ast = calloc(1, sizeof(struct rl_ast));
             if (!s->ast || !(s->ast->word = strdup(vec_cstring(&s->word))))
             {
                 rl_ast_free(s->ast);
-                return -1;
+                return UNKNOWN_ERROR;
             }
             s->ast->type = rl_type;
         }
-        s->token = cs_lex(s->cs, &s->word, s->flag);
+        lexer(s);
         return 1;
     }
     return 0;

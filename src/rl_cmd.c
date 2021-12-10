@@ -1,9 +1,4 @@
-#include <assert.h>
-#include <stdlib.h>
-#include <unistd.h>
-
 #include "rule.h"
-#include "token.h"
 
 int rl_cmd(struct rl_state *s)
 {

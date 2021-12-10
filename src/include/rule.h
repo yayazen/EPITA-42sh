@@ -3,7 +3,6 @@
 #include <io/cstream.h>
 #include <utils/vec.h>
 
-
 enum
 {
 #define RULE(Rule, Str) Rule,
@@ -18,7 +17,6 @@ struct rl_ast
     struct rl_ast *child;
     struct rl_ast *sibling;
 };
-
 
 static inline void rl_ast_free(struct rl_ast *ast)
 {
@@ -35,6 +33,7 @@ static inline void rl_ast_free(struct rl_ast *ast)
 
 struct rl_state
 {
+    int err;
     int flag;
     int token;
     struct vec word;
