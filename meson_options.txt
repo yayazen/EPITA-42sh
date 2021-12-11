@@ -18,3 +18,10 @@ option(
 	description: 'Pass arguments to the test runner',
 	value: []
 )
+
+option(
+	'testunit',
+	type: 'boolean',
+	value: false,
+	description: 'Generate testsuite for unit tests'
+)

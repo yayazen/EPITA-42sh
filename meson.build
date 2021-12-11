@@ -39,14 +39,13 @@ bin_sources = []
 tests_sources= []
 include_dirs = ['src']
 subdir('src')
-subdir('tests')
+
 
 
 # find readline, which some of the modules below link with
 cc = meson.get_compiler('c')
 readline_dep = cc.find_library('readline', required: true)
 asan_dep = cc.find_library('asan', required: true)
-criterion = cc.find_library('criterion', required: true)
 
 bin = executable(
     '42sh',
@@ -57,14 +56,22 @@ bin = executable(
     dependencies: [readline_dep, asan_dep],
 )
 
-unit_tests = executable(
-    'testsuite',
-    all_sources,
-    tests_sources,
-    include_directories: include_dirs,
-    install: false,
-    dependencies: [readline_dep, asan_dep, criterion],
-)
+if get_option('testunit')
+
+    subdir('tests')
+
+    criterion = cc.find_library('criterion', required: true)
+
+    unit_tests = executable(
+        'testsuite',
+        all_sources,
+        tests_sources,
+        include_directories: include_dirs,
+        install: false,
+        dependencies: [readline_dep, asan_dep, criterion],
+    )
+
+endif
 
 
 run_tests = meson.source_root() / 'tests/run_tests'

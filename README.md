@@ -17,7 +17,7 @@ sudo apt install meson libreadline-dev
 ```bash
 meson setup build
 # or with tests
-meson setup -Dforce_check=true build
+meson setup -Dtestunit=true -Dforce_check=true build
 
 meson compile -C build
 
