@@ -1,7 +1,6 @@
 project(
     '42sh',
     'c',
-    'cpp',
     version: '0.1',
     license: 'MIT',
     default_options: [
@@ -57,6 +56,9 @@ bin = executable(
 )
 
 if get_option('testunit')
+    # C++ must not be a requirement by default, only to
+    # build test unit
+    add_languages('cpp')
 
     subdir('tests')
 
