@@ -2,8 +2,9 @@ include_dirs += include_directories('include')
 
 subdir('utils')
 subdir('io')
+bin_sources += files('42sh.c')
+
 all_sources += files(
-    '42sh.c',
     'token.c',
     'lexer_dfa.c',
     'lexer.c',
