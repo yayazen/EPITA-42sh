@@ -51,6 +51,13 @@ clang-format:
     expose_as: clang-format diff
     when: on_failure
 
+coding-style:
+  stage: qa
+  needs: []
+  before_script: []
+  script:
+    - tests/check_coding_style
+
 doc:
   stage: doc
   needs: []

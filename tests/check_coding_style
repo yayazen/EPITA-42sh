@@ -15,13 +15,20 @@ then
 fi
 
 # Recursively check code
-for i in $(find .. | grep -E "\.(c|h)$"); do
+FOUND_ERRORS=0
+for i in $(find ../src ../tests | grep -E "\.(c|h)$"); do
 	./"$TOOL_EXE" "$i" 2> /dev/null > /dev/null;
 
     if [ ! $? -eq 0 ];
     then
         echo "* Errors in $i :"
         ./"$TOOL_EXE" "$i"
+
+        FOUND_ERRORS=1
     fi
-	
 done
+
+if [ ! "$FOUND_ERRORS" -eq "0" ];
+then
+    exit 1;
+fi
