@@ -81,12 +81,11 @@ __attribute__((unused)) static void __dbg_ast(struct rl_ast *ast)
 /* Match anything you give it */
 __attribute__((unused)) static int rl_all(struct rl_state *s)
 {
-    int rc;
     s->flag |= 1;
 
-    while ((rc = rl_accept(s, T_EOF, RL_WORD)) != 1)
+    while (rl_accept(s, T_EOF, RL_NORULE) != true)
     {
-        if (rc < 0)
+        if (s->err)
         {
             perror("rl_input");
             break;
@@ -99,19 +98,18 @@ __attribute__((unused)) static int rl_all(struct rl_state *s)
         else
             s->flag &= ~1;
 
-        rl_accept(s, s->token, RL_WORD);
-        rl_ast_free(s->ast);
+        rl_accept(s, s->token, RL_NORULE);
     }
 
-    return rc < 0 ? rc : 0;
+    return (s->err != NO_ERROR) ? -s->err : true;
 }
 
 int cs_parse(struct cstream *cs, int flag)
 {
-    int rc;
     struct rl_state s = { .err = KEYBOARD_INTERRUPT,
                           .cs = cs,
-                          .flag = flag | 1 | LAST_TOKEN_EATEN,
+                          .ast = NULL,
+                          .flag = flag | 1,
                           .token = T_EOF };
 
     vec_init(&s.word);
@@ -119,17 +117,17 @@ int cs_parse(struct cstream *cs, int flag)
     // Run in lexer-only mode
     if (flag & OPT_DEBUG)
     {
-        rc = rl_all(&s);
+        rl_all(&s);
     }
 
     // Run in parser mode
-    else if ((rc = rl_input(&s)) == true)
+    else if (rl_input(&s) == true)
     {
         rl_exec_input(s.ast);
     }
 
     // Print ast if requested
-    if (rc > 0 && flag & OPT_PRINT_AST)
+    if (flag & OPT_PRINT_AST)
         __dbg_ast(s.ast);
 
     rl_ast_free(s.ast);
@@ -138,5 +136,5 @@ int cs_parse(struct cstream *cs, int flag)
     if (s.token == T_EOF)
         return REACHED_EOF;
 
-    return rc < 0 ? PARSER_ERROR : NO_ERROR;
+    return (s.err != NO_ERROR) ? PARSER_ERROR : NO_ERROR;
 }

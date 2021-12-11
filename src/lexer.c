@@ -86,9 +86,10 @@ static int __lexer(struct rl_state *rls, int s, int mode)
     s = DFA(c, s);
     if (s == DFA_ERR_STATE || rls->token == T_WORD)
     {
+        rls->token = (rls->token == T_EOF) ? T_WORD : rls->token;
         if (TOKEN_TYPE(rls->token) == SPECIAL
             || (!(mode = __lexmode(mode, c)) && __ismeta(c)))
-            return rls->err;
+            return NO_ERROR;
         s = DFA_ENTRY_STATE;
         rls->token = T_WORD;
     }
