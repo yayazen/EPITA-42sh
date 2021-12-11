@@ -52,7 +52,7 @@ clang-format:
     when: on_failure
 
 coding-style:
-  image: pierre42100/debian-wget
+  image: pierre42100/debian-wget-clang-format
   stage: qa
   needs: []
   before_script: []
