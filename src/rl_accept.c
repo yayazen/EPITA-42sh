@@ -12,10 +12,10 @@ int rl_accept(struct rl_state *s, int token, int rl_type)
     while (s->err == KEYBOARD_INTERRUPT || s->flag & LAST_TOKEN_EATEN)
     {
         lexer(s);
-        s->flag &= (~LAST_TOKEN_EATEN);
+        s->flag &= ~LAST_TOKEN_EATEN;
     }
 
-    if (s->err)
+    if (s->err != NO_ERROR)
         return -s->err;
 
     if (s->token == token)
@@ -26,13 +26,13 @@ int rl_accept(struct rl_state *s, int token, int rl_type)
             if (!s->ast || !(s->ast->word = strdup(vec_cstring(&s->word))))
             {
                 rl_ast_free(s->ast);
-                return UNKNOWN_ERROR;
+                s->ast = NULL;
+                return -(s->err = UNKNOWN_ERROR);
             }
             s->ast->type = rl_type;
         }
-
         s->flag |= LAST_TOKEN_EATEN;
-        return 1;
+        return true;
     }
-    return 0;
+    return false;
 }

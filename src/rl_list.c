@@ -7,27 +7,26 @@
 
 int rl_list(struct rl_state *s)
 {
-    int rc;
     struct rl_ast *node;
 
     /* command */
-    if ((rc = rl_cmd(s)) <= 0)
-        return rc;
-    node = calloc(1, sizeof(struct rl_ast));
+    if (rl_cmd(s) <= 0)
+        return -s->err;
+    if (!(node = calloc(1, sizeof(struct rl_ast))))
+        return -(s->err = UNKNOWN_ERROR);
     node->type = RL_LIST;
     node->child = s->ast;
 
     /* (';' command)* */
     struct rl_ast *child = node->child;
-    while ((rc = rl_accept(s, T_SEMICOL, RL_NORULE)) == true
-           && (rc = rl_cmd(s)) == true)
+    while (rl_accept(s, T_SEMICOL, RL_NORULE) == true && rl_cmd(s) == true)
     {
         child->sibling = s->ast;
         child = child->sibling;
     }
 
     s->ast = node;
-    return (rc < 0) ? rc : 1;
+    return (s->err != NO_ERROR) ? -s->err : 1;
 }
 
 int rl_exec_list(struct rl_ast *ast)

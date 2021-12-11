@@ -9,26 +9,26 @@
 
 int rl_simple_cmd(struct rl_state *s)
 {
-    int rc;
     struct rl_ast *node;
 
     /* WORD */
-    if ((rc = rl_expect(s, T_WORD, RL_WORD)) <= 0)
-        return rc;
-    node = calloc(1, sizeof(struct rl_ast));
+    if (rl_expect(s, T_WORD, RL_WORD) <= 0)
+        return -s->err;
+    if (!(node = calloc(1, sizeof(struct rl_ast))))
+        return -(s->err = UNKNOWN_ERROR);
     node->type = RL_SIMPLE_CMD;
     node->child = s->ast;
 
     /* WORD* */
     struct rl_ast *child = node->child;
-    while ((rc = rl_accept(s, T_WORD, RL_WORD)) == true)
+    while (rl_accept(s, T_WORD, RL_WORD) == true)
     {
         child->sibling = s->ast;
         child = child->sibling;
     }
 
     s->ast = node;
-    return (rc < 0) ? rc : 1;
+    return (s->err != NO_ERROR) ? -s->err : 1;
 }
 
 int rl_exec_simple_cmd(struct rl_ast *ast)

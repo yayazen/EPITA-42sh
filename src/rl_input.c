@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <utils/error.h>
 
 #include "debug.h"
 #include "rule.h"
@@ -6,48 +7,21 @@
 
 int rl_input(struct rl_state *s)
 {
-    int rc;
-
-    struct rl_ast *node = calloc(1, sizeof(struct rl_ast));
-    node->type = RL_INPUT;
-
-    /* if only '\n' | EOF */
-    if ((rc = rl_accept(s, T_LF, RL_NORULE)) == true
-        || (rc = rl_accept(s, T_EOF, RL_NORULE)) == true)
-    {
-        s->ast = node;
+    if (rl_accept(s, T_LF, RL_NORULE) == true
+        || rl_accept(s, T_EOF, RL_NORULE) == true)
         return true;
-    }
 
-    /* list */
-    if ((rc = rl_list(s)) == true)
-    {
-        node->child = s->ast;
-    }
+    if (s->err != NO_ERROR || rl_list(s) < 0)
+        return -s->err;
 
-    /* mandatory '\n' | EOF */
-    if ((rc = rl_accept(s, T_LF, RL_NORULE)) != true
-        && (rc = rl_accept(s, T_EOF, RL_NORULE)) != true)
-    {
-        rl_ast_free(node);
-        rc = 0;
-        s->ast = NULL;
-    }
+    if (rl_accept(s, T_EOF, RL_NORULE) == true
+        || rl_accept(s, T_LF, RL_NORULE) == true)
+        return true;
 
-    else
-    {
-        s->ast = node;
-    }
-
-    return (rc <= 0) ? rc : true;
+    return (s->err != NO_ERROR) ? -s->err : false;
 }
 
 int rl_exec_input(struct rl_ast *ast)
 {
-    assert(ast && ast->type == RL_INPUT);
-
-    if (ast->child != NULL)
-        return rl_exec_list(ast->child);
-
-    return 0;
+    return (ast) ? rl_exec_list(ast) : 0;
 }
