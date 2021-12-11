@@ -15,4 +15,9 @@ enum
      */
     OPT_PRINT_AST = 4,
 
+    /**
+     * \brief specify if last token from lexer was consumed or not
+     */
+    LAST_TOKEN_EATEN = 8,
+
 };

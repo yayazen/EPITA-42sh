@@ -38,6 +38,7 @@ enum error
     BREAK_INTERRUPT,
     CONTINUE_INTERRUPT,
     EXIT_INTERRUPT,
+    REACHED_EOF,
 };
 
 /** \brief Calls warn and return err */

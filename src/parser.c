@@ -4,6 +4,7 @@
 #include <utils/vec.h>
 
 #include "constants.h"
+#include "debug.h"
 #include "rule.h"
 #include "stdio.h"
 #include "token.h"
@@ -108,9 +109,10 @@ __attribute__((unused)) static int rl_all(struct rl_state *s)
 int cs_parse(struct cstream *cs, int flag)
 {
     int rc;
-    struct rl_state s = {
-        .err = KEYBOARD_INTERRUPT, .cs = cs, .flag = flag | 1, .token = T_EOF
-    };
+    struct rl_state s = { .err = KEYBOARD_INTERRUPT,
+                          .cs = cs,
+                          .flag = flag | 1 | LAST_TOKEN_EATEN,
+                          .token = T_EOF };
 
     vec_init(&s.word);
 
@@ -121,9 +123,9 @@ int cs_parse(struct cstream *cs, int flag)
     }
 
     // Run in parser mode
-    else if ((rc = rl_list(&s)) == true)
+    else if ((rc = rl_input(&s)) == true)
     {
-        rl_exec_list(s.ast);
+        rl_exec_input(s.ast);
     }
 
     // Print ast if requested
@@ -133,5 +135,8 @@ int cs_parse(struct cstream *cs, int flag)
     rl_ast_free(s.ast);
     vec_destroy(&s.word);
 
-    return s.token == T_EOF ? PARSER_ERROR : NO_ERROR;
+    if (s.token == T_EOF)
+        return REACHED_EOF;
+
+    return rc < 0 ? PARSER_ERROR : NO_ERROR;
 }

@@ -59,6 +59,7 @@ int rl_exec_cmd(struct rl_ast *ast);
  * | EOF
  */
 int rl_input(struct rl_state *s);
+int rl_exec_input(struct rl_ast *s);
 
 /* and_or ((';'|'&') and_or)* [';'|'&'] */
 int rl_list(struct rl_state *s);
