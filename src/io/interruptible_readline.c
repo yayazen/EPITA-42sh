@@ -106,7 +106,7 @@ static enum error check_interrupt(void)
 
     // let the user know what happened
     fputs("^C\n", stderr);
-    
+
     // reset the prompt, eventhough the user input isn't complete
     rl_free_line_state();
     rl_cleanup_after_signal();

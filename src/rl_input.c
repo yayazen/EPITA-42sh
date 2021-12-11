@@ -31,9 +31,13 @@ int rl_input(struct rl_state *s)
     {
         rl_ast_free(node);
         rc = 0;
+        s->ast = NULL;
     }
 
-    s->ast = node;
+    else
+    {
+        s->ast = node;
+    }
 
     return (rc <= 0) ? rc : true;
 }
