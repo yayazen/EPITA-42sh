@@ -10,7 +10,7 @@ cd "$(dirname "$0")"
 if [ ! -f "$TOOL_EXE" ];
 then
     echo Download tool...
-    wget "$TOOL_URL" -O "$TOOL_EXE" || { rm -f "$TOOL_EXE"; echo "Failed to download tool!"; exit 1; } 
+    wget -k "$TOOL_URL" -O "$TOOL_EXE" || { rm -f "$TOOL_EXE"; echo "Failed to download tool!"; exit 1; } 
     chmod +x "$TOOL_EXE"
 fi
 
