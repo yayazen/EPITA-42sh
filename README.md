@@ -42,3 +42,11 @@ meson uninstall
 
 ### Resources
 **42sh Grammar** --> [docs/42sh-grammar.md](doc/42sh-grammar.md)
+
+
+
+### Install Meson from Github releases page
+1. Open https://github.com/mesonbuild/meson/releases
+2. Download the latest release int the `.tar.gz` format
+3. Decompress the archive somewhere in your computer
+4. Create a symlink in a directory of your path to the `meson.py` file
