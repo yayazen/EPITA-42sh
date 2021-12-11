@@ -16,7 +16,7 @@
 /**
  * \brief Print current backtrace
  */
-static inline void print_backtrace()
+static inline void print_backtrace(void)
 {
     void *buf[50];
     int num = backtrace(buf, sizeof(buf) / sizeof(void *));
@@ -30,7 +30,7 @@ static inline void print_backtrace()
  *
  * Yanis will kill me when he will see this function
  */
-static inline void abort_with_backtrace()
+static inline void abort_with_backtrace(void)
 {
     char *test = NULL;
     test[0] = 'c';
