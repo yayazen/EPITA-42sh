@@ -36,7 +36,7 @@ add_project_arguments(cflags, language: 'c')
 # interpret the meson.build in this directory
 all_sources = []
 bin_sources = []
-tests_sources= []
+tests_sources = []
 include_dirs = ['src']
 subdir('src')
 
@@ -64,8 +64,7 @@ if get_option('testunit')
 
     unit_tests = executable(
         'testsuite',
-        all_sources,
-        tests_sources,
+        [all_sources, tests_sources],
         include_directories: include_dirs,
         install: false,
         dependencies: [readline_dep, asan_dep, criterion],

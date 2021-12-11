@@ -30,7 +30,7 @@ static inline struct cstream *__eatwhitespaces(struct cstream *cs)
     return cs;
 }
 
-/*
+/**
  * \brief  true if `c` is a meta character
  *         i.e a one char token marked as SPECIAL.
  */
@@ -43,7 +43,7 @@ static inline int __ismeta(int c)
     return 0;
 }
 
-/*
+/**
  * \brief set mode for the lexer depending on `c`
  */
 static inline int __lexmode(int mode, int c)
@@ -73,9 +73,9 @@ static inline int __lexmode(int mode, int c)
     return mode;
 }
 
-/*
+/**
  * \brief recursively collect a token
- * \return NO_ERROR or an error code as deined in utils/error.h
+ * \return NO_ERROR or an error code as defined in utils/error.h
  */
 static int __lexer(struct rl_state *rls, int s, int mode)
 {
