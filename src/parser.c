@@ -3,13 +3,14 @@
 #include <io/cstream.h>
 #include <utils/vec.h>
 
+#include "constants.h"
 #include "rule.h"
 #include "stdio.h"
 #include "token.h"
 
 __attribute__((unused)) static void __dbg_type(struct rl_state *s)
 {
-    if (!(s->flag & 2))
+    if (!(s->flag & OPT_DEBUG))
         return;
 
     switch (TOKEN_TYPE(s->token))
@@ -113,16 +114,20 @@ int cs_parse(struct cstream *cs, int flag)
 
     vec_init(&s.word);
 
-    if (flag & 2)
+    // Run in lexer-only mode
+    if (flag & OPT_DEBUG)
     {
         rc = rl_all(&s);
     }
+
+    // Run in parser mode
     else if ((rc = rl_list(&s)) == true)
     {
         rl_exec_list(s.ast);
     }
 
-    if (rc > 0)
+    // Print ast if requested
+    if (rc > 0 && flag & OPT_PRINT_AST)
         __dbg_ast(s.ast);
 
     rl_ast_free(s.ast);
