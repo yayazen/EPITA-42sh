@@ -15,4 +15,5 @@ all_sources += files(
     'rl_list.c',
     'rl_cmd.c',
     'rl_input.c',
+    'ast_dot.c',
 )

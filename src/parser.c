@@ -3,6 +3,7 @@
 #include <io/cstream.h>
 #include <utils/vec.h>
 
+#include "ast_dot.h"
 #include "constants.h"
 #include "debug.h"
 #include "rule.h"
@@ -123,7 +124,10 @@ int cs_parse(struct cstream *cs, int flag)
     // Run in parser mode
     else if (rl_input(&s) == true)
     {
-        rl_exec_input(s.ast);
+        if (flag & OPT_PRINT_AST_DOT)
+            ast_dot_print(s.ast);
+        else
+            rl_exec_input(s.ast);
     }
 
     // Print ast if requested

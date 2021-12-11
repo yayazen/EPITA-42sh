@@ -17,6 +17,7 @@ static const char *__usages =
             "       --help          shows the help menu\n"
             "       --debug         enable debug output\n"
             "       --print-ast     print the ast after parsing\n"
+            "       --print-ast-dot print the ast in dot format after parsing\n"
             "Shell options:\n"
             "       -c command      evaluates argument as command";
 
@@ -25,6 +26,7 @@ static const struct option long_opts[] = {
     { "help", no_argument, &optflag, OPT_HELP },
     { "debug", no_argument, &optflag, OPT_DEBUG },
     { "print-ast", no_argument, &optflag, OPT_PRINT_AST },
+    { "print-ast-dot", no_argument, &optflag, OPT_PRINT_AST_DOT },
     { NULL, 0, NULL, 0 }
 };
 

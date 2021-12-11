@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#pragma once
+
 // #define LOG_DEBUG 1
 
 #ifdef LOG_DEBUG
