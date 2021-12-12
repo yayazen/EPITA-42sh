@@ -3,21 +3,46 @@
 #include "rule.h"
 #include "token.h"
 
-int rl_rule_if(struct rl_state *s)
+/**
+ * \brief Handles else clause
+ */
+int __rl_else(struct rl_state *s)
 {
-    struct rl_ast *node;
-
-    /* if */
-    if (rl_accept(s, T_IF, RL_NORULE) <= 0)
+    /* else */
+    if (rl_accept(s, T_ELSE, RL_NORULE) <= 0)
         return -s->err;
 
     /* compound_list */
     if (rl_compound_list(s) <= 0)
         return -s->err;
 
-    /* alloc node */
-    assert(node = calloc(1, sizeof(struct rl_ast)));
-    node->type = RL_IF;
+    struct rl_ast *node = calloc(1, sizeof(struct rl_ast));
+    assert(node != NULL);
+
+    node->type = RL_ELSE;
+    node->child = s->ast;
+
+    s->ast = node;
+    return true;
+}
+
+/**
+ * \brief Handles elif clause
+ */
+int __rl_elif(struct rl_state *s)
+{
+    /* elif */
+    if (rl_accept(s, T_ELIF, RL_NORULE) <= 0)
+        return -s->err;
+
+    /* compound_list */
+    if (rl_compound_list(s) <= 0)
+        return -s->err;
+
+    struct rl_ast *node = calloc(1, sizeof(struct rl_ast));
+    assert(node != NULL);
+
+    node->type = RL_ELIF;
     node->child = s->ast;
     s->ast = NULL;
 
@@ -45,25 +70,27 @@ int rl_rule_if(struct rl_state *s)
         node->child->sibling->sibling = s->ast;
     }
 
-    /* fi */
-    if (rl_expect(s, T_FI, RL_NORULE) <= 0)
-    {
-        rl_ast_free(node);
-        return -s->err;
-    }
-
     s->ast = node;
-
     return true;
 }
 
-int rl_exec_rule_if(struct rl_ast *ast)
+int rl_else_clause(struct rl_state *s)
 {
-    assert(ast && ast->type == RL_IF);
+    return __rl_else(s) == true ? true : __rl_elif(s);
+}
 
+int rl_exec_else_clause(struct rl_ast *ast)
+{
+    assert(ast && (ast->type == RL_ELIF || ast->type == RL_ELSE));
+
+    /* else */
+    if (ast->type == RL_ELSE)
+        return rl_exec_compound_list(ast->child);
+
+    /* elif */
     int status = rl_exec_compound_list(ast->child);
 
-    // If the `if` condition is met
+    // If the `elif` condition is met
     if (status == 0)
     {
         status = rl_exec_compound_list(ast->child->sibling);

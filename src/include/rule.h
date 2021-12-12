@@ -73,6 +73,11 @@ int rl_exec_shell_command(struct rl_ast *s);
 int rl_rule_if(struct rl_state *s);
 int rl_exec_rule_if(struct rl_ast *s);
 
+/* else_clause:   Else compound_list
+                | Elif compound_list Then compound_list [else_clause] */
+int rl_else_clause(struct rl_state *s);
+int rl_exec_else_clause(struct rl_ast *s);
+
 /* compound_list: list */
 int rl_compound_list(struct rl_state *s);
 int rl_exec_compound_list(struct rl_ast *s);
