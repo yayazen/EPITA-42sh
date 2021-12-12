@@ -51,12 +51,12 @@ def test_simple_cmd(cmd, stdout, stderr, status):
         )
     
     if len(errors) == 0:
-        print("[\033[92m+\033[0m] " + cmd)
+        print("[\033[92m+\033[0m] " + cmd.replace("\n", "<NEWLINE>"))
         return
     
     else:
         test_failed()
-        print("[\033[91m-\033[0m] " + cmd)
+        print("[\033[91m-\033[0m] " + cmd.replace("\n", "<NEWLINE>"))
         print("\n".join(errors))
         print()
     
@@ -89,6 +89,8 @@ test_simple_cmd("nonexisting_command", b"", None, 127)
 print_info("If else...")
 test_simple_cmd("if true; then uname; fi", b"Linux\n", b"", 0)
 test_simple_cmd("if false; then uname; fi", b"", b"", 0)
+test_simple_cmd("if false\n then uname; fi", b"", b"", 0)
+test_simple_cmd("if false\n true;true then uname; fi", b"Linux\n", b"", 0)
 test_simple_cmd("if false; then ls; else uname; fi", b"Linux\n", b"", 0)
 test_simple_cmd("if false; then ls; elif true; then uname; else ls; fi", b"Linux\n", b"", 0)
 test_simple_cmd("if false; then ls; elif false; then uname; fi", b"", b"", 0)
