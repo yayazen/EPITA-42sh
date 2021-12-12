@@ -44,8 +44,18 @@ int rl_exec_simple_cmd(struct rl_ast *ast)
         argv[i++] = ast->word;
     argv[i] = NULL;
 
-    if (fork() == 0)
-        return execvp(argv[0], argv);
-    wait(0);
-    return 0;
+    pid_t pid = fork();
+    if (pid == 0)
+    {
+        execvp(argv[0], argv);
+
+        // If the command was not found, we have to return
+        // exit status 127
+        exit(127);
+    }
+
+    int status;
+    waitpid(pid, &status, 0);
+
+    return WEXITSTATUS(status);
 }

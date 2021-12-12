@@ -83,10 +83,12 @@ int main(int argc, char *argv[])
     int flag = 0;
     struct cstream *cs = NULL;
     int err = __parse_opts(argc, argv, &cs, &flag);
+    int exit_status = 0;
     if (err || (flag & OPT_HELP))
         goto err_parse_args;
 
-    while ((err = cs_parse(cs, flag)) == NO_ERROR && !(flag & OPT_HELP))
+    while ((err = cs_parse(cs, flag, &exit_status)) == NO_ERROR
+           && !(flag & OPT_HELP))
         ;
 
     goto end_loop;
@@ -97,5 +99,7 @@ end_loop:
         perror(PACKAGE);
     if (cs)
         cstream_free(cs);
+    if (err == REACHED_EOF)
+        return exit_status;
     return err;
 }

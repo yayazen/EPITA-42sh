@@ -1,3 +1,11 @@
 #!/bin/sh
 
-echo 'You have to write tests'
+[ ! -z "$1" ] || {
+    echo "Please specify shell to use as first argument!"
+    exit 1
+}
+
+echo Using shell $1
+
+# Functional tests
+"$(dirname "$0")/functional_tests/e2etest.py" "$1"

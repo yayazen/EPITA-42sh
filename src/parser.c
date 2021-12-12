@@ -105,7 +105,7 @@ __attribute__((unused)) static int rl_all(struct rl_state *s)
     return (s->err != NO_ERROR) ? -s->err : true;
 }
 
-int cs_parse(struct cstream *cs, int flag)
+int cs_parse(struct cstream *cs, int flag, int *exit_status)
 {
     struct rl_state s = { .err = KEYBOARD_INTERRUPT,
                           .cs = cs,
@@ -127,7 +127,7 @@ int cs_parse(struct cstream *cs, int flag)
         if (flag & OPT_PRINT_AST_DOT)
             ast_dot_print(s.ast);
         else
-            rl_exec_input(s.ast);
+            *exit_status = rl_exec_input(s.ast);
     }
 
     // Print ast if requested
