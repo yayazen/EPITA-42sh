@@ -86,6 +86,14 @@ test_simple_cmd(
 
 test_simple_cmd("nonexisting_command", b"", None, 127)
 
+print_info("If else...")
+test_simple_cmd("if true; then uname; fi", b"Linux\n", b"", 0)
+test_simple_cmd("if false; then uname; fi", b"", b"", 0)
+test_simple_cmd("if false; then ls; else uname; fi", b"Linux\n", b"", 0)
+test_simple_cmd("if false; then ls; elif true; then uname; else ls; fi", b"Linux\n", b"", 0)
+test_simple_cmd("if false; then ls; elif false; then uname; fi", b"", b"", 0)
+test_simple_cmd("if true; then nonexisting_command; fi", b"", None, 127)
+
 
 if err:
     sys.exit(-1)

@@ -91,5 +91,10 @@ int rl_exec_else_clause(struct rl_ast *ast)
         status = rl_exec_else_clause(ast->child->sibling->sibling);
     }
 
+    else
+    {
+        status = 0;
+    }
+
     return status;
 }
