@@ -26,7 +26,7 @@ int rl_list(struct rl_state *s)
     }
 
     s->ast = node;
-    return (s->err != NO_ERROR) ? -s->err : 1;
+    return (s->err != NO_ERROR) ? -s->err : true;
 }
 
 int rl_exec_list(struct rl_ast *ast)

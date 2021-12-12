@@ -45,11 +45,11 @@ int rl_accept(struct rl_state *s, int token, int rl_type);
 
 int rl_expect(struct rl_state *s, int token, int rl_type);
 
-/* WORD* */
+/* simple_cmd: WORD* */
 int rl_simple_cmd(struct rl_state *s);
 int rl_exec_simple_cmd(struct rl_ast *ast);
 
-/* command: simple_command */
+/* command: simple_command | shell_command */
 int rl_cmd(struct rl_state *s);
 int rl_exec_cmd(struct rl_ast *ast);
 
@@ -61,9 +61,21 @@ int rl_exec_cmd(struct rl_ast *ast);
 int rl_input(struct rl_state *s);
 int rl_exec_input(struct rl_ast *s);
 
-/* and_or ((';'|'&') and_or)* [';'|'&'] */
+/* list: and_or ((';'|'&') and_or)* [';'|'&'] */
 int rl_list(struct rl_state *s);
 int rl_exec_list(struct rl_ast *s);
+
+/* shell_command: rule_if */
+int rl_shell_command(struct rl_state *s);
+int rl_exec_shell_command(struct rl_ast *s);
+
+/* rule_if: If compound_list Then compound_list [else_clause] Fi */
+int rl_rule_if(struct rl_state *s);
+int rl_exec_rule_if(struct rl_ast *s);
+
+/* compound_list: list */
+int rl_compound_list(struct rl_state *s);
+int rl_exec_compound_list(struct rl_ast *s);
 
 /* pipeline (('&&'|'||') ('\n')* pipeline)* */
 int rl_and_or(struct rl_state *s);

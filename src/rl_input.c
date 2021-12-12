@@ -11,7 +11,7 @@ int rl_input(struct rl_state *s)
         || rl_accept(s, T_EOF, RL_NORULE) == true)
         return true;
 
-    if (s->err != NO_ERROR || rl_list(s) < 0)
+    if (s->err != NO_ERROR || rl_list(s) <= 0)
         return -s->err;
 
     if (rl_accept(s, T_EOF, RL_NORULE) == true

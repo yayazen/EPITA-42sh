@@ -15,5 +15,8 @@ all_sources += files(
     'rl_list.c',
     'rl_cmd.c',
     'rl_input.c',
+    'rl_shell_command.c',
+    'rl_rule_if.c',
+    'rl_compound_list.c',
     'ast_dot.c',
 )

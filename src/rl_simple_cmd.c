@@ -12,7 +12,7 @@ int rl_simple_cmd(struct rl_state *s)
     struct rl_ast *node;
 
     /* WORD */
-    if (rl_expect(s, T_WORD, RL_WORD) <= 0)
+    if (rl_accept(s, T_WORD, RL_WORD) <= 0)
         return -s->err;
     if (!(node = calloc(1, sizeof(struct rl_ast))))
         return -(s->err = UNKNOWN_ERROR);
