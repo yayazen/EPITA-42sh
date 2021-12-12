@@ -7,12 +7,8 @@ int rl_rule_if(struct rl_state *s)
 {
     struct rl_ast *node;
 
-    /* if */
-    if (rl_accept(s, T_IF, RL_NORULE) <= 0)
-        return -s->err;
-
-    /* compound_list */
-    if (rl_compound_list(s) <= 0)
+    /* if compound_list */
+    if (rl_accept(s, T_IF, RL_NORULE) <= 0 || rl_compound_list(s) <= 0)
         return -s->err;
 
     /* alloc node */
@@ -21,15 +17,8 @@ int rl_rule_if(struct rl_state *s)
     node->child = s->ast;
     s->ast = NULL;
 
-    /* then */
-    if (rl_expect(s, T_THEN, RL_NORULE) <= 0)
-    {
-        rl_ast_free(node);
-        return -s->err;
-    }
-
-    /* compound_list */
-    if (rl_compound_list(s) <= 0)
+    /* then compound_list */
+    if (rl_expect(s, T_THEN, RL_NORULE) <= 0 || rl_compound_list(s) <= 0)
     {
         rl_ast_free(node);
         return -s->err;
@@ -39,7 +28,7 @@ int rl_rule_if(struct rl_state *s)
     node->child->sibling->sibling = NULL;
     s->ast = NULL;
 
-    /* else_clause */
+    /* [else_clause] */
     if (rl_else_clause(s) == true)
     {
         node->child->sibling->sibling = s->ast;

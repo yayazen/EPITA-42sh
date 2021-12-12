@@ -31,12 +31,8 @@ int __rl_else(struct rl_state *s)
  */
 int __rl_elif(struct rl_state *s)
 {
-    /* elif */
-    if (rl_accept(s, T_ELIF, RL_NORULE) <= 0)
-        return -s->err;
-
-    /* compound_list */
-    if (rl_compound_list(s) <= 0)
+    /* elif compound_list */
+    if (rl_accept(s, T_ELIF, RL_NORULE) <= 0 || rl_compound_list(s) <= 0)
         return -s->err;
 
     struct rl_ast *node = calloc(1, sizeof(struct rl_ast));
@@ -46,15 +42,8 @@ int __rl_elif(struct rl_state *s)
     node->child = s->ast;
     s->ast = NULL;
 
-    /* then */
-    if (rl_expect(s, T_THEN, RL_NORULE) <= 0)
-    {
-        rl_ast_free(node);
-        return -s->err;
-    }
-
-    /* compound_list */
-    if (rl_compound_list(s) <= 0)
+    /* then compound_list*/
+    if (rl_expect(s, T_THEN, RL_NORULE) <= 0 || rl_compound_list(s) <= 0)
     {
         rl_ast_free(node);
         return -s->err;
@@ -64,7 +53,7 @@ int __rl_elif(struct rl_state *s)
     node->child->sibling->sibling = NULL;
     s->ast = NULL;
 
-    /* else_clause */
+    /* [else_clause] */
     if (rl_else_clause(s) == true)
     {
         node->child->sibling->sibling = s->ast;
