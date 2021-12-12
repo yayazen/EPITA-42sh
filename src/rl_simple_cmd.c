@@ -4,6 +4,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include "quotes.h"
 #include "rule.h"
 #include "token.h"
 
@@ -37,11 +38,11 @@ int rl_exec_simple_cmd(struct rl_ast *ast)
 
     char *argv[10];
     ast = ast->child;
-    argv[0] = ast->word;
+    argv[0] = expand_simple_quotes(ast->word);
 
     int i = 1;
     while ((ast = ast->sibling))
-        argv[i++] = ast->word;
+        argv[i++] = expand_simple_quotes(ast->word);
     argv[i] = NULL;
 
     pid_t pid = fork();

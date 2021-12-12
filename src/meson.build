@@ -21,5 +21,6 @@ all_sources += files(
     'rl_compound_list.c',
     'rl_and_or.c',
     'rl_pipeline.c',
+    'quotes.c',
     'ast_dot.c',
 )
