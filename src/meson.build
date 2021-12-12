@@ -19,5 +19,7 @@ all_sources += files(
     'rl_rule_if.c',
     'rl_else_clause.c',
     'rl_compound_list.c',
+    'rl_and_or.c',
+    'rl_pipeline.c',
     'ast_dot.c',
 )

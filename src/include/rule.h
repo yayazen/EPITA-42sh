@@ -1,5 +1,6 @@
 #pragma once
 
+#include <assert.h>
 #include <io/cstream.h>
 #include <utils/vec.h>
 
@@ -17,6 +18,25 @@ struct rl_ast
     struct rl_ast *child;
     struct rl_ast *sibling;
 };
+
+// Hack for test units, which are written in C++, which
+// requires explicit cast when returning from malloc functions
+#ifdef __cplusplus
+#    define CAST_AST(a) (struct rl_ast *)(a)
+#else
+#    define CAST_AST(a) a
+#endif
+
+/**
+ * \brief Create a new AST node with a predefined type
+ */
+static inline struct rl_ast *rl_ast_new(int type)
+{
+    struct rl_ast *ast = CAST_AST(calloc(1, sizeof(struct rl_ast)));
+    assert(ast);
+    ast->type = type;
+    return ast;
+}
 
 static inline void rl_ast_free(struct rl_ast *ast)
 {
@@ -40,6 +60,17 @@ struct rl_state
     struct cstream *cs;
     struct rl_ast *ast;
 };
+
+/**
+ * \brief Remove ast node from parser state and return it
+ */
+static inline struct rl_ast *rl_state_take_ast(struct rl_state *s)
+{
+    struct rl_ast *ast = s->ast;
+    assert(ast);
+    s->ast = NULL;
+    return ast;
+}
 
 int rl_accept(struct rl_state *s, int token, int rl_type);
 
@@ -82,11 +113,13 @@ int rl_exec_else_clause(struct rl_ast *s);
 int rl_compound_list(struct rl_state *s);
 int rl_exec_compound_list(struct rl_ast *s);
 
-/* pipeline (('&&'|'||') ('\n')* pipeline)* */
+/* and_or: pipeline (('&&'|'||') ('\n')* pipeline)* */
 int rl_and_or(struct rl_state *s);
+int rl_exec_and_or(struct rl_ast *ast);
 
-/* ['!'] command ('|' ('\n')* command)* */
+/* pipeline: ['!'] command ('|' ('\n')* command)* */
 int rl_pipeline(struct rl_state *s);
+int rl_exec_pipeline(struct rl_ast *ast);
 
 /*   [IONUMBER] '>' WORD
  * | [IONUMBER] '<' WORD

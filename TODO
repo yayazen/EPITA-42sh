@@ -70,11 +70,11 @@
 #                                                                             #
 ###############################################################################
 
-* AUTOTOOLS/CMAKE                      [ -- ]
-    | * Build system in place          [ -- ]
+* MESON                                [ OK ]
+    | * Build system in place          [ OK ]
 
 * OPTIONS PARSER                       [ -- ]
-    | * -c <command>                   [ -- ]
+    | * -c <command>                   [ OK ]
     | * [-+]0                          [ -- ]
     | * --norc                         [ -- ]
     | * --ast-print                    [ -- ]
@@ -83,16 +83,16 @@
     | * from pipe                      [ -- ]
 
 * AST PRINTER                          [ -- ]
-    | * generate dot                   [ ++ ]
+    | * generate dot                   [ -- ]
 
 * EXECUTION                            [ -- ]
-    | * simple commands                [ -- ]
-    | * IF                             [ -- ]
+    | * simple commands                [ OK ]
+    | * IF                             [ OK ]
 
 * INTERACTIVE                          [ -- ]
     | * interactive mode               [ -- ]
     | * catch SIGINT                   [ -- ]
-    | * clean exit with ctrl+d         [ -- ]
+    | * clean exit with ctrl+d         [ OK ]
 
 * PROMPT                               [ -- ]
     | * PS1                            [ -- ]
