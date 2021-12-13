@@ -47,6 +47,8 @@ static const struct cstream_type cstream_file_type = {
 
 struct cstream *cstream_file_create(FILE *file, bool fclose_on_free)
 {
+    if (!file)
+        return NULL;
     struct cstream_file *cstream = zalloc(sizeof(*cstream));
     cstream->base.type = &cstream_file_type;
     cstream->file = file;

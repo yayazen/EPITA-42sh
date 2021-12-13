@@ -26,28 +26,36 @@ enum
 #endif
 
 /**
- *
- *
+ * \brief represents a rule in an AST format
  */
 struct rl_ast
 {
+    /* the node rule type */
     int type;
+    /* the effective value of the ast node */
     char *word;
+    /* left-child */
     struct rl_ast *child;
+    /* right-sibling */
     struct rl_ast *sibling;
 };
 
 /**
- *
- *
+ * \brief represents a state in the current parsing process
  */
 struct rl_state
 {
+    /* store error code for rule functions */
     int err;
+    /* flags for the parser */
     int flag;
+    /* the current token being processed */
     int token;
+    /* hold the token's string representation */
     struct vec word;
+    /* the stream to collect from */
     struct cstream *cs;
+    /* the resulting ast at this parsing state */
     struct rl_ast *ast;
 };
 
