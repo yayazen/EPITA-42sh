@@ -96,7 +96,7 @@ int rl_expect(struct rl_state *s, int token, int rltype);
 
 /* simple_cmd: WORD* */
 int rl_simple_cmd(struct rl_state *s);
-/* return is similar to execvp (must be forked)*/
+/* return is similar to execvp (must be forked) */
 int rl_exec_simple_cmd(struct rl_ast *ast);
 
 /* command: simple_command | shell_command */
