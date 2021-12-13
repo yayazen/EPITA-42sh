@@ -4,6 +4,7 @@ extern "C"
 {
 #include <io/cstream.h>
 
+#include "constants.h"
 #include "lexer.h"
 #include "token.h"
 }
@@ -41,7 +42,7 @@ static struct rl_state *get_new_state(const char *s)
     state->cs = cstream_string_create(s);
     state->err = KEYBOARD_INTERRUPT;
     state->ast = NULL;
-    state->flag = 1;
+    state->flag = 1 | PARSER_LINE_START | LEX_CMDSTART;
     state->token = T_EOF;
     vec_init(&state->word);
 
@@ -109,4 +110,19 @@ Test(lexer, simple_if)
         lex_entry(T_EOF)
     };
     check_lexer_seq("if true then echo yes fi", tokens);
+}
+
+Test(lexer, if_in_string)
+{
+    auto state = get_new_state("echo if");
+
+    cr_assert_eq(lexer(state), NO_ERROR);
+    cr_assert_eq(state->token, T_WORD);
+
+    state->flag &= ~LEX_CMDSTART;
+    cr_assert_eq(lexer(state), NO_ERROR);
+    cr_assert_eq(state->token, T_WORD);
+    cr_assert_str_eq(vec_cstring(&state->word), "if");
+
+    free_state(state);
 }
