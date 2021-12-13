@@ -10,7 +10,7 @@ int rl_simple_cmd(struct rl_state *s)
     struct rl_ast *node;
 
     /* WORD */
-    // s->flag |= LEX_CMDSTART;
+    s->flag |= LEX_CMDSTART;
     if (rl_accept(s, T_WORD, RL_WORD) <= 0)
         return -s->err;
     struct rl_ast *child = s->ast;
@@ -19,7 +19,7 @@ int rl_simple_cmd(struct rl_state *s)
     node->child = child;
 
     /* WORD* */
-    // s->flag &= ~LEX_CMDSTART;
+    s->flag &= ~LEX_CMDSTART;
     while (rl_accept(s, T_WORD, RL_WORD) == true)
     {
         child->sibling = s->ast;
