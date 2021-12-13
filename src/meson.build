@@ -23,4 +23,6 @@ all_sources += files(
     'rl_else_clause.c',
     'quotes.c',
     'ast_dot.c',
+    'builtins.c',
+    'bi_echo.c',
 )

@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <unistd.h>
 
+#include "builtins.h"
 #include "constants.h"
 #include "rule.h"
 #include "token.h"
@@ -38,6 +39,13 @@ int rl_exec_simple_cmd(struct rl_ast *ast)
     argv[0] = (ast = ast->child)->word;
     for (int i = 1; (ast = ast->sibling) != NULL; i++)
         argv[i] = ast->word;
+
+    builtin_def builtin = builtin_find(argv[0]);
+    if (builtin)
+    {
+        // FIXME: this is bad. Built in must not be executed in fork
+        exit(builtin(argv));
+    }
 
     return execvp(argv[0], argv);
 }

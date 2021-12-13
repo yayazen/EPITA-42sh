@@ -103,5 +103,20 @@ test_simple_cmd("echo '$PATH'72", b"$PATH72\n", b"", 0)
 test_simple_cmd("echo ''", b"\n", b"", 0)
 test_simple_cmd("echo 'a\nb\nc'", b"a\nb\nc\n", b"", 0)
 
+
+print_info("echo builtin...")
+test_simple_cmd("echo hello", b"hello\n", b"", 0)
+test_simple_cmd("echo hello yes", b"hello yes\n", b"", 0)
+test_simple_cmd("echo -n hello", b"hello", b"", 0)
+test_simple_cmd("echo -n h\\tello", b"h\\tello", b"", 0)
+test_simple_cmd("echo -ne h\\tello", b"h\tello", b"", 0)
+test_simple_cmd("echo -en h\\tello", b"h\tello", b"", 0)
+test_simple_cmd("echo -e -n h\\tello", b"h\tello", b"", 0)
+test_simple_cmd("echo -n -e h\\tello", b"h\tello", b"", 0)
+test_simple_cmd("echo -n -n -e h\\tello", b"h\tello", b"", 0)
+test_simple_cmd("echo -e h\\tello", b"h\tello\n", b"", 0)
+test_simple_cmd("echo -e h\\nello", b"h\nello\n", b"", 0)
+test_simple_cmd("echo -e h\\nel\\\\lo", b"h\nel\\lo\n", b"", 0)
+
 if err:
     sys.exit(-1)
