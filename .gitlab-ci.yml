@@ -22,12 +22,17 @@ build:
       - builddir/testsuite
     expose_as: 42sh
 
-test:
+functional_tests_42sh:
   stage: test
   dependencies:
     - build
   script:
     - tests/run_tests builddir/42sh
+
+functional_tests_dash:
+  stage: test
+  script:
+    - tests/run_tests dash
 
 unit_test:
   stage: test
