@@ -1,10 +1,7 @@
 #include <assert.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/wait.h>
 #include <unistd.h>
 
-#include "quotes.h"
+#include "constants.h"
 #include "rule.h"
 #include "token.h"
 
@@ -13,15 +10,16 @@ int rl_simple_cmd(struct rl_state *s)
     struct rl_ast *node;
 
     /* WORD */
-    if (rl_accept(s, T_WORD, RL_WORD) <= 0)
+    s->flag |= LEX_CMDSTART;
+    if (rl_expect(s, T_WORD, RL_WORD) <= 0)
         return -s->err;
-    if (!(node = calloc(1, sizeof(struct rl_ast))))
+    struct rl_ast *child = s->ast;
+    if (!(node = rl_ast_new(RL_SIMPLE_CMD)))
         return -(s->err = UNKNOWN_ERROR);
-    node->type = RL_SIMPLE_CMD;
-    node->child = s->ast;
+    node->child = child;
 
     /* WORD* */
-    struct rl_ast *child = node->child;
+    s->flag &= ~LEX_CMDSTART;
     while (rl_accept(s, T_WORD, RL_WORD) == true)
     {
         child->sibling = s->ast;
@@ -34,29 +32,12 @@ int rl_simple_cmd(struct rl_state *s)
 
 int rl_exec_simple_cmd(struct rl_ast *ast)
 {
-    assert(ast && ast->type == RL_SIMPLE_CMD);
+    assert(ast && ast->child && ast->type == RL_SIMPLE_CMD);
 
-    char *argv[10];
-    ast = ast->child;
-    argv[0] = expand_simple_quotes(ast->word);
+    char *argv[10] = { 0 };
+    argv[0] = (ast = ast->child)->word;
+    for (int i = 1; (ast = ast->sibling) != NULL; i++)
+        argv[i] = ast->word;
 
-    int i = 1;
-    while ((ast = ast->sibling))
-        argv[i++] = expand_simple_quotes(ast->word);
-    argv[i] = NULL;
-
-    pid_t pid = fork();
-    if (pid == 0)
-    {
-        execvp(argv[0], argv);
-
-        // If the command was not found, we have to return
-        // exit status 127
-        exit(127);
-    }
-
-    int status;
-    waitpid(pid, &status, 0);
-
-    return WEXITSTATUS(status);
+    return execvp(argv[0], argv);
 }

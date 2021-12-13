@@ -7,12 +7,12 @@
 #include "lexer.h"
 #include "rule.h"
 
-int rl_accept(struct rl_state *s, int token, int rl_type)
+int rl_accept(struct rl_state *s, int token, int rltype)
 {
-    while (s->err == KEYBOARD_INTERRUPT || s->flag & LAST_TOKEN_EATEN)
+    while (s->err == KEYBOARD_INTERRUPT || s->flag & LEX_COLLECT)
     {
+        s->flag &= ~LEX_COLLECT;
         lexer(s);
-        s->flag &= ~LAST_TOKEN_EATEN;
     }
 
     if (s->err != NO_ERROR)
@@ -20,18 +20,18 @@ int rl_accept(struct rl_state *s, int token, int rl_type)
 
     if (s->token == token)
     {
-        if (rl_type != RL_NORULE)
+        if (rltype != RL_NORULE)
         {
-            s->ast = calloc(1, sizeof(struct rl_ast));
+            s->ast = rl_ast_new(rltype);
             if (!s->ast || !(s->ast->word = strdup(vec_cstring(&s->word))))
             {
                 rl_ast_free(s->ast);
                 s->ast = NULL;
                 return -(s->err = UNKNOWN_ERROR);
             }
-            s->ast->type = rl_type;
+            s->ast->type = rltype;
         }
-        s->flag |= LAST_TOKEN_EATEN;
+        s->flag |= LEX_COLLECT;
         return true;
     }
     return false;

@@ -107,27 +107,26 @@ __attribute__((unused)) static int rl_all(struct rl_state *s)
 
 int cs_parse(struct cstream *cs, int flag, int *exit_status)
 {
-    struct rl_state s = { .err = KEYBOARD_INTERRUPT,
-                          .cs = cs,
-                          .ast = NULL,
-                          .flag = flag | 1,
-                          .token = T_EOF };
-
+    struct rl_state s = RL_DEFAULT_STATE;
     vec_init(&s.word);
 
     // Run in lexer-only mode
     if (flag & OPT_DEBUG)
     {
+        s.flag |= flag;
         rl_all(&s);
     }
 
-    // Run in parser mode
     else if (rl_input(&s) == true)
     {
         if (flag & OPT_PRINT_AST_DOT)
             ast_dot_print(s.ast);
         else
             *exit_status = rl_exec_input(s.ast);
+    }
+    else
+    {
+        fprintf(stderr, PACKAGE ": rule mismatch or unimplemented\n");
     }
 
     // Print ast if requested

@@ -1,7 +1,9 @@
 #include <assert.h>
-#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
+#include "constants.h"
 #include "rule.h"
 #include "token.h"
 
@@ -9,18 +11,20 @@ int rl_list(struct rl_state *s)
 {
     struct rl_ast *node;
 
-    /* command */
-    if (rl_cmd(s) <= 0)
+    /* and_or */
+    if (rl_and_or(s) <= 0)
         return -s->err;
-    if (!(node = calloc(1, sizeof(struct rl_ast))))
+    struct rl_ast *child = s->ast;
+    if (!(node = rl_ast_new(RL_LIST)))
         return -(s->err = UNKNOWN_ERROR);
-    node->type = RL_LIST;
-    node->child = s->ast;
+    node->child = child;
 
-    /* (';' command)* */
-    struct rl_ast *child = node->child;
-    while (rl_accept(s, T_SEMICOL, RL_NORULE) == true && rl_cmd(s) == true)
+    /* ((';'|'&') and_or)* [';'|'&'] */
+    while (rl_accept(s, T_SEMICOL, RL_NORULE) == true
+           || rl_accept(s, T_AND, RL_NORULE) == true)
     {
+        if (rl_and_or(s) <= 0)
+            break;
         child->sibling = s->ast;
         child = child->sibling;
     }
@@ -31,15 +35,14 @@ int rl_list(struct rl_state *s)
 
 int rl_exec_list(struct rl_ast *ast)
 {
-    assert(ast && ast->type == RL_LIST);
+    assert(ast && ast->child && ast->type == RL_LIST);
 
-    int rc;
+    int status;
     ast = ast->child;
-    while (ast)
+    do
     {
-        rc = rl_exec_cmd(ast);
-        ast = ast->sibling;
-    }
+        status = rl_exec_and_or(ast);
+    } while ((ast = ast->sibling));
 
-    return rc;
+    return status;
 }

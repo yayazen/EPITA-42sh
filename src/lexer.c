@@ -4,15 +4,17 @@
 #include <io/cstream.h>
 #include <utils/vec.h>
 
+#include "constants.h"
 #include "rule.h"
 #include "token.h"
 
-#define LEX_MODE_SQUOTE (1 << 0)
-#define LEX_MODE_DQUOTE (1 << 1)
-#define LEX_MODE_DOLLAR (1 << 2)
-#define LEX_MODE_CMD_SUB (1 << 3)
-#define LEX_MODE_PARAM_EXP (1 << 4)
-#define LEX_MODE_ARITH_EXP (1 << 5)
+#define LEX_MODE_SQUOTE (1 << 1)
+#define LEX_MODE_DQUOTE (1 << 2)
+#define LEX_MODE_BACKSLASH (1 << 3)
+#define LEX_MODE_DOLLAR (1 << 4)
+#define LEX_MODE_CMD_SUB (1 << 5)
+#define LEX_MODE_PARAM_EXP (1 << 6)
+#define LEX_MODE_ARITH_EXP (1 << 7)
 
 #define DFA(C, S) (dfa_eval((C), (S)))
 #define DFA_TERM(S) (dfa_term((S)))
@@ -48,29 +50,33 @@ static inline int __ismeta(int c)
  */
 static inline int __lexmode(int mode, int c)
 {
-    static int oldc = -1;
+    if (mode & LEX_MODE_BACKSLASH)
+        return mode & ~LEX_MODE_BACKSLASH;
 
-    if (c == '\'' && !(mode & LEX_MODE_DQUOTE))
+    else if (c == '\\' && !(mode & LEX_MODE_SQUOTE))
+        mode |= LEX_MODE_BACKSLASH;
+
+    else if (c == '\'' && !(mode & LEX_MODE_DQUOTE))
         mode ^= LEX_MODE_SQUOTE;
 
-    if (c == '"' && !(mode & LEX_MODE_SQUOTE))
+    else if (c == '"' && !(mode & LEX_MODE_SQUOTE))
         mode ^= LEX_MODE_DQUOTE;
 
-    if (c == '`' && !(mode & LEX_MODE_SQUOTE))
+    else if (c == '`' && !(mode & LEX_MODE_SQUOTE))
         mode ^= LEX_MODE_CMD_SUB;
 
-    if (oldc == '$' && c == '(')
-        mode |= LEX_MODE_CMD_SUB;
-    if (c == ')' && (mode & LEX_MODE_PARAM_EXP))
-        mode &= ~LEX_MODE_CMD_SUB;
+    else if ((c == '(' && mode & LEX_MODE_DOLLAR)
+             || (c == ')' && mode & LEX_MODE_CMD_SUB))
+        mode ^= LEX_MODE_CMD_SUB;
 
-    if (oldc == '$' && c == '{')
-        mode |= LEX_MODE_PARAM_EXP;
-    if (c == '}' && (mode & LEX_MODE_PARAM_EXP))
-        mode &= ~LEX_MODE_PARAM_EXP;
+    else if ((c == '{' && mode & LEX_MODE_DOLLAR)
+             || (c == '}' && mode & LEX_MODE_PARAM_EXP))
+        mode ^= LEX_MODE_PARAM_EXP;
 
-    oldc = c;
-    return mode;
+    else if (c == '$' && !(mode & LEX_MODE_SQUOTE))
+        return mode | LEX_MODE_DOLLAR;
+
+    return mode & ~LEX_MODE_DOLLAR;
 }
 
 /**
@@ -96,12 +102,12 @@ static int __lexer(struct rl_state *rls, int s, int mode)
     else if (DFA_TERM(s))
     {
         rls->token = DFA_TOKEN(s);
-        if (TOKEN_TYPE(rls->token) == KEYWORD && !(rls->flag & 1))
+        if (TOKEN_TYPE(rls->token) == KEYWORD && !(rls->flag & LEX_CMDSTART))
             rls->token = T_WORD;
     }
 
     vec_push(&rls->word, c);
-    rls->cs->line_start = !mode;
+    rls->cs->line_start = !mode && !(rls->flag & PARSER_LINE_START);
     if ((rls->err = cstream_pop(rls->cs, &c)) != NO_ERROR || rls->token == T_LF)
         return rls->err;
 

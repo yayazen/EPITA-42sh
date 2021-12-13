@@ -11,13 +11,11 @@ enum
 #undef RULE
 };
 
-struct rl_ast
-{
-    int type;
-    char *word;
-    struct rl_ast *child;
-    struct rl_ast *sibling;
-};
+#define RL_DEFAULT_STATE                                                       \
+    {                                                                          \
+        .err = NO_ERROR, .flag = LEX_COLLECT | LEX_CMDSTART, .token = T_EOF,   \
+        .cs = cs, .ast = NULL,                                                 \
+    }
 
 // Hack for test units, which are written in C++, which
 // requires explicit cast when returning from malloc functions
@@ -28,16 +26,46 @@ struct rl_ast
 #endif
 
 /**
+ *
+ *
+ */
+struct rl_ast
+{
+    int type;
+    char *word;
+    struct rl_ast *child;
+    struct rl_ast *sibling;
+};
+
+/**
+ *
+ *
+ */
+struct rl_state
+{
+    int err;
+    int flag;
+    int token;
+    struct vec word;
+    struct cstream *cs;
+    struct rl_ast *ast;
+};
+
+/**
  * \brief Create a new AST node with a predefined type
  */
-static inline struct rl_ast *rl_ast_new(int type)
+static inline struct rl_ast *rl_ast_new(int rltype)
 {
     struct rl_ast *ast = CAST_AST(calloc(1, sizeof(struct rl_ast)));
-    assert(ast);
-    ast->type = type;
+    if (!ast)
+        return NULL;
+    ast->type = rltype;
     return ast;
 }
 
+/**
+ * \brief Free the AST recursively
+ */
 static inline void rl_ast_free(struct rl_ast *ast)
 {
     if (!ast)
@@ -51,16 +79,6 @@ static inline void rl_ast_free(struct rl_ast *ast)
     free(ast);
 }
 
-struct rl_state
-{
-    int err;
-    int flag;
-    int token;
-    struct vec word;
-    struct cstream *cs;
-    struct rl_ast *ast;
-};
-
 /**
  * \brief Remove ast node from parser state and return it
  */
@@ -72,12 +90,13 @@ static inline struct rl_ast *rl_state_take_ast(struct rl_state *s)
     return ast;
 }
 
-int rl_accept(struct rl_state *s, int token, int rl_type);
+int rl_accept(struct rl_state *s, int token, int rltype);
 
-int rl_expect(struct rl_state *s, int token, int rl_type);
+int rl_expect(struct rl_state *s, int token, int rltype);
 
 /* simple_cmd: WORD* */
 int rl_simple_cmd(struct rl_state *s);
+/* return is similar to execvp (must be forked)*/
 int rl_exec_simple_cmd(struct rl_ast *ast);
 
 /* command: simple_command | shell_command */

@@ -1,5 +1,6 @@
 #include <execinfo.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 #pragma once
@@ -31,9 +32,9 @@ static inline void print_backtrace(void)
  * Please use this function only for debugging purposes!
  *
  * Yanis will kill me when he will see this function
+ * ...I'll slay you
  */
 static inline void abort_with_backtrace(void)
 {
-    char *test = NULL;
-    test[0] = 'c';
+    abort();
 }

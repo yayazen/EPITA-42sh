@@ -7,9 +7,6 @@
 #include "constants.h"
 #include "parser.h"
 
-#define PACKAGE "42sh"
-#define VERSION "0.1.0"
-
 static const char *__usages =
     PACKAGE ", version " VERSION "\n"
             "Usage: " PACKAGE " [OPTIONS] [FILE] [ARGUMENTS...]\n"
@@ -50,30 +47,20 @@ static int __parse_opts(int optc, char **optv, struct cstream **cs, int *flag)
                 *cs = cstream_string_create(optarg);
                 break;
             }
-
             __attribute__((fallthrough));
-        case '?':
         default:
             return 1;
         }
     }
 
-    /*
-    *cs = (*cs) ? *cs
-                : (optind < optc)
-            ? cstream_file_create(fopen(optv[optind], "r"), true)
-            : (isatty(STDIN_FILENO)) ? cstream_readline_create()
-                                     : cstream_file_create(stdin, false);
-    */
-
-    if (*cs == NULL)
-    {
-        if (optind < optc)
-            *cs = cstream_file_create(fopen(optv[optind], "r"), true);
-        else
-            *cs = (isatty(STDIN_FILENO)) ? cstream_readline_create()
-                                         : cstream_file_create(stdin, false);
-    }
+    if (*cs)
+        ;
+    else if (optind < optc)
+        *cs = cstream_file_create(fopen(optv[optind], "r"), true);
+    else if (isatty(STDIN_FILENO))
+        *cs = cstream_readline_create();
+    else
+        *cs = cstream_file_create(stdin, false);
 
     return *cs == NULL;
 }

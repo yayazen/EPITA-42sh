@@ -3,7 +3,7 @@
 #include "rule.h"
 #include "token.h"
 
-static const char *__pretty_token(int token)
+static const char *__token_str(int token)
 {
     switch (token)
     {
@@ -17,12 +17,12 @@ static const char *__pretty_token(int token)
     return TOKEN_STR(token);
 }
 
-int rl_expect(struct rl_state *s, int token, int rl_type)
+int rl_expect(struct rl_state *s, int token, int rltype)
 {
-    int rc = rl_accept(s, token, rl_type);
+    int rc = rl_accept(s, token, rltype);
     if (rc <= 0)
         fprintf(stderr,
                 "42sh: syntax error near unexpected token <%s> expected <%s>\n",
-                __pretty_token(s->token), __pretty_token(token));
+                __token_str(s->token), __token_str(token));
     return rc;
 }
