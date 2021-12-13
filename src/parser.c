@@ -82,8 +82,6 @@ __attribute__((unused)) static void __dbg_ast(struct rl_ast *ast)
 /* Match anything you give it */
 __attribute__((unused)) static int rl_all(struct rl_state *s)
 {
-    s->flag |= 1;
-
     while (rl_accept(s, T_EOF, RL_NORULE) != true)
     {
         if (s->err)
@@ -93,12 +91,6 @@ __attribute__((unused)) static int rl_all(struct rl_state *s)
         }
 
         __dbg_type(s);
-
-        if (s->token == T_LF || s->token == T_SEMICOL)
-            s->flag |= 1;
-        else
-            s->flag &= ~1;
-
         rl_accept(s, s->token, RL_NORULE);
     }
 

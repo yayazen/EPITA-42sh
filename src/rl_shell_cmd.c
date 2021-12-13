@@ -4,7 +4,7 @@
 #include "rule.h"
 #include "token.h"
 
-int rl_shell_command(struct rl_state *s)
+int rl_shell_cmd(struct rl_state *s)
 {
     struct rl_ast *node;
 
@@ -24,6 +24,8 @@ int rl_shell_command(struct rl_state *s)
             return -s->err;
         s->flag &= ~PARSER_LINE_START;
     }
+    else if (rl_if_clause(s) == true)
+        ;
     else
         return false;
 
@@ -34,7 +36,7 @@ int rl_shell_command(struct rl_state *s)
     return true;
 }
 
-int rl_exec_shell_command(struct rl_ast *ast)
+int rl_exec_shell_cmd(struct rl_ast *ast)
 {
     assert(ast && ast->child && ast->type == RL_SHELL_CMD);
 
@@ -43,6 +45,8 @@ int rl_exec_shell_command(struct rl_ast *ast)
     {
     case RL_COMPOUND_LIST:
         return rl_exec_compound_list(ast);
+    case RL_IF:
+        return rl_exec_if_clause(ast);
     default:
         assert(0);
     }

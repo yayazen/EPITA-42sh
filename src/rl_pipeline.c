@@ -59,6 +59,9 @@ int rl_exec_pipeline(struct rl_ast *ast)
     ast = ast->child;
     do
     {
+        if (ast->type != RL_SIMPLE_CMD)
+            return rl_exec_cmd(ast);
+
         pid_t pid;
 
         if (pipe(fd) < 0)

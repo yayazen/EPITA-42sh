@@ -79,17 +79,6 @@ static inline void rl_ast_free(struct rl_ast *ast)
     free(ast);
 }
 
-/**
- * \brief Remove ast node from parser state and return it
- */
-static inline struct rl_ast *rl_state_take_ast(struct rl_state *s)
-{
-    struct rl_ast *ast = s->ast;
-    assert(ast);
-    s->ast = NULL;
-    return ast;
-}
-
 int rl_accept(struct rl_state *s, int token, int rltype);
 
 int rl_expect(struct rl_state *s, int token, int rltype);
@@ -99,7 +88,7 @@ int rl_simple_cmd(struct rl_state *s);
 /* return is similar to execvp (must be forked) */
 int rl_exec_simple_cmd(struct rl_ast *ast);
 
-/* command: simple_command | shell_command */
+/* command: simple_command | shell_cmd */
 int rl_cmd(struct rl_state *s);
 int rl_exec_cmd(struct rl_ast *ast);
 
@@ -115,13 +104,13 @@ int rl_exec_input(struct rl_ast *s);
 int rl_list(struct rl_state *s);
 int rl_exec_list(struct rl_ast *s);
 
-/* shell_command: rule_if */
-int rl_shell_command(struct rl_state *s);
-int rl_exec_shell_command(struct rl_ast *s);
+/* shell_cmd: if_clause */
+int rl_shell_cmd(struct rl_state *s);
+int rl_exec_shell_cmd(struct rl_ast *s);
 
-/* rule_if: If compound_list Then compound_list [else_clause] Fi */
-int rl_rule_if(struct rl_state *s);
-int rl_exec_rule_if(struct rl_ast *s);
+/* if_clause: If compound_list Then compound_list [else_clause] Fi */
+int rl_if_clause(struct rl_state *s);
+int rl_exec_if_clause(struct rl_ast *s);
 
 /* else_clause:   Else compound_list
                 | Elif compound_list Then compound_list [else_clause] */

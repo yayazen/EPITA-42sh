@@ -70,6 +70,7 @@ if get_option('testunit')
         include_directories: include_dirs,
         install: false,
         dependencies: [readline_dep, asan_dep, criterion],
+        cpp_args: '--std=c++14'
     )
 
 endif
