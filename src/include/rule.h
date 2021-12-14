@@ -2,14 +2,9 @@
 
 #include <assert.h>
 #include <io/cstream.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include <utils/vec.h>
-
-enum
-{
-#define RULE(Rule, Str) Rule,
-#include "rule.def"
-#undef RULE
-};
 
 #define RL_DEFAULT_STATE                                                       \
     {                                                                          \
@@ -26,12 +21,27 @@ enum
 #endif
 
 /**
- * \brief represents a rule in an AST format
+ * \brief anonymous enum of rule types.
+ * \see rule.def
+ */
+enum
+{
+#define RULE(Rule, Str) Rule,
+#include "rule.def"
+#undef RULE
+};
+
+/**
+ * \brief represents a rule in an AST format.
  */
 struct rl_ast
 {
     /* the node rule type */
     int type;
+    /* store node exec pid */
+    pid_t pid;
+    /* file descriptors to replace STDIN and STDOUT */
+    int fd[2];
     /* the effective value of the ast node */
     char *word;
     /* left-child */
@@ -41,7 +51,7 @@ struct rl_ast
 };
 
 /**
- * \brief represents a state in the current parsing process
+ * \brief represents a state in the current parsing process.
  */
 struct rl_state
 {
@@ -60,7 +70,7 @@ struct rl_state
 };
 
 /**
- * \brief Create a new AST node with a predefined type
+ * \brief create a new AST node with a predefined type.
  */
 static inline struct rl_ast *rl_ast_new(int rltype)
 {
@@ -68,27 +78,38 @@ static inline struct rl_ast *rl_ast_new(int rltype)
     if (!ast)
         return NULL;
     ast->type = rltype;
+    ast->pid = -1;
+    ast->fd[0] = STDIN_FILENO;
+    ast->fd[1] = STDOUT_FILENO;
     return ast;
 }
 
 /**
- * \brief Free the AST recursively
+ * \brief free the AST recursively.
  */
 static inline void rl_ast_free(struct rl_ast *ast)
 {
     if (!ast)
         return;
-
     rl_ast_free(ast->child);
     rl_ast_free(ast->sibling);
-
     if (ast->word)
         free(ast->word);
     free(ast);
 }
 
+/**
+ * \brief accept a token and build the corresponding ast node
+ *          of rule type `rltype`.
+ *  \param a rule state
+ *  \param an accepted token
+ *  \param the desired ruletype
+ */
 int rl_accept(struct rl_state *s, int token, int rltype);
 
+/**
+ * \brief same as rl_accept but errored out when token mismatch
+ */
 int rl_expect(struct rl_state *s, int token, int rltype);
 
 /* simple_cmd: WORD* */
