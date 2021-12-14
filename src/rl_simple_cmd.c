@@ -1,10 +1,14 @@
 #include <assert.h>
+#include <stdio.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #include "builtins.h"
 #include "constants.h"
 #include "rule.h"
 #include "token.h"
+
+#define ARG_MAX 256
 
 int rl_simple_cmd(struct rl_state *s)
 {
@@ -31,21 +35,35 @@ int rl_simple_cmd(struct rl_state *s)
     return (s->err != NO_ERROR) ? -s->err : 1;
 }
 
+static inline int __redirect(int oldfd, int newfd, int closefd)
+{
+    if (oldfd == newfd)
+        return 0;
+    if (dup2(oldfd, newfd) == -1)
+        return -1;
+    if (closefd && close(oldfd) == -1)
+        return -1;
+    return 0;
+}
+
 int rl_exec_simple_cmd(struct rl_ast *ast)
 {
     assert(ast && ast->child && ast->type == RL_SIMPLE_CMD);
 
-    char *argv[10] = { 0 };
-    argv[0] = (ast = ast->child)->word;
-    for (int i = 1; (ast = ast->sibling) != NULL; i++)
-        argv[i] = ast->word;
+    char *argv[ARG_MAX] = { 0 };
+    struct rl_ast *arg = ast->child;
+    for (int i = 0; arg != NULL; i++, arg = arg->sibling)
+        argv[i] = arg->word;
 
-    builtin_def builtin = builtin_find(argv[0]);
-    if (builtin)
+    ast->pid = fork();
+    assert(ast->pid != -1);
+    if (ast->pid == 0)
     {
-        // FIXME: this is bad. Built in must not be executed in fork
-        exit(builtin(argv));
+        assert(__redirect(ast->fd[0], STDIN_FILENO, true) == 0);
+        assert(__redirect(ast->fd[1], STDOUT_FILENO, false) == 0);
+        execvp(argv[0], argv);
+        fprintf(stderr, PACKAGE ": %s: command not found...\n", argv[0]);
+        exit(127);
     }
-
-    return execvp(argv[0], argv);
+    return 0;
 }

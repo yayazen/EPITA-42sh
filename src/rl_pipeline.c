@@ -54,39 +54,26 @@ int rl_exec_pipeline(struct rl_ast *ast)
 
     int status;
     int fdin = STDIN_FILENO;
-
     int fd[2];
-    ast = ast->child;
+    struct rl_ast *cmd = ast->child;
     do
     {
-        if (ast->type != RL_SIMPLE_CMD)
-            return rl_exec_cmd(ast);
-
-        pid_t pid;
-
         if (pipe(fd) < 0)
             return EXECUTION_ERROR;
 
-        pid = fork();
-        if (pid == 0)
-        {
-            dup2(fdin, 0);
-            if (ast->sibling)
-                dup2(fd[1], 1);
-            close(fd[0]);
-            rl_exec_cmd(ast);
-            fprintf(stderr, PACKAGE ": %s: command not found...\n",
-                    ast->child->word);
-            exit(127);
-        }
-        else
-        {
-            // very bad stuff
-            waitpid(pid, &status, 0);
-            close(fd[1]);
-            fdin = fd[0];
-        }
-    } while ((ast = ast->sibling));
+        cmd->fd[0] = fdin;
+        cmd->fd[1] = (cmd->sibling) ? fd[1] : STDOUT_FILENO;
+        rl_exec_cmd(cmd);
+        close(fd[1]);
+        fdin = fd[0];
+
+    } while ((cmd = cmd->sibling));
+
+    cmd = ast->child;
+    do
+    {
+        waitpid(cmd->pid, &status, 0);
+    } while ((cmd = cmd->sibling));
 
     return WEXITSTATUS(status);
 }
