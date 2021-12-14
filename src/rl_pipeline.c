@@ -40,14 +40,6 @@ int rl_pipeline(struct rl_state *s)
     return (s->err != NO_ERROR) ? -s->err : true;
 }
 
-static inline int __redirect(int oldfd, int newfd)
-{
-    if (oldfd == newfd)
-        return 0;
-
-    return dup2(oldfd, newfd) != -1 && close(oldfd) != -1;
-}
-
 int rl_exec_pipeline(struct rl_ast *ast)
 {
     assert(ast && ast->child && ast->type == RL_PIPELINE);
@@ -73,6 +65,7 @@ int rl_exec_pipeline(struct rl_ast *ast)
     do
     {
         waitpid(cmd->pid, &status, 0);
+        cmd->pid = -1;
     } while ((cmd = cmd->sibling));
 
     return WEXITSTATUS(status);
