@@ -1,1 +1,2 @@
 BUILTIN("echo", bi_echo)
+BUILTIN("cd", bi_cd)

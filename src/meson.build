@@ -25,4 +25,5 @@ all_sources += files(
     'ast_dot.c',
     'builtins.c',
     'bi_echo.c',
+    'bi_cd.c',
 )
