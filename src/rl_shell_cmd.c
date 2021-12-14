@@ -33,6 +33,10 @@ int rl_shell_cmd(struct rl_state *s)
     else if (rl_while(s) == true)
         ;
 
+    /* rule_until */
+    else if (rl_until(s) == true)
+        ;
+
     else
         return false;
 
@@ -56,6 +60,8 @@ int rl_exec_shell_cmd(struct rl_ast *ast)
         return rl_exec_if_clause(ast);
     case RL_WHILE:
         return rl_exec_while(ast);
+    case RL_UNTIL:
+        return rl_exec_until(ast);
     default:
         assert(0);
     }

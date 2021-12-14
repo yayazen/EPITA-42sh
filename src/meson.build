@@ -22,6 +22,7 @@ all_sources += files(
     'rl_if_clause.c',
     'rl_else_clause.c',
     'rl_while.c',
+    'rl_until.c',
     'rl_do_group.c',
     'quotes.c',
     'ast_dot.c',
