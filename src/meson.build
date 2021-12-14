@@ -21,6 +21,8 @@ all_sources += files(
     'rl_compound_list.c',
     'rl_if_clause.c',
     'rl_else_clause.c',
+    'rl_while.c',
+    'rl_do_group.c',
     'quotes.c',
     'ast_dot.c',
     'builtins.c',

@@ -24,8 +24,15 @@ int rl_shell_cmd(struct rl_state *s)
             return -s->err;
         s->flag &= ~PARSER_LINE_START;
     }
+
+    /* rule_if */
     else if (rl_if_clause(s) == true)
         ;
+
+    /* rule_while */
+    else if (rl_while(s) == true)
+        ;
+
     else
         return false;
 
@@ -47,6 +54,8 @@ int rl_exec_shell_cmd(struct rl_ast *ast)
         return rl_exec_compound_list(ast);
     case RL_IF:
         return rl_exec_if_clause(ast);
+    case RL_WHILE:
+        return rl_exec_while(ast);
     default:
         assert(0);
     }

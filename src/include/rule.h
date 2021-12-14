@@ -146,6 +146,14 @@ int rl_exec_if_clause(struct rl_ast *s);
 int rl_else_clause(struct rl_state *s);
 int rl_exec_else_clause(struct rl_ast *s);
 
+/* rule_while: rule_while: While compound_list do_group */
+int rl_while(struct rl_state *s);
+int rl_exec_while(struct rl_ast *s);
+
+/* do_group: Do compound_list Done */
+int rl_do_group(struct rl_state *s);
+int rl_exec_do_group(struct rl_ast *s);
+
 /* compound_list: list */
 int rl_compound_list(struct rl_state *s);
 int rl_exec_compound_list(struct rl_ast *s);
