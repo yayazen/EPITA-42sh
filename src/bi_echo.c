@@ -1,5 +1,6 @@
 #include "builtins.h"
 #include "stdio.h"
+#include "stdlib.h"
 #include "string.h"
 
 enum
@@ -98,22 +99,29 @@ void __interpret_escapes(char *message)
 int bi_echo(char **args)
 {
     int mode = 0;
-    args = __parse_mode(args + 1, &mode);
+    char **seek = __parse_mode(args + 1, &mode);
 
     int first = 1;
 
-    while (*args)
+    while (*seek)
     {
         if (!first)
             printf(" ");
 
         if (mode & INTERPRET_SPACERS)
-            __interpret_escapes(*args);
-
-        printf("%s", *args);
+        {
+            char *s = strdup(*seek);
+            __interpret_escapes(s);
+            printf("%s", s);
+            free(s);
+        }
+        else
+        {
+            printf("%s", *seek);
+        }
 
         first = 0;
-        args++;
+        seek++;
     }
 
     if (!(mode & INHIBIT_NEWLINE))
