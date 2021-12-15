@@ -9,8 +9,12 @@ int rl_if_clause(struct rl_state *s)
     struct rl_ast *node;
 
     /* if compound_list */
-    if (rl_accept(s, T_IF, RL_NORULE) <= 0 || rl_compound_list(s) <= 0)
+    if (rl_accept(s, T_IF, RL_NORULE) <= 0)
         return -s->err;
+    s->flag |= PARSER_LINE_START;
+    if (rl_compound_list(s) <= 0)
+        return -s->err;
+
     struct rl_ast *child = s->ast;
     if (!(node = rl_ast_new(RL_IF)))
         return -(s->err = UNKNOWN_ERROR);
@@ -35,6 +39,7 @@ int rl_if_clause(struct rl_state *s)
         s->ast = node;
         return -s->err;
     }
+    s->flag &= ~PARSER_LINE_START;
     s->ast = node;
 
     return true;

@@ -74,6 +74,8 @@ __attribute__((unused)) static void __dbg_ast_aux(struct rl_ast *ast)
 
 __attribute__((unused)) static void __dbg_ast(struct rl_ast *ast)
 {
+    if (!ast)
+        return;
     printf("DBG << ");
     __dbg_ast_aux(ast);
     printf("\n");

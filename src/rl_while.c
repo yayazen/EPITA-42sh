@@ -1,5 +1,6 @@
 #include <assert.h>
 
+#include "constants.h"
 #include "rule.h"
 #include "token.h"
 
@@ -8,8 +9,14 @@ int rl_while(struct rl_state *s)
     struct rl_ast *node;
 
     /* While compound_list */
-    if (rl_accept(s, T_WHILE, RL_NORULE) <= 0 || rl_compound_list(s) <= 0)
+    if (rl_accept(s, T_WHILE, RL_NORULE) <= 0)
         return -s->err;
+    s->flag |= PARSER_LINE_START;
+    if (rl_compound_list(s) <= 0)
+    {
+        s->flag &= ~PARSER_LINE_START;
+        return -s->err;
+    }
 
     struct rl_ast *child = s->ast;
     if (!(node = rl_ast_new(RL_WHILE)))
@@ -19,11 +26,13 @@ int rl_while(struct rl_state *s)
     /* do_group */
     if (rl_do_group(s) <= 0)
     {
+        s->flag &= ~PARSER_LINE_START;
         s->ast = node;
         return -s->err;
     }
-    child->sibling = s->ast;
 
+    s->flag &= ~PARSER_LINE_START;
+    child->sibling = s->ast;
     s->ast = node;
 
     return true;

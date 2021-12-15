@@ -1,9 +1,7 @@
 #include <assert.h>
-#include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
-#include "constants.h"
 #include "rule.h"
 #include "token.h"
 
@@ -44,29 +42,44 @@ int rl_exec_pipeline(struct rl_ast *ast)
 {
     assert(ast && ast->child && ast->type == RL_PIPELINE);
 
-    int status;
+    int status = 0;
     int fdin = STDIN_FILENO;
     int fd[2];
-    struct rl_ast *cmd = ast->child;
-    do
-    {
-        if (pipe(fd) < 0)
-            return EXECUTION_ERROR;
-
-        cmd->fd[0] = fdin;
-        cmd->fd[1] = (cmd->sibling) ? fd[1] : STDOUT_FILENO;
-        rl_exec_cmd(cmd);
-        close(fd[1]);
-        fdin = fd[0];
-
-    } while ((cmd = cmd->sibling));
+    struct rl_ast *cmd;
 
     cmd = ast->child;
-    do
+    while (cmd)
     {
-        waitpid(cmd->pid, &status, 0);
-        cmd->pid = -1;
-    } while ((cmd = cmd->sibling));
+        if (pipe(fd) < 0)
+            return -EXECUTION_ERROR;
+        cmd->fd[0] = fdin;
+        cmd->fd[1] = (cmd->sibling) ? fd[1] : STDOUT_FILENO;
+        int ret = rl_exec_cmd(cmd);
+        if (cmd->type == RL_SHELL_CMD)
+            status = ret;
+        close(fd[1]);
+        fdin = fd[0];
+        cmd = cmd->sibling;
+    }
 
-    return WEXITSTATUS(status);
+    cmd = ast->child;
+    while (cmd)
+    {
+        if (cmd->pid != -1)
+        {
+            if (cmd->sibling)
+                waitpid(cmd->pid, NULL, 0);
+            else
+            {
+                waitpid(cmd->pid, &status, 0);
+                status = WEXITSTATUS(status);
+            }
+        }
+        cmd->fd[0] = STDIN_FILENO;
+        cmd->fd[1] = STDOUT_FILENO;
+        cmd->pid = -1;
+        cmd = cmd->sibling;
+    }
+
+    return status;
 }

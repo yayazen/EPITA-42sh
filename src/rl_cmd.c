@@ -13,13 +13,10 @@ int rl_exec_cmd(struct rl_ast *ast)
 {
     assert(ast);
 
-    switch (ast->type)
-    {
-    case RL_SIMPLE_CMD:
+    if (ast->type == RL_SIMPLE_CMD)
         return rl_exec_simple_cmd(ast);
-    case RL_SHELL_CMD:
+    else if (ast->type == RL_SHELL_CMD)
         return rl_exec_shell_cmd(ast);
-    default:
-        assert(0);
-    }
+
+    assert(0);
 }

@@ -1,4 +1,6 @@
 #include <assert.h>
+#include <unistd.h>
+#include <utils/error.h>
 
 #include "constants.h"
 #include "rule.h"
@@ -62,26 +64,27 @@ int rl_exec_shell_cmd(struct rl_ast *ast)
 {
     assert(ast && ast->child && ast->type == RL_SHELL_CMD);
 
-    ast->pid = fork();
-    assert(ast->pid != -1);
+    int status;
+    int type = ast->child->type;
+    int savefd[2] = { dup(STDIN_FILENO), dup(STDOUT_FILENO) };
 
-    if (ast->pid == 0)
-    {
-        assert(__redirect(ast->fd[0], STDIN_FILENO, true) == 0);
-        assert(__redirect(ast->fd[1], STDOUT_FILENO, false) == 0);
-        switch (ast->child->type)
-        {
-        case RL_COMPOUND_LIST:
-            exit(rl_exec_compound_list(ast->child));
-        case RL_IF:
-            exit(rl_exec_if_clause(ast->child));
-        case RL_WHILE:
-            exit(rl_exec_while(ast->child));
-        case RL_UNTIL:
-            exit(rl_exec_until(ast->child));
-        default:
-            exit(42);
-        }
-    }
-    return 0;
+    assert(savefd[0] != -1 && savefd[1] != -1);
+    assert(__redirect(ast->fd[0], STDIN_FILENO, true) == 0);
+    assert(__redirect(ast->fd[1], STDOUT_FILENO, false) == 0);
+
+    if (type == RL_COMPOUND_LIST)
+        status = rl_exec_compound_list(ast->child);
+    else if (type == RL_IF)
+        status = rl_exec_if_clause(ast->child);
+    else if (type == RL_WHILE)
+        status = rl_exec_while(ast->child);
+    else if (type == RL_UNTIL)
+        status = rl_exec_until(ast->child);
+    else
+        status = -EXECUTION_ERROR;
+
+    assert(__redirect(savefd[0], STDIN_FILENO, true) == 0);
+    assert(__redirect(savefd[1], STDOUT_FILENO, false) == 0);
+
+    return status;
 }
