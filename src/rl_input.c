@@ -1,7 +1,6 @@
 #include <assert.h>
 #include <utils/error.h>
 
-#include "debug.h"
 #include "rule.h"
 #include "token.h"
 
@@ -21,7 +20,7 @@ int rl_input(struct rl_state *s)
     return (s->err != NO_ERROR) ? -s->err : false;
 }
 
-int rl_exec_input(struct rl_ast *ast)
+int rl_exec_input(struct rl_exectree *node)
 {
-    return (ast) ? rl_exec_list(ast) : 0;
+    return (node) ? rl_exec_list(node) : 0;
 }

@@ -9,13 +9,13 @@
 
 int rl_list(struct rl_state *s)
 {
-    struct rl_ast *node;
+    struct rl_exectree *node;
 
     /* and_or */
     if (rl_and_or(s) <= 0)
         return -s->err;
-    struct rl_ast *child = s->ast;
-    if (!(node = rl_ast_new(RL_LIST)))
+    struct rl_exectree *child = s->node;
+    if (!(node = rl_exectree_new(RL_LIST)))
         return -(s->err = UNKNOWN_ERROR);
     node->child = child;
 
@@ -25,24 +25,24 @@ int rl_list(struct rl_state *s)
     {
         if (rl_and_or(s) <= 0)
             break;
-        child->sibling = s->ast;
+        child->sibling = s->node;
         child = child->sibling;
     }
 
-    s->ast = node;
+    s->node = node;
     return (s->err != NO_ERROR) ? -s->err : true;
 }
 
-int rl_exec_list(struct rl_ast *ast)
+int rl_exec_list(struct rl_exectree *node)
 {
-    assert(ast && ast->child && ast->type == RL_LIST);
+    assert(node && node->child && node->type == RL_LIST);
 
     int status;
-    ast = ast->child;
+    node =node->child;
     do
     {
-        status = rl_exec_and_or(ast);
-    } while ((ast = ast->sibling));
+        status = rl_exec_and_or(node);
+    } while ((node = node->sibling));
 
     return status;
 }

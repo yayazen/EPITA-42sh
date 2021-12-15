@@ -5,7 +5,7 @@
 
 int rl_compound_list(struct rl_state *s)
 {
-    struct rl_ast *node;
+    struct rl_exectree *node;
 
     /* ('\n')* */
     while (rl_accept(s, T_LF, RL_NORULE) == true)
@@ -14,8 +14,8 @@ int rl_compound_list(struct rl_state *s)
     /* and_or */
     if (rl_and_or(s) <= 0)
         return -s->err;
-    struct rl_ast *child = s->ast;
-    if (!(node = rl_ast_new(RL_COMPOUND_LIST)))
+    struct rl_exectree *child = s->node;
+    if (!(node = rl_exectree_new(RL_COMPOUND_LIST)))
         return -(s->err = UNKNOWN_ERROR);
     node->child = child;
 
@@ -30,25 +30,25 @@ int rl_compound_list(struct rl_state *s)
         if (rl_and_or(s) <= 0)
             break;
 
-        child->sibling = s->ast;
+        child->sibling = s->node;
         child = child->sibling;
     }
 
-    s->ast = node;
+    s->node = node;
     return (s->err != NO_ERROR) ? -s->err : true;
 }
 
-int rl_exec_compound_list(struct rl_ast *ast)
+int rl_exec_compound_list(struct rl_exectree *node)
 {
-    assert(ast && ast->child && ast->type == RL_COMPOUND_LIST);
+    assert(node && node->child && node->type == RL_COMPOUND_LIST);
 
     int status;
-    ast = ast->child;
+    node =node->child;
     do
     {
-        status = rl_exec_and_or(ast);
+        status = rl_exec_and_or(node);
 
-    } while ((ast = ast->sibling));
+    } while ((node = node->sibling));
 
     return status;
 }

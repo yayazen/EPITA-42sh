@@ -8,6 +8,19 @@
 #include "rule.h"
 #include "token.h"
 
+//static inline int __exectree(struct rl_state *s, int rltype)
+//{
+//    if (rltype == RL_NORULE)
+//        return NO_ERROR;
+//
+//    if (!s->node && !(s->node = rl_exectree_new(rltype)))
+//        return -(s->err = UNKNOWN_ERROR);
+//
+//    if (rltype != RL_SIMPLE_CMD)
+//        return NO_ERROR; 
+//}
+//
+
 int rl_accept(struct rl_state *s, int token, int rltype)
 {
     while (s->err == KEYBOARD_INTERRUPT || s->flag & LEX_COLLECT)
@@ -25,14 +38,14 @@ int rl_accept(struct rl_state *s, int token, int rltype)
     {
         if (rltype != RL_NORULE)
         {
-            s->ast = rl_ast_new(rltype);
-            if (!s->ast || !(s->ast->word = strdup(vec_cstring(&s->word))))
+            s->node = rl_exectree_new(rltype);
+            if (!s->node || !(s->node->word = strdup(vec_cstring(&s->word))))
             {
-                rl_ast_free(s->ast);
-                s->ast = NULL;
+                rl_exectree_free(s->node);
+                s->node = NULL;
                 return -(s->err = UNKNOWN_ERROR);
             }
-            s->ast->type = rltype;
+            s->node->type = rltype;
         }
         s->flag |= LEX_COLLECT;
         return true;

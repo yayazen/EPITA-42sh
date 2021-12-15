@@ -8,7 +8,7 @@
 
 int rl_pipeline(struct rl_state *s)
 {
-    struct rl_ast *node;
+    struct rl_exectree *node;
 
     /* ['!'] */
     if (rl_accept(s, T_BANG, RL_NORULE) < 0)
@@ -17,8 +17,8 @@ int rl_pipeline(struct rl_state *s)
     /* command */
     if (rl_cmd(s) <= 0)
         return -s->err;
-    struct rl_ast *child = s->ast;
-    if (!(node = rl_ast_new(RL_PIPELINE)))
+    struct rl_exectree *child = s->node;
+    if (!(node = rl_exectree_new(RL_PIPELINE)))
         return -(s->err = UNKNOWN_ERROR);
     node->child = child;
 
@@ -31,24 +31,24 @@ int rl_pipeline(struct rl_state *s)
         if (rl_cmd(s) <= 0)
             break;
 
-        child->sibling = s->ast;
+        child->sibling = s->node;
         child = child->sibling;
     }
 
-    s->ast = node;
+    s->node = node;
     return (s->err != NO_ERROR) ? -s->err : true;
 }
 
-int rl_exec_pipeline(struct rl_ast *ast)
+int rl_exec_pipeline(struct rl_exectree *node)
 {
-    assert(ast && ast->child && ast->type == RL_PIPELINE);
+    assert(node && node->child && node->type == RL_PIPELINE);
 
     int status = 0;
     int fdin = STDIN_FILENO;
     int fd[2];
-    struct rl_ast *cmd;
+    struct rl_exectree *cmd;
 
-    cmd = ast->child;
+    cmd = node->child;
     while (cmd)
     {
         if (pipe(fd) < 0)
@@ -67,7 +67,7 @@ int rl_exec_pipeline(struct rl_ast *ast)
         cmd = cmd->sibling;
     }
 
-    cmd = ast->child;
+    cmd = node->child;
     while (cmd)
     {
         if (cmd->pid != -1)
