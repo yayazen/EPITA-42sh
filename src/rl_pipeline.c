@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <fcntl.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -54,6 +55,10 @@ int rl_exec_pipeline(struct rl_ast *ast)
             return -EXECUTION_ERROR;
         cmd->fd[0] = fdin;
         cmd->fd[1] = (cmd->sibling) ? fd[1] : STDOUT_FILENO;
+
+        fcntl(fd[0], F_SETFD, FD_CLOEXEC);
+        fcntl(fd[1], F_SETFD, FD_CLOEXEC);
+
         int ret = rl_exec_cmd(cmd);
         if (cmd->pid == -1)
             status = ret;
