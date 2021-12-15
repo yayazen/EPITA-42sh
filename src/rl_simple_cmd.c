@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -55,15 +56,33 @@ int rl_exec_simple_cmd(struct rl_ast *ast)
     for (int i = 0; arg != NULL; i++, arg = arg->sibling)
         argv[i] = arg->word;
 
-    ast->pid = fork();
-    assert(ast->pid != -1);
-    if (ast->pid == 0)
+    int stdin_bak = dup(STDIN_FILENO);
+    int stdout_bak = dup(STDOUT_FILENO);
+    fcntl(stdin_bak, F_SETFD, FD_CLOEXEC);
+    fcntl(stdout_bak, F_SETFD, FD_CLOEXEC);
+    assert(__redirect(ast->fd[0], STDIN_FILENO, true) == 0);
+    assert(__redirect(ast->fd[1], STDOUT_FILENO, false) == 0);
+
+    int status = 0;
+    builtin_def blt = builtin_find(argv[0]);
+    if (blt)
     {
-        assert(__redirect(ast->fd[0], STDIN_FILENO, true) == 0);
-        assert(__redirect(ast->fd[1], STDOUT_FILENO, false) == 0);
-        execvp(argv[0], argv);
-        fprintf(stderr, PACKAGE ": %s: command not found...\n", argv[0]);
-        exit(127);
+        status = blt(argv);
     }
-    return 0;
+    else
+    {
+        ast->pid = fork();
+        assert(ast->pid != -1);
+        if (ast->pid == 0)
+        {
+            execvp(argv[0], argv);
+            fprintf(stderr, PACKAGE ": %s: command not found...\n", argv[0]);
+            exit(127);
+        }
+    }
+
+    assert(__redirect(stdin_bak, STDIN_FILENO, true) == 0);
+    assert(__redirect(stdout_bak, STDOUT_FILENO, false) == 0);
+
+    return status;
 }

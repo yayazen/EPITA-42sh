@@ -55,7 +55,7 @@ int rl_exec_pipeline(struct rl_ast *ast)
         cmd->fd[0] = fdin;
         cmd->fd[1] = (cmd->sibling) ? fd[1] : STDOUT_FILENO;
         int ret = rl_exec_cmd(cmd);
-        if (cmd->type == RL_SHELL_CMD)
+        if (cmd->pid == -1)
             status = ret;
         close(fd[1]);
         fdin = fd[0];
@@ -75,6 +75,7 @@ int rl_exec_pipeline(struct rl_ast *ast)
                 status = WEXITSTATUS(status);
             }
         }
+
         cmd->fd[0] = STDIN_FILENO;
         cmd->fd[1] = STDOUT_FILENO;
         cmd->pid = -1;

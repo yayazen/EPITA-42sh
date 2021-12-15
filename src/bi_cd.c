@@ -35,7 +35,7 @@ int __chdir(char *dir)
         assert(!setenv("OLDPWD", new_old_pwd, 1));
     }
 
-    return !res;
+    return res == 0 ? 0 : 1;
 }
 
 /**
