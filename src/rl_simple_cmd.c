@@ -100,19 +100,26 @@ int rl_exec_simple_cmd(struct rl_exectree *node)
     if (!__push_args(node->child, argv))
         return NO_ERROR;
 
-    node->attr.cmd.pid = fork();
-    if (node->attr.cmd.pid == 0)
+    builtin_def blt;
+    if ((blt = builtin_find(argv[0])))
     {
-        execvp(argv[0], argv);
-        fprintf(stderr, PACKAGE ": %s: command not found...\n", argv[0]);
-        exit(127);
+        node->attr.cmd.status = blt(argv);
     }
-
+    else
+    {
+        node->attr.cmd.pid = fork();
+        if (node->attr.cmd.pid == 0)
+        {
+            execvp(argv[0], argv);
+            fprintf(stderr, PACKAGE ": %s: command not found...\n", argv[0]);
+            exit(127);
+        }
+    }
     for (int i = 0; i < 3; i++)
     {
         if (__redirect(savedfd[i], i, true) != 0)
             return EXECUTION_ERROR;
     }
 
-    return (node->attr.cmd.pid == -1) ? EXECUTION_ERROR : NO_ERROR;
+    return (node->attr.cmd.pid == -1 && !blt) ? EXECUTION_ERROR : NO_ERROR;
 }
