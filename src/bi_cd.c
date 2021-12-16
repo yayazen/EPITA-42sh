@@ -8,12 +8,108 @@
 #include "builtins.h"
 
 /**
+ * \brief My own strcpy implementation, where
+ * `src` and `dest` may overlap
+ */
+static void __my_strcpy(const char *src, char *dest)
+{
+    while (*src)
+    {
+        *dest = *src;
+        src++;
+        dest++;
+    }
+    *dest = '\0';
+}
+
+/**
+ * \brief Determine current working directory location
+ * Attempt to do it from  PWD environment variable
+ * If this variable is missing, use getcwd as a fallback
+ * \param dest A buffer large enough to contain any kind of path
+ */
+static void __get_working_directory(char *dest)
+{
+    char *cur_pwd = getenv("PWD");
+    if (cur_pwd)
+        strcpy(dest, cur_pwd);
+    else
+        assert(getcwd(dest, PATH_MAX + 1));
+}
+
+/**
+ * \brief Join two directories
+ * \param dest Destination buffer, large enough to contain
+ * both `a` and `b`
+ * \param a The first directory (the "parent" directory)
+ * \param b The second directory (the "child" directory)
+ * If `b` starts with a '/' then the content of `a` is ignored
+ */
+static void __join_dirs(char *dest, const char *a, const char *b)
+{
+    assert(dest && a && b);
+    assert(*a && *b);
+
+    if (b[0] == '/')
+    {
+        sprintf(dest, "%s/", b);
+    }
+    else
+    {
+        sprintf(dest, "%s/%s/", a, b);
+    }
+
+    // Go to the end of the string
+    char *seek = strrchr(dest, '/') + 1;
+
+    // Process the string in reverse order
+    while (seek > dest)
+    {
+        // Skip non-slash characters
+        if (*seek != '/')
+        {
+        }
+
+        // Remove double slash
+        else if (*(seek - 1) == '/')
+        {
+            __my_strcpy(seek, seek - 1);
+        }
+
+        // Remove '/./'
+        else if (*(seek - 1) == '.' && *(seek - 2) == '/')
+        {
+            __my_strcpy(seek, seek - 2);
+            seek -= 2;
+            continue;
+        }
+
+        // Process '/../'
+        else if (*(seek - 1) == '.' && *(seek - 2) == '.' && *(seek - 3) == '/')
+        {
+            char *cpy_dest = dest + 4 < seek ? seek - 4 : dest;
+            while (*cpy_dest != '/')
+                cpy_dest--;
+            __my_strcpy(seek, cpy_dest);
+            seek = cpy_dest;
+            continue;
+        }
+
+        seek--;
+    }
+
+    // Remove last slash
+    if (*(dest + 1))
+        *strrchr(dest, '/') = '\0';
+}
+
+/**
  * \brief Set new active directory to `dir`.
  * In case of error, a message on stderr is shown
  * \param dir New directory name
  * \return 0 in case of success, or a positive value otherwise.
  */
-int __chdir(char *dir)
+static int __chdir(char *dir)
 {
     if (dir == NULL)
     {
@@ -22,15 +118,18 @@ int __chdir(char *dir)
     }
 
     char new_old_pwd[PATH_MAX + 1];
-    assert(getcwd(new_old_pwd, sizeof(new_old_pwd)));
+    __get_working_directory(new_old_pwd);
 
-    int res = chdir(dir);
+    char new_pwd[PATH_MAX + PATH_MAX + 1];
+    __join_dirs(new_pwd, new_old_pwd, dir);
 
-    char new_pwd[PATH_MAX + 1];
-    assert(getcwd(new_pwd, sizeof(new_pwd)));
+    int res = chdir(new_pwd);
 
     if (res)
+    {
+        fprintf(stderr, "cd to dir %s - ", new_pwd);
         perror("cd");
+    }
 
     else
     {

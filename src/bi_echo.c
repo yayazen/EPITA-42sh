@@ -22,7 +22,7 @@ enum
  * I did not use getopt to achieve this, because
  * it could conflict with the main function of this program...
  */
-char **__parse_mode(char **seek, int *mode)
+static char **__parse_mode(char **seek, int *mode)
 {
     while (*seek)
     {

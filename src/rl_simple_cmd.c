@@ -82,7 +82,7 @@ int rl_exec_simple_cmd(struct rl_ast *ast)
     }
 
     assert(__redirect(stdin_bak, STDIN_FILENO, true) == 0);
-    assert(__redirect(stdout_bak, STDOUT_FILENO, false) == 0);
+    assert(__redirect(stdout_bak, STDOUT_FILENO, true) == 0);
 
     return status;
 }

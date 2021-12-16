@@ -84,7 +84,7 @@ int rl_exec_shell_cmd(struct rl_ast *ast)
         status = -EXECUTION_ERROR;
 
     assert(__redirect(savefd[0], STDIN_FILENO, true) == 0);
-    assert(__redirect(savefd[1], STDOUT_FILENO, false) == 0);
+    assert(__redirect(savefd[1], STDOUT_FILENO, true) == 0);
 
     return status;
 }

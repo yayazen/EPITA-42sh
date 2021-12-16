@@ -145,15 +145,15 @@ else:
 
 print_info("cd builtin...")
 test_simple_cmd("cd /tmp", b"", b"", 0)
-test_simple_cmd("cd /tmp; /usr/bin/pwd", b"/tmp\n", b"", 0)
+test_simple_cmd("cd /tmp; pwd", b"/tmp\n", b"", 0)
 test_simple_cmd("cd /nonexisting", b"", validate_status=lambda s: s > 0)
-test_simple_cmd("cd /tmp; cd /bin; cd -; /usr/bin/pwd",
+test_simple_cmd("cd /tmp; cd /bin; cd -; pwd",
                 b'/tmp\n/tmp\n', b"", 0)
-# test_simple_cmd("cd /tmp; cd /bin; cd -; /usr/bin/pwd; cd -; /usr/bin/pwd",
-#                b'/tmp\n/tmp\n/bin\n/usr/bin\n', b"", 0)
-test_simple_cmd("cd /tmp;cd;/usr/bin/pwd", b"/var\n",
+test_simple_cmd("cd /tmp; cd /bin; cd -; pwd; cd -; env -i pwd",
+                b'/tmp\n/tmp\n/bin\n/usr/bin\n', b"", 0)
+test_simple_cmd("cd /tmp;cd;pwd", b"/var\n",
                 b"", 0, env={"HOME": "/var"})
-test_simple_cmd("cd /tmp;cd;/usr/bin/pwd", b"/tmp\n", b"", 0, env={"HOME": ""})
+test_simple_cmd("cd /tmp;cd;pwd", b"/tmp\n", b"", 0, env={"HOME": ""})
 
 
 print_info("Pipelines")
@@ -169,8 +169,8 @@ test_simple_cmd(
 print_info("Compound lists")
 test_simple_cmd("{ uname; uname; }", b"Linux\nLinux\n", b"", 0)
 test_simple_cmd("{ echo yes; }\n{ uname; }", b"yes\nLinux\n", b"", 0)
-#test_simple_cmd("{ echo a; echo b; } | cat -e", b"a$\nb$\n", b"", 0)
-#test_simple_cmd("{ uname; uname; } | cat -e", b"Linux$\nLinux$\n", b"", 0)
+test_simple_cmd("{ echo a; echo b; } | cat -e", b"a$\nb$\n", b"", 0)
+test_simple_cmd("{ uname; uname; } | cat -e", b"Linux$\nLinux$\n", b"", 0)
 
 if err:
     sys.exit(-1)
