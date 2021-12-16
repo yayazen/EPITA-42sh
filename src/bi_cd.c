@@ -49,8 +49,7 @@ static void __get_working_directory(char *dest)
  */
 static void __join_dirs(char *dest, const char *a, const char *b)
 {
-    assert(dest && a && b);
-    assert(*a && *b);
+    assert(dest && a && b && *a && *b);
 
     if (b[0] == '/')
     {
@@ -61,48 +60,40 @@ static void __join_dirs(char *dest, const char *a, const char *b)
         snprintf(dest, JOIN_BUFF_LEN - 3, "%s/%s/", a, b);
     }
 
-    // Go to the end of the string
-    char *seek = strrchr(dest, '/') + 1;
+    char *seek = dest;
 
-    // Process the string in reverse order
-    while (seek > dest)
+    // Process the string
+    while (*seek)
     {
         // Skip non-slash characters
         if (*seek != '/')
-        {
-        }
+            seek++;
 
         // Remove double slash
-        else if (*(seek - 1) == '/')
-        {
-            __my_strcpy(seek, seek - 1);
-        }
+        else if (*(seek + 1) == '/')
+            __my_strcpy(seek + 1, seek);
 
         // Remove '/./'
-        else if (*(seek - 1) == '.' && *(seek - 2) == '/')
-        {
-            __my_strcpy(seek, seek - 2);
-            seek -= 2;
-            continue;
-        }
+        else if (*(seek + 1) == '.' && *(seek + 2) == '/')
+            __my_strcpy(seek + 2, seek);
 
         // Process '/../'
-        else if (*(seek - 1) == '.' && *(seek - 2) == '.' && *(seek - 3) == '/')
+        else if (*(seek + 1) == '.' && *(seek + 2) == '.' && *(seek + 3) == '/')
         {
-            char *cpy_dest = dest + 4 < seek ? seek - 4 : dest;
+            char *cpy_dest = dest < seek ? seek - 1 : dest;
             while (*cpy_dest != '/')
                 cpy_dest--;
-            __my_strcpy(seek, cpy_dest);
+            __my_strcpy(seek + 3, cpy_dest);
             seek = cpy_dest;
-            continue;
         }
 
-        seek--;
+        else
+            seek++;
     }
 
     // Remove last slash
     if (*(dest + 1))
-        *strrchr(dest, '/') = '\0';
+        *(seek - 1) = '\0';
 }
 
 /**
