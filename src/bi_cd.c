@@ -119,7 +119,7 @@ static int __chdir(char *dir)
         return 1;
     }
 
-    char new_old_pwd[PATH_MAX + 1];
+    char new_old_pwd[JOIN_BUFF_LEN];
     __get_working_directory(new_old_pwd);
 
     char new_pwd[JOIN_BUFF_LEN];
