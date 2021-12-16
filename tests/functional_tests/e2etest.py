@@ -163,7 +163,7 @@ test_simple_cmd(
     stdout=b"",
     stderr=b"",
     status=0,
-    max_exec_time=0.09
+    max_exec_time=0.2
 )
 
 print_info("Compound lists")
