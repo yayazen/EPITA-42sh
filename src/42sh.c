@@ -77,9 +77,11 @@ int main(int argc, char *argv[])
     if (err)
         goto end_loop;
 
-    while ((err = cs_parse(cs, flag, &exit_status)) == NO_ERROR
+    while ((err = parser(cs, flag, &exit_status)) == NO_ERROR
            && !(flag & OPT_HELP))
-        ;
+    {
+        printf("exit_status: %d\n", exit_status);
+    }
 
     goto end_loop;
 err_parse_args:

@@ -1,25 +1,15 @@
 #pragma once
 
-#include <assert.h>
 #include <io/cstream.h>
-#include <sys/types.h>
-#include <unistd.h>
 #include <utils/vec.h>
+
+#include "token.h"
 
 #define RL_DEFAULT_STATE                                                       \
     {                                                                          \
         .err = NO_ERROR, .flag = LEX_COLLECT | LEX_CMDSTART, .token = T_EOF,   \
-        .cs = cs, .node = NULL,                                                 \
+        .cs = cs, .node = NULL,                                                \
     }
-
-// Hack for test units, which are written in C++, which
-// requires explicit cast when returning from malloc functions
-#ifdef __cplusplus
-#    define CAST_AST(a) (struct rl_exectree *)(a)
-#else
-#    define CAST_AST(a) a
-#endif
-
 /**
  * \brief anonymous enum of rule types.
  * \see rule.def
@@ -31,71 +21,7 @@ enum
 #undef RULE
 };
 
-struct exec_cmd
-{
-    /* store node exec pid */
-    pid_t pid;
-    /* file descriptors to replace STDIN, STDOUT and STDERR */
-    int fd[3];
-    /* execution arguments capacity */
-    int arg_capacity;
-    /* number of execution arguments */
-    int argc;
-    /* execution arguments */
-    char **argv;
-};
-
-
-struct exec_pipeline
-{
-    int negate;
-    int pipe[2];
-};
-
-struct exec_redir
-{
-    /* redirection token */ 
-    int token;
-    /* left side ionumber */
-    int ionumber;
-    /* right side filename or ionumber */
-    char *filename;
-};
-
-struct exec_word
-{
-    char *word;
-};
-
-union exec_type
-{
-    struct exec_cmd cmd;
-    struct exec_word word;
-    struct exec_redir redir;
-    struct exec_pipeline pipeline; 
-};
-
-/**
- * \brief represents a rule in an execution tree format.
- */
-struct rl_exectree
-{
-    /* the node rule type */
-    int type;
-    /* left-child */
-    struct rl_exectree *child;
-    /* right-sibling */
-    struct rl_exectree *sibling;
-    /* */
-    union exec_type data;
-
-    /* TODO rm */ 
-    char *word; 
-    /* store node exec pid */
-    pid_t pid;
-    /* file descriptors to replace STDIN, STDOUT and STDERR */
-    int fd[3];
-};
+#include "rule_exec.h"
 
 /**
  * \brief represents a state in the current parsing process.
@@ -112,54 +38,22 @@ struct rl_state
     struct vec word;
     /* the stream to collect from */
     struct cstream *cs;
-    /* the resulting ast at this parsing state */
+    /* the resulting execution at this parsing state */
     struct rl_exectree *node;
 };
-
-/**
- * \brief create a new AST node with a predefined type.
- */
-static inline struct rl_exectree *rl_exectree_new(int rltype)
-{
-    struct rl_exectree *node = CAST_AST(calloc(1, sizeof(struct rl_exectree)));
-    if (!node)
-        return NULL;
-    
-
-    node->type = rltype;
-    node->pid = -1;
-    node->fd[0] = STDIN_FILENO;
-    node->fd[1] = STDOUT_FILENO;
-    return node;
-}
-
-/**
- * \brief free the AST recursively.
- */
-static inline void rl_exectree_free(struct rl_exectree *node)
-{
-    if (!node)
-        return;
-    rl_exectree_free(node->child);
-    rl_exectree_free(node->sibling);
-    if (node->word)
-        free(node->word);
-    free(node);
-}
 
 /**
  * \brief accept a token and build the corresponding ast node
  *          of rule type `rltype`.
  *  \param a rule state
  *  \param an accepted token
- *  \param the desired ruletype
  */
-int rl_accept(struct rl_state *s, int token, int rltype);
+int rl_accept(struct rl_state *s, int token);
 
 /**
  * \brief same as rl_accept but errored out when token mismatch
  */
-int rl_expect(struct rl_state *s, int token, int rltype);
+int rl_expect(struct rl_state *s, int token);
 
 /* simple_cmd: WORD* */
 int rl_simple_cmd(struct rl_state *s);
@@ -228,6 +122,7 @@ int rl_exec_pipeline(struct rl_exectree *node);
  * | [IONUMBER] '<>' WORD
  */
 int rl_redirection(struct rl_state *s);
+int rl_exec_redirection(struct rl_exectree *node);
 
 /*   ASSIGNEMENT_WORD
  * | redirection

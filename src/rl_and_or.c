@@ -1,3 +1,5 @@
+#include <assert.h>
+
 #include "rule.h"
 #include "token.h"
 
@@ -14,10 +16,9 @@ int rl_and_or(struct rl_state *s)
     node->child = child;
 
     /* (('&&'|'||') ('\n')* pipeline)* */
-    while (rl_accept(s, T_AND_IF, RL_NORULE) == true
-           || rl_accept(s, T_OR_IF, RL_NORULE) == true)
+    while (rl_accept(s, T_AND_IF) == true || rl_accept(s, T_OR_IF) == true)
     {
-        while (rl_accept(s, T_LF, RL_NORULE) == true)
+        while (rl_accept(s, T_LF) == true)
             ;
 
         if (rl_pipeline(s) <= 0)
@@ -36,7 +37,7 @@ int rl_exec_and_or(struct rl_exectree *node)
     assert(node && node->child && node->type == RL_AND_OR);
 
     int status;
-    node =node->child;
+    node = node->child;
     do
     {
         status = rl_exec_pipeline(node);

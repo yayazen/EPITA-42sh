@@ -9,4 +9,4 @@
  * \param exit_status Last command execution exit status
  * \return zero or a negative value in case of erroro
  */
-int cs_parse(struct cstream *cs, int flag, int *exit_status);
+int parser(struct cstream *cs, int flag, int *exit_status);

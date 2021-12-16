@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <utils/error.h>
 
@@ -11,18 +12,18 @@ int rl_shell_cmd(struct rl_state *s)
     struct rl_exectree *node;
 
     /* '{' compound_list '}' */
-    if (rl_accept(s, T_LBRACE, RL_NORULE) == true)
+    if (rl_accept(s, T_LBRACE) == true)
     {
         s->flag |= PARSER_LINE_START;
-        if (rl_compound_list(s) <= 0 || rl_expect(s, T_RBRACE, RL_NORULE) <= 0)
+        if (rl_compound_list(s) <= 0 || rl_expect(s, T_RBRACE) <= 0)
             return -s->err;
         s->flag &= ~PARSER_LINE_START;
     }
     /* '(' compound_list ')' */
-    else if (rl_accept(s, T_LPAR, RL_NORULE) == true)
+    else if (rl_accept(s, T_LPAR) == true)
     {
         s->flag |= PARSER_LINE_START;
-        if (rl_compound_list(s) <= 0 || rl_expect(s, T_RPAR, RL_NORULE) <= 0)
+        if (rl_compound_list(s) <= 0 || rl_expect(s, T_RPAR) <= 0)
             return -s->err;
         s->flag &= ~PARSER_LINE_START;
     }
@@ -64,14 +65,18 @@ int rl_exec_shell_cmd(struct rl_exectree *node)
 {
     assert(node && node->child && node->type == RL_SHELL_CMD);
 
+    int savedfd[3];
+    for (int i = 0; i < 3; i++)
+    {
+        if ((savedfd[i] = dup(i)) == -1)
+            return EXECUTION_ERROR;
+        fcntl(savedfd[i], F_SETFD, FD_CLOEXEC);
+        if (__redirect(node->attr.cmd.fd[i], i, i == 0) != 0)
+            return EXECUTION_ERROR;
+    }
+
     int status;
     int type = node->child->type;
-    int savefd[2] = { dup(STDIN_FILENO), dup(STDOUT_FILENO) };
-
-    assert(savefd[0] != -1 && savefd[1] != -1);
-    assert(__redirect(node->fd[0], STDIN_FILENO, true) == 0);
-    assert(__redirect(node->fd[1], STDOUT_FILENO, false) == 0);
-
     if (type == RL_COMPOUND_LIST)
         status = rl_exec_compound_list(node->child);
     else if (type == RL_IF)
@@ -83,8 +88,11 @@ int rl_exec_shell_cmd(struct rl_exectree *node)
     else
         status = -EXECUTION_ERROR;
 
-    assert(__redirect(savefd[0], STDIN_FILENO, true) == 0);
-    assert(__redirect(savefd[1], STDOUT_FILENO, true) == 0);
+    for (int i = 0; i < 3; i++)
+    {
+        if (__redirect(savedfd[i], i, true) != 0)
+            return EXECUTION_ERROR;
+    }
 
     return status;
 }

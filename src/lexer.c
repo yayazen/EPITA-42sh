@@ -34,8 +34,6 @@ static inline struct cstream *__eatwhitespaces(struct cstream *cs)
     return cs;
 }
 
-
-
 /**
  * \brief  true if `c` is a meta character
  *         i.e a one char token marked as SPECIAL.
@@ -116,10 +114,10 @@ static int __lexer(struct rl_state *rls, int s, int mode)
         mode = __lexmode(mode, c);
         if (rls->token == T_EOF || (rls->token == T_IONUMBER && !__isredir(c)))
             rls->token = T_WORD;
-        if (rls->flag & LEX_CMDSTART
-            && c == '=' && !mode && rls->word.size && !DIGIT(rls->word.data[0]))
+        if (rls->flag & LEX_CMDSTART && c == '=' && !mode && rls->word.size
+            && !DIGIT(rls->word.data[0]))
             rls->token = T_ASSIGN_WORD;
-        if (TOKEN_TYPE(rls->token) == SPECIAL|| (!mode && __ismeta(c)))
+        if (TOKEN_TYPE(rls->token) == SPECIAL || (!mode && __ismeta(c)))
             return NO_ERROR;
     }
     else if (DFA_TERM(s))

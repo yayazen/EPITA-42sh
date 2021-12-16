@@ -6,11 +6,17 @@ bin_sources += files('42sh.c')
 
 all_sources += files(
     'token.c',
+
     'lexer_dfa.c',
     'lexer.c',
+
     'parser.c',
+
     'rl_accept.c',
     'rl_expect.c',
+    'rl_prefix.c',
+    'rl_element.c',
+    'rl_redirection.c',
     'rl_input.c',
     'rl_list.c',
     'rl_and_or.c',
@@ -24,7 +30,7 @@ all_sources += files(
     'rl_while.c',
     'rl_until.c',
     'rl_do_group.c',
-    'quotes.c',
+
     'ast_dot.c',
     'builtins.c',
     'bi_echo.c',

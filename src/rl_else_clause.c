@@ -9,7 +9,7 @@
 int __rl_else(struct rl_state *s)
 {
     /* else */
-    if (rl_accept(s, T_ELSE, RL_NORULE) <= 0)
+    if (rl_accept(s, T_ELSE) <= 0)
         return -s->err;
 
     /* compound_list */
@@ -32,7 +32,7 @@ int __rl_else(struct rl_state *s)
 int __rl_elif(struct rl_state *s)
 {
     /* elif compound_list */
-    if (rl_accept(s, T_ELIF, RL_NORULE) <= 0 || rl_compound_list(s) <= 0)
+    if (rl_accept(s, T_ELIF) <= 0 || rl_compound_list(s) <= 0)
         return -s->err;
 
     struct rl_exectree *node = calloc(1, sizeof(struct rl_exectree));
@@ -43,7 +43,7 @@ int __rl_elif(struct rl_state *s)
     s->node = NULL;
 
     /* then compound_list*/
-    if (rl_expect(s, T_THEN, RL_NORULE) <= 0 || rl_compound_list(s) <= 0)
+    if (rl_expect(s, T_THEN) <= 0 || rl_compound_list(s) <= 0)
     {
         rl_exectree_free(node);
         return -s->err;

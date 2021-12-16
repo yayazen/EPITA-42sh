@@ -20,8 +20,7 @@ int rl_list(struct rl_state *s)
     node->child = child;
 
     /* ((';'|'&') and_or)* [';'|'&'] */
-    while (rl_accept(s, T_SEMICOL, RL_NORULE) == true
-           || rl_accept(s, T_AND, RL_NORULE) == true)
+    while (rl_accept(s, T_SEMICOL) == true || rl_accept(s, T_AND) == true)
     {
         if (rl_and_or(s) <= 0)
             break;
@@ -38,7 +37,7 @@ int rl_exec_list(struct rl_exectree *node)
     assert(node && node->child && node->type == RL_LIST);
 
     int status;
-    node =node->child;
+    node = node->child;
     do
     {
         status = rl_exec_and_or(node);

@@ -9,7 +9,7 @@ int rl_if_clause(struct rl_state *s)
     struct rl_exectree *node;
 
     /* if compound_list */
-    if (rl_accept(s, T_IF, RL_NORULE) <= 0)
+    if (rl_accept(s, T_IF) <= 0)
         return -s->err;
     s->flag |= PARSER_LINE_START;
     if (rl_compound_list(s) <= 0)
@@ -21,7 +21,7 @@ int rl_if_clause(struct rl_state *s)
     node->child = child;
 
     /* then compound_list */
-    if (rl_expect(s, T_THEN, RL_NORULE) <= 0 || rl_compound_list(s) <= 0)
+    if (rl_expect(s, T_THEN) <= 0 || rl_compound_list(s) <= 0)
     {
         s->node = node;
         return -s->err;
@@ -34,7 +34,7 @@ int rl_if_clause(struct rl_state *s)
         child->sibling = s->node;
 
     /* fi */
-    if (rl_expect(s, T_FI, RL_NORULE) <= 0)
+    if (rl_expect(s, T_FI) <= 0)
     {
         s->node = node;
         return -s->err;
@@ -49,7 +49,7 @@ int rl_exec_if_clause(struct rl_exectree *node)
 {
     assert(node && node->type == RL_IF);
 
-    node =node->child;
+    node = node->child;
     // If the `if` condition is met
     if (rl_exec_compound_list(node) == 0)
     {

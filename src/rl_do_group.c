@@ -1,10 +1,12 @@
+#include <assert.h>
+
 #include "rule.h"
 #include "token.h"
 
 int rl_do_group(struct rl_state *s)
 {
-    if (rl_expect(s, T_DO, RL_NORULE) <= 0 || rl_compound_list(s) <= 0
-        || rl_expect(s, T_DONE, RL_NORULE) <= 0)
+    if (rl_expect(s, T_DO) <= 0 || rl_compound_list(s) <= 0
+        || rl_expect(s, T_DONE) <= 0)
         return -s->err;
 
     return true;

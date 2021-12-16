@@ -44,17 +44,27 @@ __attribute__((unused)) static void __dbg_ast_aux(struct rl_exectree *node)
     if (!node)
         return;
 
-    if (node->type != RL_WORD)
+    if (node->type == RL_WORD)
     {
-#define RULE(Rl, Str)                                                          \
-    if (Rl == node->type)                                                       \
-        printf(#Str);
-#include "rule.def"
-#undef RULE
+        printf("%s", node->attr.word);
+    }
+    else if (node->type == RL_ASSIGN_WORD)
+    {
+        printf("\"assign\"(%s)", node->attr.word);
+    }
+    else if (node->type == RL_REDIRECTION)
+    {
+        struct attr_redir *redir = &node->attr.redir;
+        printf("\"redir\"(%d, %s, %s)", redir->ionumber,
+               TOKEN_STR(redir->token), redir->file);
     }
     else
     {
-        printf("%s", node->word);
+#define RULE(Rl, Str)                                                          \
+    if (Rl == node->type)                                                      \
+        printf(#Str);
+#include "rule.def"
+#undef RULE
     }
 
     if (node->child)
@@ -83,7 +93,7 @@ __attribute__((unused)) static void __dbg_ast(struct rl_exectree *node)
 /* Match anything you give it */
 __attribute__((unused)) static int rl_all(struct rl_state *s)
 {
-    while (rl_accept(s, T_EOF, RL_NORULE) != true)
+    while (rl_accept(s, T_EOF) != true)
     {
         if (s->err)
         {
@@ -92,13 +102,13 @@ __attribute__((unused)) static int rl_all(struct rl_state *s)
         }
 
         __dbg_type(s);
-        rl_accept(s, s->token, RL_NORULE);
+        rl_accept(s, s->token);
     }
 
     return (s->err != NO_ERROR) ? -s->err : true;
 }
 
-int cs_parse(struct cstream *cs, int flag, int *exit_status)
+int parser(struct cstream *cs, int flag, int *exit_status)
 {
     struct rl_state s = RL_DEFAULT_STATE;
     vec_init(&s.word);
@@ -114,17 +124,15 @@ int cs_parse(struct cstream *cs, int flag, int *exit_status)
     {
         if (flag & OPT_PRINT_AST_DOT)
             ast_dot_print(s.node);
-        else
-            *exit_status = rl_exec_input(s.node);
+        if (flag & OPT_PRINT_AST)
+            __dbg_ast(s.node);
+
+        *exit_status = rl_exec_input(s.node);
     }
     else
     {
         fprintf(stderr, PACKAGE ": rule mismatch or unimplemented\n");
     }
-
-    // Print ast if requested
-    if (flag & OPT_PRINT_AST)
-        __dbg_ast(s.node);
 
     rl_exectree_free(s.node);
     vec_destroy(&s.word);

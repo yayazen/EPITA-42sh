@@ -8,7 +8,7 @@ int rl_until(struct rl_state *s)
     struct rl_exectree *node;
 
     /* Until compound_list */
-    if (rl_accept(s, T_UNTIL, RL_NORULE) <= 0 || rl_compound_list(s) <= 0)
+    if (rl_accept(s, T_UNTIL) <= 0 || rl_compound_list(s) <= 0)
         return -s->err;
 
     struct rl_exectree *child = s->node;

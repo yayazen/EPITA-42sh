@@ -9,7 +9,7 @@ int rl_while(struct rl_state *s)
     struct rl_exectree *node;
 
     /* While compound_list */
-    if (rl_accept(s, T_WHILE, RL_NORULE) <= 0)
+    if (rl_accept(s, T_WHILE) <= 0)
         return -s->err;
     s->flag |= PARSER_LINE_START;
     if (rl_compound_list(s) <= 0)

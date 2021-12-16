@@ -8,7 +8,7 @@ int rl_compound_list(struct rl_state *s)
     struct rl_exectree *node;
 
     /* ('\n')* */
-    while (rl_accept(s, T_LF, RL_NORULE) == true)
+    while (rl_accept(s, T_LF) == true)
         ;
 
     /* and_or */
@@ -20,10 +20,9 @@ int rl_compound_list(struct rl_state *s)
     node->child = child;
 
     /* ((';'|'\n') ('\n')* and_or)* [(';'|'\n') ('\n')*] */
-    while (rl_accept(s, T_SEMICOL, RL_NORULE) == true
-           || rl_accept(s, T_LF, RL_NORULE) == true)
+    while (rl_accept(s, T_SEMICOL) == true || rl_accept(s, T_LF) == true)
     {
-        while (rl_accept(s, T_LF, RL_NORULE) == true)
+        while (rl_accept(s, T_LF) == true)
             ;
 
         /* and_or */
@@ -43,7 +42,7 @@ int rl_exec_compound_list(struct rl_exectree *node)
     assert(node && node->child && node->type == RL_COMPOUND_LIST);
 
     int status;
-    node =node->child;
+    node = node->child;
     do
     {
         status = rl_exec_and_or(node);
