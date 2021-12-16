@@ -7,6 +7,8 @@
 
 #include "builtins.h"
 
+#define JOIN_BUFF_LEN PATH_MAX + PATH_MAX + 4
+
 /**
  * \brief My own strcpy implementation, where
  * `src` and `dest` may overlap
@@ -52,11 +54,11 @@ static void __join_dirs(char *dest, const char *a, const char *b)
 
     if (b[0] == '/')
     {
-        sprintf(dest, "%s/", b);
+        snprintf(dest, JOIN_BUFF_LEN - 3, "%s/", b);
     }
     else
     {
-        sprintf(dest, "%s/%s/", a, b);
+        snprintf(dest, JOIN_BUFF_LEN - 3, "%s/%s/", a, b);
     }
 
     // Go to the end of the string
@@ -120,7 +122,7 @@ static int __chdir(char *dir)
     char new_old_pwd[PATH_MAX + 1];
     __get_working_directory(new_old_pwd);
 
-    char new_pwd[PATH_MAX + PATH_MAX + 1];
+    char new_pwd[JOIN_BUFF_LEN];
     __join_dirs(new_pwd, new_old_pwd, dir);
 
     int res = chdir(new_pwd);
