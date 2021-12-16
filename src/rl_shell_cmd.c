@@ -75,18 +75,15 @@ int rl_exec_shell_cmd(struct rl_exectree *node)
             return EXECUTION_ERROR;
     }
 
-    int status;
     int type = node->child->type;
     if (type == RL_COMPOUND_LIST)
-        status = rl_exec_compound_list(node->child);
+        node->attr.cmd.status = rl_exec_compound_list(node->child);
     else if (type == RL_IF)
-        status = rl_exec_if_clause(node->child);
+        node->attr.cmd.status = rl_exec_if_clause(node->child);
     else if (type == RL_WHILE)
-        status = rl_exec_while(node->child);
+        node->attr.cmd.status = rl_exec_while(node->child);
     else if (type == RL_UNTIL)
-        status = rl_exec_until(node->child);
-    else
-        status = -EXECUTION_ERROR;
+        node->attr.cmd.status = rl_exec_until(node->child);
 
     for (int i = 0; i < 3; i++)
     {
@@ -94,5 +91,5 @@ int rl_exec_shell_cmd(struct rl_exectree *node)
             return EXECUTION_ERROR;
     }
 
-    return status;
+    return NO_ERROR;
 }

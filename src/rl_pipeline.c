@@ -59,7 +59,7 @@ static inline int __piperun(struct rl_exectree *rl_pipe)
         node->attr.cmd.fd[0] = fdin;
         node->attr.cmd.fd[1] = (node->sibling) ? p->fd[1] : STDOUT_FILENO;
 
-        node->attr.cmd.status = rl_exec_cmd(node);
+        rl_exec_cmd(node);
 
         close(p->fd[1]);
         fdin = p->fd[0];
