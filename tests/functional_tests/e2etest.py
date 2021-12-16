@@ -149,8 +149,8 @@ test_simple_cmd("cd /tmp; pwd", b"/tmp\n", b"", 0)
 test_simple_cmd("cd /nonexisting", b"", validate_status=lambda s: s > 0)
 test_simple_cmd("cd /tmp; cd /bin; cd -; pwd",
                 b'/tmp\n/tmp\n', b"", 0)
-test_simple_cmd("cd /tmp; cd /bin; cd -; pwd; cd -; env -i pwd",
-                b'/tmp\n/tmp\n/bin\n/usr/bin\n', b"", 0)
+test_simple_cmd("cd /tmp; cd /var; cd -; pwd; cd -; env -i pwd",
+                b'/tmp\n/tmp\n/var\n/var\n', b"", 0)
 test_simple_cmd("cd /tmp;cd;pwd", b"/var\n",
                 b"", 0, env={"HOME": "/var"})
 test_simple_cmd("cd /tmp;cd;pwd", b"/tmp\n", b"", 0, env={"HOME": ""})
