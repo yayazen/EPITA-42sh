@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <utils/error.h>
 
@@ -8,21 +9,21 @@
 
 int rl_shell_cmd(struct rl_state *s)
 {
-    struct rl_ast *node;
+    struct rl_exectree *node;
 
     /* '{' compound_list '}' */
-    if (rl_accept(s, T_LBRACE, RL_NORULE) == true)
+    if (rl_accept(s, T_LBRACE) == true)
     {
         s->flag |= PARSER_LINE_START;
-        if (rl_compound_list(s) <= 0 || rl_expect(s, T_RBRACE, RL_NORULE) <= 0)
+        if (rl_compound_list(s) <= 0 || rl_expect(s, T_RBRACE) <= 0)
             return -s->err;
         s->flag &= ~PARSER_LINE_START;
     }
     /* '(' compound_list ')' */
-    else if (rl_accept(s, T_LPAR, RL_NORULE) == true)
+    else if (rl_accept(s, T_LPAR) == true)
     {
         s->flag |= PARSER_LINE_START;
-        if (rl_compound_list(s) <= 0 || rl_expect(s, T_RPAR, RL_NORULE) <= 0)
+        if (rl_compound_list(s) <= 0 || rl_expect(s, T_RPAR) <= 0)
             return -s->err;
         s->flag &= ~PARSER_LINE_START;
     }
@@ -42,10 +43,10 @@ int rl_shell_cmd(struct rl_state *s)
     else
         return false;
 
-    if (!(node = rl_ast_new(RL_SHELL_CMD)))
+    if (!(node = rl_exectree_new(RL_SHELL_CMD)))
         return -(s->err = UNKNOWN_ERROR);
-    node->child = s->ast;
-    s->ast = node;
+    node->child = s->node;
+    s->node = node;
     return true;
 }
 
@@ -60,31 +61,35 @@ static inline int __redirect(int oldfd, int newfd, int closefd)
     return 0;
 }
 
-int rl_exec_shell_cmd(struct rl_ast *ast)
+int rl_exec_shell_cmd(struct rl_exectree *node)
 {
-    assert(ast && ast->child && ast->type == RL_SHELL_CMD);
+    assert(node && node->child && node->type == RL_SHELL_CMD);
 
-    int status;
-    int type = ast->child->type;
-    int savefd[2] = { dup(STDIN_FILENO), dup(STDOUT_FILENO) };
+    int savedfd[3];
+    for (int i = 0; i < 3; i++)
+    {
+        if ((savedfd[i] = dup(i)) == -1)
+            return EXECUTION_ERROR;
+        fcntl(savedfd[i], F_SETFD, FD_CLOEXEC);
+        if (__redirect(node->attr.cmd.fd[i], i, i == 0) != 0)
+            return EXECUTION_ERROR;
+    }
 
-    assert(savefd[0] != -1 && savefd[1] != -1);
-    assert(__redirect(ast->fd[0], STDIN_FILENO, true) == 0);
-    assert(__redirect(ast->fd[1], STDOUT_FILENO, false) == 0);
-
+    int type = node->child->type;
     if (type == RL_COMPOUND_LIST)
-        status = rl_exec_compound_list(ast->child);
+        node->attr.cmd.status = rl_exec_compound_list(node->child);
     else if (type == RL_IF)
-        status = rl_exec_if_clause(ast->child);
+        node->attr.cmd.status = rl_exec_if_clause(node->child);
     else if (type == RL_WHILE)
-        status = rl_exec_while(ast->child);
+        node->attr.cmd.status = rl_exec_while(node->child);
     else if (type == RL_UNTIL)
-        status = rl_exec_until(ast->child);
-    else
-        status = -EXECUTION_ERROR;
+        node->attr.cmd.status = rl_exec_until(node->child);
 
-    assert(__redirect(savefd[0], STDIN_FILENO, true) == 0);
-    assert(__redirect(savefd[1], STDOUT_FILENO, true) == 0);
+    for (int i = 0; i < 3; i++)
+    {
+        if (__redirect(savedfd[i], i, true) != 0)
+            return EXECUTION_ERROR;
+    }
 
-    return status;
+    return NO_ERROR;
 }

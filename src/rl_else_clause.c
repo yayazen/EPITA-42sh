@@ -9,20 +9,20 @@
 int __rl_else(struct rl_state *s)
 {
     /* else */
-    if (rl_accept(s, T_ELSE, RL_NORULE) <= 0)
+    if (rl_accept(s, T_ELSE) <= 0)
         return -s->err;
 
     /* compound_list */
     if (rl_compound_list(s) <= 0)
         return -s->err;
 
-    struct rl_ast *node = calloc(1, sizeof(struct rl_ast));
+    struct rl_exectree *node = calloc(1, sizeof(struct rl_exectree));
     assert(node != NULL);
 
     node->type = RL_ELSE;
-    node->child = s->ast;
+    node->child = s->node;
 
-    s->ast = node;
+    s->node = node;
     return true;
 }
 
@@ -32,34 +32,34 @@ int __rl_else(struct rl_state *s)
 int __rl_elif(struct rl_state *s)
 {
     /* elif compound_list */
-    if (rl_accept(s, T_ELIF, RL_NORULE) <= 0 || rl_compound_list(s) <= 0)
+    if (rl_accept(s, T_ELIF) <= 0 || rl_compound_list(s) <= 0)
         return -s->err;
 
-    struct rl_ast *node = calloc(1, sizeof(struct rl_ast));
+    struct rl_exectree *node = calloc(1, sizeof(struct rl_exectree));
     assert(node != NULL);
 
     node->type = RL_ELIF;
-    node->child = s->ast;
-    s->ast = NULL;
+    node->child = s->node;
+    s->node = NULL;
 
     /* then compound_list*/
-    if (rl_expect(s, T_THEN, RL_NORULE) <= 0 || rl_compound_list(s) <= 0)
+    if (rl_expect(s, T_THEN) <= 0 || rl_compound_list(s) <= 0)
     {
-        rl_ast_free(node);
+        rl_exectree_free(node);
         return -s->err;
     }
 
-    node->child->sibling = s->ast;
+    node->child->sibling = s->node;
     node->child->sibling->sibling = NULL;
-    s->ast = NULL;
+    s->node = NULL;
 
     /* [else_clause] */
     if (rl_else_clause(s) == true)
     {
-        node->child->sibling->sibling = s->ast;
+        node->child->sibling->sibling = s->node;
     }
 
-    s->ast = node;
+    s->node = node;
     return true;
 }
 
@@ -68,27 +68,27 @@ int rl_else_clause(struct rl_state *s)
     return __rl_else(s) == true ? true : __rl_elif(s);
 }
 
-int rl_exec_else_clause(struct rl_ast *ast)
+int rl_exec_else_clause(struct rl_exectree *node)
 {
-    assert(ast && (ast->type == RL_ELIF || ast->type == RL_ELSE));
+    assert(node && (node->type == RL_ELIF || node->type == RL_ELSE));
 
     /* else */
-    if (ast->type == RL_ELSE)
-        return rl_exec_compound_list(ast->child);
+    if (node->type == RL_ELSE)
+        return rl_exec_compound_list(node->child);
 
     /* elif */
-    int status = rl_exec_compound_list(ast->child);
+    int status = rl_exec_compound_list(node->child);
 
     // If the `elif` condition is met
     if (status == 0)
     {
-        status = rl_exec_compound_list(ast->child->sibling);
+        status = rl_exec_compound_list(node->child->sibling);
     }
 
     // Otherwise, run `else clause` (if available)
-    else if (ast->child->sibling->sibling != NULL)
+    else if (node->child->sibling->sibling != NULL)
     {
-        status = rl_exec_else_clause(ast->child->sibling->sibling);
+        status = rl_exec_else_clause(node->child->sibling->sibling);
     }
 
     else

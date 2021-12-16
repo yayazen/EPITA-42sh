@@ -41,7 +41,7 @@ static struct rl_state *get_new_state(const char *s)
     struct rl_state *state = (struct rl_state *)zalloc(sizeof(struct rl_state));
     state->cs = cstream_string_create(s);
     state->err = KEYBOARD_INTERRUPT;
-    state->ast = NULL;
+    state->node = NULL;
     state->flag = 1 | PARSER_LINE_START | LEX_CMDSTART;
     state->token = T_EOF;
     vec_init(&state->word);

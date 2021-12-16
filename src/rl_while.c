@@ -6,10 +6,10 @@
 
 int rl_while(struct rl_state *s)
 {
-    struct rl_ast *node;
+    struct rl_exectree *node;
 
     /* While compound_list */
-    if (rl_accept(s, T_WHILE, RL_NORULE) <= 0)
+    if (rl_accept(s, T_WHILE) <= 0)
         return -s->err;
     s->flag |= PARSER_LINE_START;
     if (rl_compound_list(s) <= 0)
@@ -18,8 +18,8 @@ int rl_while(struct rl_state *s)
         return -s->err;
     }
 
-    struct rl_ast *child = s->ast;
-    if (!(node = rl_ast_new(RL_WHILE)))
+    struct rl_exectree *child = s->node;
+    if (!(node = rl_exectree_new(RL_WHILE)))
         return -(s->err = UNKNOWN_ERROR);
     node->child = child;
 
@@ -27,23 +27,23 @@ int rl_while(struct rl_state *s)
     if (rl_do_group(s) <= 0)
     {
         s->flag &= ~PARSER_LINE_START;
-        s->ast = node;
+        s->node = node;
         return -s->err;
     }
 
     s->flag &= ~PARSER_LINE_START;
-    child->sibling = s->ast;
-    s->ast = node;
+    child->sibling = s->node;
+    s->node = node;
 
     return true;
 }
 
-int rl_exec_while(struct rl_ast *ast)
+int rl_exec_while(struct rl_exectree *node)
 {
-    assert(ast && ast->type == RL_WHILE);
+    assert(node && node->type == RL_WHILE);
 
-    while (rl_exec_compound_list(ast->child) == 0)
-        rl_exec_compound_list(ast->child->sibling);
+    while (rl_exec_compound_list(node->child) == 0)
+        rl_exec_compound_list(node->child->sibling);
 
     return 0;
 }

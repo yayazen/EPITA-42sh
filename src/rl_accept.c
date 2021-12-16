@@ -1,14 +1,9 @@
-#include <stdlib.h>
-#include <string.h>
-#include <utils/error.h>
-#include <utils/vec.h>
-
 #include "constants.h"
 #include "lexer.h"
 #include "rule.h"
 #include "token.h"
 
-int rl_accept(struct rl_state *s, int token, int rltype)
+int rl_accept(struct rl_state *s, int token)
 {
     while (s->err == KEYBOARD_INTERRUPT || s->flag & LEX_COLLECT)
     {
@@ -23,17 +18,6 @@ int rl_accept(struct rl_state *s, int token, int rltype)
 
     if (s->token == token)
     {
-        if (rltype != RL_NORULE)
-        {
-            s->ast = rl_ast_new(rltype);
-            if (!s->ast || !(s->ast->word = strdup(vec_cstring(&s->word))))
-            {
-                rl_ast_free(s->ast);
-                s->ast = NULL;
-                return -(s->err = UNKNOWN_ERROR);
-            }
-            s->ast->type = rltype;
-        }
         s->flag |= LEX_COLLECT;
         return true;
     }

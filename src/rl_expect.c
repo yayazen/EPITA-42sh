@@ -17,9 +17,9 @@ static const char *__token_str(int token)
     return TOKEN_STR(token);
 }
 
-int rl_expect(struct rl_state *s, int token, int rltype)
+int rl_expect(struct rl_state *s, int token)
 {
-    int rc = rl_accept(s, token, rltype);
+    int rc = rl_accept(s, token);
     if (rc <= 0)
         fprintf(stderr,
                 "42sh: syntax error near unexpected token <%s> expected <%s>\n",
