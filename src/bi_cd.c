@@ -26,12 +26,15 @@ int __chdir(char *dir)
 
     int res = chdir(dir);
 
+    char new_pwd[PATH_MAX + 1];
+    assert(getcwd(new_pwd, sizeof(new_pwd)));
+
     if (res)
         perror("cd");
 
     else
     {
-        assert(!setenv("PWD", dir, 1));
+        assert(!setenv("PWD", new_pwd, 1));
         assert(!setenv("OLDPWD", new_old_pwd, 1));
     }
 
@@ -63,6 +66,7 @@ int bi_cd(char **args)
     {
         char *oldpwd = getenv("OLDPWD");
         printf("%s\n", oldpwd);
+        fflush(stdout);
         return __chdir(oldpwd);
     }
 
