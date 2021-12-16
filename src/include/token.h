@@ -56,6 +56,7 @@ enum
 
 enum
 {
+    ENDOF,
     DEFAULT,
     SPECIAL,
     KEYWORD,

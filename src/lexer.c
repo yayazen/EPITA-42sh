@@ -16,6 +16,8 @@
 #define LEX_MODE_PARAM_EXP (1 << 6)
 #define LEX_MODE_ARITH_EXP (1 << 7)
 
+#define DIGIT(N) ('0' <= (N) && (N) <= '9')
+
 #define DFA(C, S) (dfa_eval((C), (S)))
 #define DFA_TERM(S) (dfa_term((S)))
 #define DFA_TOKEN(S) (dfa_token((S)))
@@ -32,6 +34,8 @@ static inline struct cstream *__eatwhitespaces(struct cstream *cs)
     return cs;
 }
 
+
+
 /**
  * \brief  true if `c` is a meta character
  *         i.e a one char token marked as SPECIAL.
@@ -44,6 +48,21 @@ static inline int __ismeta(int c)
         return 1;
     return 0;
 }
+
+/**
+ * \brief true if `c` start a redirection token
+ */
+static inline int __isredir(int c)
+{
+    int s = DFA(c, DFA_ENTRY_STATE);
+    if (s == DFA_ERR_STATE)
+        return 0;
+    return DFA_TERM(s) && (DFA_TOKEN(s) == T_LESS || DFA_TOKEN(s) == T_GREAT);
+}
+
+/**
+ * \brief return true if `c`
+ */
 
 /**
  * \brief set mode for the lexer depending on `c`
@@ -90,14 +109,18 @@ static int __lexer(struct rl_state *rls, int s, int mode)
         return rls->err;
 
     s = DFA(c, s);
-    if (s == DFA_ERR_STATE || rls->token == T_WORD)
+
+    if (s == DFA_ERR_STATE || TOKEN_TYPE(rls->token) == DEFAULT)
     {
-        rls->token = (rls->token == T_EOF) ? T_WORD : rls->token;
-        if (TOKEN_TYPE(rls->token) == SPECIAL
-            || (!(mode = __lexmode(mode, c)) && __ismeta(c)))
-            return NO_ERROR;
         s = DFA_ENTRY_STATE;
-        rls->token = T_WORD;
+        mode = __lexmode(mode, c);
+        if (rls->token == T_EOF || (rls->token == T_IONUMBER && !__isredir(c)))
+            rls->token = T_WORD;
+        if (rls->flag & LEX_CMDSTART
+            && c == '=' && !mode && rls->word.size && !DIGIT(rls->word.data[0]))
+            rls->token = T_ASSIGN_WORD;
+        if (TOKEN_TYPE(rls->token) == SPECIAL|| (!mode && __ismeta(c)))
+            return NO_ERROR;
     }
     else if (DFA_TERM(s))
     {
@@ -108,6 +131,7 @@ static int __lexer(struct rl_state *rls, int s, int mode)
 
     vec_push(&rls->word, c);
     rls->cs->line_start = !mode && !(rls->flag & PARSER_LINE_START);
+
     if ((rls->err = cstream_pop(rls->cs, &c)) != NO_ERROR || rls->token == T_LF)
         return rls->err;
 

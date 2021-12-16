@@ -69,10 +69,10 @@ struct exec_word
 
 union exec_type
 {
-    struct exec_word word;
     struct exec_cmd cmd;
-    struct exec_pipeline pipeline; 
+    struct exec_word word;
     struct exec_redir redir;
+    struct exec_pipeline pipeline; 
 };
 
 /**
