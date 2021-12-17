@@ -145,7 +145,7 @@ int bi_cd(char **args)
     {
         // If HOME variable is defined
         char *home = getenv("HOME");
-        if (*home)
+        if (home && *home)
         {
             return __chdir(home);
         }
