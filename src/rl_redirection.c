@@ -33,8 +33,8 @@ static int __redirtoken(struct rl_state *s)
     else if (rl_accept(s, T_CLOBBER) == true)
         return T_CLOBBER;
     /* "<>" */
-    else if (rl_accept(s, T_LESSAND) == true)
-        return T_LESSAND;
+    else if (rl_accept(s, T_LESSGREAT) == true)
+        return T_LESSGREAT;
     return -1;
 }
 
@@ -43,14 +43,22 @@ int rl_redirection(struct rl_state *s)
     int token;
     int ionumber = STDOUT_FILENO;
     struct rl_exectree *node;
+    int got_io_number = 0;
 
     /* [IONUMBER] */
     if (rl_accept(s, T_IONUMBER) == true)
+    {
         ionumber = atoi(vec_cstring(&s->word));
+        got_io_number = 1;
+    }
 
     /* ">", "<", ... */
     if ((token = __redirtoken(s)) == -1)
         return false;
+
+    /* overwrite stdin if required */
+    if (!got_io_number && (token == T_LESS || token == T_LESSAND))
+        ionumber = STDIN_FILENO;
 
     /* WORD */
     if (rl_expect(s, T_WORD) <= 0)
@@ -85,13 +93,31 @@ int rl_exec_redirection(struct rl_exectree *node)
         return NO_ERROR;
 
     int flags = 0;
-    if (redir->token == T_GREAT)
-        flags = O_WRONLY | O_CREAT | O_TRUNC;
-    else if (redir->token == T_DGREAT)
-        flags = O_WRONLY | O_APPEND;
+    int fd = -1;
 
-    int fd = open(redir->file, flags, DEFAULT_MODE);
-    if (fd == -1 || __redirect(fd, redir->ionumber, true) != 0)
+    /* > | >| */
+    if (redir->token == T_GREAT || redir->token == T_CLOBBER)
+        flags = O_WRONLY | O_CREAT | O_TRUNC;
+
+    /* < */
+    else if (redir->token == T_LESS)
+        flags = O_RDONLY;
+
+    /* >> */
+    else if (redir->token == T_DGREAT)
+        flags = O_WRONLY | O_APPEND | O_CREAT;
+
+    /* >& | <& => reuse file descriptors */
+    else if (redir->token == T_GREATAND || redir->token == T_LESSAND)
+        fd = atoi(redir->file);
+
+    /* unsupported case */
+    else
+        assert(0);
+
+    fd = fd > 0 ? fd : open(redir->file, flags, DEFAULT_MODE);
+    if (fd == -1
+        || __redirect(fd, redir->ionumber, flags == 0 ? false : true) != 0)
         return EXECUTION_ERROR;
 
     return NO_ERROR;
