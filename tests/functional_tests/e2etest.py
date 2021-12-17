@@ -121,7 +121,7 @@ test_simple_cmd(
     1
 )
 # Quotes are not supported yet
-#test_simple_cmd("/bin/sh -c \"echo 'toto'\"", b"toto\n", b"", 0)
+test_simple_cmd("/bin/sh -c \"echo 'toto'\"", b"toto\n", b"", 0)
 test_simple_cmd("nonexisting_command", b"", None, 127)
 
 
@@ -136,12 +136,12 @@ test_simple_cmd(
 test_simple_cmd("if false; then ls; elif false; then uname; fi", b"", b"", 0)
 test_simple_cmd("if true; then nonexisting_command; fi", b"", None, 127)
 
-#print_info("Single quote expansion...")
-#test_simple_cmd("echo 'yes'72", b"yes72\n", b"", 0)
-#test_simple_cmd("echo 'yes'72'non'", b"yes72non\n", b"", 0)
-#test_simple_cmd("echo '$PATH'72", b"$PATH72\n", b"", 0)
-#test_simple_cmd("echo ''", b"\n", b"", 0)
-#test_simple_cmd("echo 'a\nb\nc'", b"a\nb\nc\n", b"", 0)
+print_info("Single quote expansion...")
+test_simple_cmd("echo 'yes'72", b"yes72\n", b"", 0)
+test_simple_cmd("echo 'yes'72'non'", b"yes72non\n", b"", 0)
+test_simple_cmd("echo '$PATH'72", b"$PATH72\n", b"", 0)
+test_simple_cmd("echo ''", b"\n", b"", 0)
+test_simple_cmd("echo 'a\nb\nc'", b"a\nb\nc\n", b"", 0)
 
 
 print_info("echo builtin...")
