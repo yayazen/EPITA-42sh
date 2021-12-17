@@ -122,12 +122,14 @@ int parser(struct cstream *cs, int flag, int *exit_status)
 
     else if (rl_input(&s) == true)
     {
-        if (flag & OPT_PRINT_AST_DOT)
-            ast_dot_print(s.node);
         if (flag & OPT_PRINT_AST)
             __dbg_ast(s.node);
 
-        *exit_status = rl_exec_input(s.node);
+        /* Do not both print & execute tree at the same time */
+        if (flag & OPT_PRINT_AST_DOT)
+            ast_dot_print(s.node);
+        else
+            *exit_status = rl_exec_input(s.node);
     }
     else
     {

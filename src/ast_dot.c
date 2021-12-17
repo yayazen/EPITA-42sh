@@ -42,6 +42,9 @@ static void __aux_ast_dot(struct rl_exectree *node, int p, int c)
 
 void ast_dot_print(struct rl_exectree *node)
 {
+    if (!node)
+        return;
+
     fprintf(stdout, "graph {\n");
     fprintf(stdout, "0 [label= \"input\"]\n");
     __aux_ast_dot(node->child, 0, 1);
