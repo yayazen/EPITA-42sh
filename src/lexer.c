@@ -103,21 +103,23 @@ static inline int __lexmode(int mode, int c)
 static int __lexer(struct rl_state *rls, int s, int mode)
 {
     int c;
+    int type = TOKEN_TYPE(rls->token);
     if ((rls->err = cstream_peek(rls->cs, &c)) != NO_ERROR || c == EOF)
         return rls->err;
 
     s = DFA(c, s);
 
-    if (s == DFA_ERR_STATE || TOKEN_TYPE(rls->token) == DEFAULT)
+    if (s == DFA_ERR_STATE || type == DEFAULT)
     {
         s = DFA_ENTRY_STATE;
         mode = __lexmode(mode, c);
-        if (rls->token == T_EOF || (rls->token == T_IONUMBER && !__isredir(c)))
+        if (rls->token == T_EOF || (type == KEYWORD && !__ismeta(c))
+            || (rls->token == T_IONUMBER && !__isredir(c)))
             rls->token = T_WORD;
         if (rls->flag & LEX_CMDSTART && c == '=' && !mode && rls->word.size
             && !DIGIT(rls->word.data[0]))
             rls->token = T_ASSIGN_WORD;
-        if (TOKEN_TYPE(rls->token) == SPECIAL || (!mode && __ismeta(c)))
+        if (type == SPECIAL || (!mode && __ismeta(c)))
             return NO_ERROR;
     }
     else if (DFA_TERM(s))
