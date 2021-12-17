@@ -81,8 +81,8 @@ def test_simple_cmd(cmd, stdout=None,
         if validate_status is not None and not validate_status(res.returncode):
             errors.append("* Exit code failed to validate!")
 
+        exec_time = time.time() - t
         if max_exec_time is not None:
-            exec_time = time.time() - t
             if exec_time > max_exec_time:
                 errors.append("* Exec time ({} secs) higher than allowed maximum ({} secs)".format(
                     exec_time,
@@ -95,12 +95,14 @@ def test_simple_cmd(cmd, stdout=None,
 
     if len(errors) == 0:
         test_passed()
-        # print("[\033[92m+\033[0m] " + cmd.replace("\n", "<NEWLINE>"))
+        # print("[\033[92m+\033[0m] {}s ".format(round(exec_time, 2)) +
+        #      cmd.replace("\n", "<NEWLINE>"))
         return
 
     else:
         test_failed()
-        print("[\033[91m-\033[0m] " + cmd.replace("\n", "<NEWLINE>"))
+        print("[\033[91m-\033[0m] {}s ".format(round(exec_time, 2)) +
+              cmd.replace("\n", "<NEWLINE>"))
         print("\n".join(errors))
         print()
 
