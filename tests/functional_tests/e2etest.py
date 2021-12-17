@@ -4,8 +4,8 @@ import subprocess
 import sys
 import time
 
-err = False
-
+err = 0
+successes = 0
 
 def print_info(str):
     print("[\033[94m*\033[0m] {}".format(str))
@@ -17,13 +17,17 @@ def shell_to_use():
 
 def test_failed():
     global err
-    err = True
+    err += 1
 
+def test_passed():
+    global successes
+    successes += 1
 
 def test_simple_cmd(cmd, stdout=None,
                     stderr=None,
                     status=None,
                     validate_status=None,
+                    empty_stderr=None,
                     env=None,
                     max_exec_time=None):
     """
@@ -63,6 +67,14 @@ def test_simple_cmd(cmd, stdout=None,
                 )
             )
 
+        if empty_stderr == True and res.stderr != b"":
+            errors.append(
+                "* stderr\texpected empty\n\t\tgot instead\t: {}\n".format(
+                    stderr,
+                    res.stderr,
+                )
+            )
+
         if validate_status is not None and not validate_status(res.returncode):
             errors.append("* Exit code failed to validate!")
 
@@ -79,6 +91,7 @@ def test_simple_cmd(cmd, stdout=None,
         errors.append("Test did timeout")
 
     if len(errors) == 0:
+        test_passed()
         # print("[\033[92m+\033[0m] " + cmd.replace("\n", "<NEWLINE>"))
         return
 
@@ -165,6 +178,8 @@ test_simple_cmd(
     status=0,
     max_exec_time=0.2
 )
+test_simple_cmd("! uname", b"Linux\n", empty_stderr=True, validate_status=lambda s: s != 0)
+test_simple_cmd("! { uname; }", b"Linux\n", empty_stderr=True, validate_status=lambda s: s != 0)
 
 print_info("Compound lists")
 test_simple_cmd("{ uname; uname; }", b"Linux\nLinux\n", b"", 0)
@@ -172,5 +187,8 @@ test_simple_cmd("{ echo yes; }\n{ uname; }", b"yes\nLinux\n", b"", 0)
 test_simple_cmd("{ echo a; echo b; } | cat -e", b"a$\nb$\n", b"", 0)
 test_simple_cmd("{ uname; uname; } | cat -e", b"Linux$\nLinux$\n", b"", 0)
 
+
+# . end of tests
+print("{} / {} tests failed".format(err, successes + err))
 if err:
     sys.exit(-1)
