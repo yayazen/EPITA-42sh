@@ -75,7 +75,7 @@ static inline int __push_args(struct rl_exectree *arg, char **argv)
     {
         if (arg->type == RL_WORD)
         {
-            char *expword = symexp_word(arg->attr.word);
+            char *expword = symexp_word(symtab, arg->attr.word);
             assert(expword != NULL);
             free(arg->attr.word);
             arg->attr.word = expword;
