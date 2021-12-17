@@ -12,6 +12,8 @@ all_sources += files(
 
     'parser.c',
 
+    'symtab.c',
+
     'rl_accept.c',
     'rl_expect.c',
     'rl_prefix.c',

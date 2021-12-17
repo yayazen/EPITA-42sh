@@ -7,9 +7,13 @@
 #include "builtins.h"
 #include "constants.h"
 #include "rule.h"
+#include "symexp.h"
+#include "symtab.h"
 #include "token.h"
 
 #define ARG_MAX 256
+
+struct symtab *symtab = NULL;
 
 int rl_simple_cmd(struct rl_state *s)
 {
@@ -70,7 +74,13 @@ static inline int __push_args(struct rl_exectree *arg, char **argv)
     for (i = 0; arg != NULL; arg = arg->sibling)
     {
         if (arg->type == RL_WORD)
+        {
+            char *expword = symexp_word(arg->attr.word);
+            assert(expword != NULL);
+            free(arg->attr.word);
+            arg->attr.word = expword;
             argv[i++] = arg->attr.word;
+        }
         else if (arg->type == RL_REDIRECTION)
             assert(rl_exec_redirection(arg) == NO_ERROR);
         else if (arg->type == RL_ASSIGN_WORD)
@@ -80,6 +90,19 @@ static inline int __push_args(struct rl_exectree *arg, char **argv)
     }
 
     return i > 0;
+}
+
+static inline void __add_symbol(struct rl_exectree *arg)
+{
+    if (!symtab)
+        symtab = symtab_new();
+
+    while (arg != NULL)
+    {
+        if (arg->type == RL_ASSIGN_WORD)
+            symtab_add(symtab, strdup(arg->attr.word));
+        arg = arg->sibling;
+    }
 }
 
 int rl_exec_simple_cmd(struct rl_exectree *node)
@@ -96,30 +119,34 @@ int rl_exec_simple_cmd(struct rl_exectree *node)
             return EXECUTION_ERROR;
     }
 
-    char *argv[ARG_MAX] = { 0 };
-    if (!__push_args(node->child, argv))
-        return NO_ERROR;
-
     builtin_def blt;
-    if ((blt = builtin_find(argv[0])))
+    char *argv[ARG_MAX] = { 0 };
+    if (__push_args(node->child, argv))
     {
-        node->attr.cmd.status = blt(argv);
-    }
-    else
-    {
-        node->attr.cmd.pid = fork();
-        if (node->attr.cmd.pid == 0)
+        if ((blt = builtin_find(argv[0])))
         {
-            execvp(argv[0], argv);
-            fprintf(stderr, PACKAGE ": %s: command not found...\n", argv[0]);
-            exit(127);
+            node->attr.cmd.status = blt(argv);
+        }
+        else
+        {
+            node->attr.cmd.pid = fork();
+            if (node->attr.cmd.pid == 0)
+            {
+                execvp(argv[0], argv);
+                fprintf(stderr, PACKAGE ": %s: command not found...\n",
+                        argv[0]);
+                exit(127);
+            }
         }
     }
+
     for (int i = 0; i < 3; i++)
     {
         if (__redirect(savedfd[i], i, true) != 0)
             return EXECUTION_ERROR;
     }
+
+    __add_symbol(node->child);
 
     return (node->attr.cmd.pid == -1 && !blt) ? EXECUTION_ERROR : NO_ERROR;
 }

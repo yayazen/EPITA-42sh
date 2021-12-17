@@ -4,6 +4,7 @@
 #include <unistd.h>
 
 #include "rule.h"
+#include "symtab.h"
 
 // Hack for test units, which are written in C++, which
 // requires explicit cast when returning from malloc functions
