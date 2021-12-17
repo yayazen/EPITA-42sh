@@ -7,6 +7,7 @@ import time
 err = 0
 successes = 0
 
+
 def print_info(str):
     print("[\033[94m*\033[0m] {}".format(str))
 
@@ -19,9 +20,11 @@ def test_failed():
     global err
     err += 1
 
+
 def test_passed():
     global successes
     successes += 1
+
 
 def test_simple_cmd(cmd, stdout=None,
                     stderr=None,
@@ -78,8 +81,8 @@ def test_simple_cmd(cmd, stdout=None,
         if validate_status is not None and not validate_status(res.returncode):
             errors.append("* Exit code failed to validate!")
 
+        exec_time = time.time() - t
         if max_exec_time is not None:
-            exec_time = time.time() - t
             if exec_time > max_exec_time:
                 errors.append("* Exec time ({} secs) higher than allowed maximum ({} secs)".format(
                     exec_time,
@@ -92,12 +95,14 @@ def test_simple_cmd(cmd, stdout=None,
 
     if len(errors) == 0:
         test_passed()
-        # print("[\033[92m+\033[0m] " + cmd.replace("\n", "<NEWLINE>"))
+        # print("[\033[92m+\033[0m] {}s ".format(round(exec_time, 2)) +
+        #      cmd.replace("\n", "<NEWLINE>"))
         return
 
     else:
         test_failed()
-        print("[\033[91m-\033[0m] " + cmd.replace("\n", "<NEWLINE>"))
+        print("[\033[91m-\033[0m] {}s ".format(round(exec_time, 2)) +
+              cmd.replace("\n", "<NEWLINE>"))
         print("\n".join(errors))
         print()
 
@@ -116,7 +121,7 @@ test_simple_cmd(
     1
 )
 # Quotes are not supported yet
-#test_simple_cmd("/bin/sh -c \"echo 'toto'\"", b"toto\n", b"", 0)
+test_simple_cmd("/bin/sh -c \"echo 'toto'\"", b"toto\n", b"", 0)
 test_simple_cmd("nonexisting_command", b"", None, 127)
 
 
@@ -131,12 +136,12 @@ test_simple_cmd(
 test_simple_cmd("if false; then ls; elif false; then uname; fi", b"", b"", 0)
 test_simple_cmd("if true; then nonexisting_command; fi", b"", None, 127)
 
-#print_info("Single quote expansion...")
-#test_simple_cmd("echo 'yes'72", b"yes72\n", b"", 0)
-#test_simple_cmd("echo 'yes'72'non'", b"yes72non\n", b"", 0)
-#test_simple_cmd("echo '$PATH'72", b"$PATH72\n", b"", 0)
-#test_simple_cmd("echo ''", b"\n", b"", 0)
-#test_simple_cmd("echo 'a\nb\nc'", b"a\nb\nc\n", b"", 0)
+print_info("Single quote expansion...")
+test_simple_cmd("echo 'yes'72", b"yes72\n", b"", 0)
+test_simple_cmd("echo 'yes'72'non'", b"yes72non\n", b"", 0)
+test_simple_cmd("echo '$PATH'72", b"$PATH72\n", b"", 0)
+test_simple_cmd("echo ''", b"\n", b"", 0)
+test_simple_cmd("echo 'a\nb\nc'", b"a\nb\nc\n", b"", 0)
 
 
 print_info("echo builtin...")
@@ -178,14 +183,56 @@ test_simple_cmd(
     status=0,
     max_exec_time=0.2
 )
-test_simple_cmd("! uname", b"Linux\n", empty_stderr=True, validate_status=lambda s: s != 0)
-test_simple_cmd("! { uname; }", b"Linux\n", empty_stderr=True, validate_status=lambda s: s != 0)
+test_simple_cmd("! uname", b"Linux\n", empty_stderr=True,
+                validate_status=lambda s: s != 0)
+test_simple_cmd("! { uname; }", b"Linux\n",
+                empty_stderr=True, validate_status=lambda s: s != 0)
 
 print_info("Compound lists")
 test_simple_cmd("{ uname; uname; }", b"Linux\nLinux\n", b"", 0)
 test_simple_cmd("{ echo yes; }\n{ uname; }", b"yes\nLinux\n", b"", 0)
 test_simple_cmd("{ echo a; echo b; } | cat -e", b"a$\nb$\n", b"", 0)
 test_simple_cmd("{ uname; uname; } | cat -e", b"Linux$\nLinux$\n", b"", 0)
+
+
+print_info("Redirections...")
+test_simple_cmd("uname > /tmp/lolo;cat /tmp/lolo; rm /tmp/lolo",
+                b"Linux\n", b"", 0)
+test_simple_cmd("ls / | grep tmp > /tmp/lolo; cat /tmp/lolo; rm /tmp/lolo",
+                b"tmp\n", b"", 0)
+test_simple_cmd("uname > /tmp/lolo;cat /tmp/lolo; uname >> /tmp/lolo;cat -e /tmp/lolo; rm /tmp/lolo",
+                b"Linux\nLinux$\nLinux$\n", b"", 0)
+test_simple_cmd("uname > /tmp/lolo;cat /tmp/lolo; uname > /tmp/lolo;cat -e /tmp/lolo; rm /tmp/lolo",
+                b"Linux\nLinux$\n", b"", 0)
+
+
+print_info("Until loops")
+test_simple_cmd(
+    "until cat /tmp/titi; do touch /tmp/titi; echo a; done; rm /tmp/titi",
+    b"a\n",
+    stderr=None,
+    status=0
+)
+test_simple_cmd(
+    "touch /tmp/titi;until cat /tmp/titi; do touch /tmp/titi; echo a; done; rm /tmp/titi",
+    stdout=b"",
+    stderr=b"",
+    status=0
+)
+
+print_info("While loop")
+test_simple_cmd(
+    "touch /tmp/titi;while ! cat /tmp/titi; do touch /tmp/titi; echo a; done; rm /tmp/titi",
+    stdout=b"",
+    stderr=b"",
+    status=0
+)
+test_simple_cmd(
+    "touch /tmp/tatu;while cat /tmp/tatu; do rm /tmp/tatu; echo hihi; done;",
+    stdout=b"hihi\n",
+    stderr=None,
+    status=0
+)
 
 
 # . end of tests
