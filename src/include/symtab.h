@@ -3,12 +3,31 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "rule_exec.h"
+
+enum
+{
+    KV_WORD,
+    KV_FUNC,
+    KV_ALIAS,
+};
+
+union symval
+{
+    char *word;
+    struct rl_exectree *func;
+};
+
 /* hold a key-value pair */
 struct kvpair
 {
+    int type;
+
     uint32_t hkey;
     char *key;
-    char *value;
+
+    union symval value;
+
     struct kvpair *next;
 };
 
@@ -29,7 +48,7 @@ void symtab_clear(struct symtab *st);
 /* free the memory used by st */
 void symtab_free(struct symtab *st);
 /* add a new kv of the form K=V to a hash table */
-int symtab_add(struct symtab *st, char *kvs);
+int symtab_add(struct symtab *st, const char *key, int type, void *value);
 /* search for a key in the symbol table */
 struct kvpair *symtab_lookup(struct symtab *st, const char *key);
 

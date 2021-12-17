@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdlib.h>
 #include <utils/vec.h>
 
 #include "symtab.h"
@@ -30,9 +31,17 @@ static char *symexp_word(const char *word)
             key[i++] = c;
             key[i] = '\0';
             struct kvpair *kv = symtab_lookup(symtab, key);
-            if (kv)
+            if (kv && kv->type == KV_WORD)
             {
-                for (char *s = kv->value; *s != '\0'; s++)
+                for (char *s = kv->value.word; *s != '\0'; s++)
+                    vec_push(&expvec, *s);
+                mode &= ~EXP_DOLLAR;
+            }
+
+            else if (getenv(key) != NULL)
+            {
+                char *env = getenv(key);
+                for (char *s = env; *s != '\0'; s++)
                     vec_push(&expvec, *s);
                 mode &= ~EXP_DOLLAR;
             }

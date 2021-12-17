@@ -100,7 +100,14 @@ static inline void __add_symbol(struct rl_exectree *arg)
     while (arg != NULL)
     {
         if (arg->type == RL_ASSIGN_WORD)
-            symtab_add(symtab, strdup(arg->attr.word));
+        {
+            char *str = strdup(arg->attr.word);
+            char *eq = strchr(str, '=');
+            *eq = '\0';
+            symtab_add(symtab, str, KV_WORD, eq + 1);
+
+            free(str);
+        }
         arg = arg->sibling;
     }
 }
