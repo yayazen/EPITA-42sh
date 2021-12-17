@@ -16,23 +16,23 @@ static void __aux_ast_dot(struct rl_exectree *node, int p, int c)
     fprintf(stdout, "%d", c);
     if (node->type == RL_WORD)
     {
-        fprintf(stdout, " [label= \"%s\"]\n", node->attr.word);
+        fprintf(stdout, " [label= \"%s (%d)\"]\n", node->attr.word, c);
     }
     else if (node->type == RL_ASSIGN_WORD)
     {
-        fprintf(stdout, " [label= \"%s\"]\n", node->attr.word);
+        fprintf(stdout, " [label= \"%s (%d)\"]\n", node->attr.word, c);
     }
     else if (node->type == RL_REDIRECTION)
     {
         struct attr_redir *redir = &node->attr.redir;
-        fprintf(stdout, " [label= \"%d %s %s\"]\n", redir->ionumber,
-               TOKEN_STR(redir->token), redir->file);
+        fprintf(stdout, " [label= \"%d %s %s (%d)\"]\n", redir->ionumber,
+               TOKEN_STR(redir->token), redir->file, c);
     }
     else
     {
 #define RULE(Rl, Str)                                                          \
     if (Rl == node->type)                                                      \
-        fprintf(stdout, " [label= \"%s\"]\n", Str);
+        fprintf(stdout, " [label= \"%s (%d)\"]\n", Str, c);
 #include "rule.def"
 #undef RULE
     }
