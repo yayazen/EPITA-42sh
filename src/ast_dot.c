@@ -6,10 +6,11 @@
 #include "rule.h"
 #include "token.h"
 
-static void __aux_ast_dot(struct rl_exectree *node, int p, int c)
+static int __aux_ast_dot(struct rl_exectree *node, int p, int c)
 {
     if (!node)
-        return;
+        return c;
+    c++;
 
     fprintf(stdout, "%d", c);
     if (node->type == RL_WORD)
@@ -36,8 +37,9 @@ static void __aux_ast_dot(struct rl_exectree *node, int p, int c)
     }
 
     fprintf(stdout, "%d -- %d\n", p, c);
-    __aux_ast_dot(node->child, c, c + 1);
-    __aux_ast_dot(node->sibling, p, c + 2);
+    c = __aux_ast_dot(node->child, c, c);
+    c = __aux_ast_dot(node->sibling, p, c);
+    return c;
 }
 
 void ast_dot_print(struct rl_exectree *node)
