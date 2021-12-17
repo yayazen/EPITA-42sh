@@ -7,6 +7,22 @@
 #define SINGLE_QUOTE (1 << 2)
 #define DOUBLE_QUOTE (1 << 3)
 
+/**
+ * \brief Search for a symbol in symbol table & environment variables
+ * \param symtab A pointer on the symbol table to use
+ * \param key The key to search
+ */
+static char *__search_sym(struct symtab *symtab, const char *key)
+{
+    struct kvpair *kv = symtab_lookup(symtab, key);
+    if (kv && kv->type == KV_WORD)
+    {
+        return kv->value.word;
+    }
+
+    return getenv(key);
+}
+
 char *symexp_word(struct symtab *symtab, const char *word)
 {
     struct vec expvec;
@@ -41,18 +57,11 @@ char *symexp_word(struct symtab *symtab, const char *word)
         {
             key[i++] = c;
             key[i] = '\0';
-            struct kvpair *kv = symtab_lookup(symtab, key);
-            if (kv && kv->type == KV_WORD)
-            {
-                for (char *s = kv->value.word; *s != '\0'; s++)
-                    vec_push(&expvec, *s);
-                mode &= ~EXP_DOLLAR;
-            }
 
-            else if (getenv(key) != NULL)
+            char *sym = __search_sym(symtab, key);
+            if (sym != NULL)
             {
-                char *env = getenv(key);
-                for (char *s = env; *s != '\0'; s++)
+                for (char *s = sym; *s != '\0'; s++)
                     vec_push(&expvec, *s);
                 mode &= ~EXP_DOLLAR;
             }
