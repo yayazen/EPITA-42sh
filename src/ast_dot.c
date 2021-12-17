@@ -1,18 +1,16 @@
 #include "ast_dot.h"
 
-#include <stdio.h>
 #include <assert.h>
+#include <stdio.h>
 
 #include "rule.h"
 #include "token.h"
-
-
 
 static void __aux_ast_dot(struct rl_exectree *node, int p, int c)
 {
     if (!node)
         return;
-    
+
     fprintf(stdout, "%d", c);
     if (node->type == RL_WORD)
     {
@@ -26,7 +24,7 @@ static void __aux_ast_dot(struct rl_exectree *node, int p, int c)
     {
         struct attr_redir *redir = &node->attr.redir;
         fprintf(stdout, " [label= \"%d %s %s (%d)\"]\n", redir->ionumber,
-               TOKEN_STR(redir->token), redir->file, c);
+                TOKEN_STR(redir->token), redir->file, c);
     }
     else
     {
@@ -42,7 +40,6 @@ static void __aux_ast_dot(struct rl_exectree *node, int p, int c)
     __aux_ast_dot(node->sibling, p, c + 2);
 }
 
-
 void ast_dot_print(struct rl_exectree *node)
 {
     fprintf(stdout, "graph {\n");
@@ -50,6 +47,3 @@ void ast_dot_print(struct rl_exectree *node)
     __aux_ast_dot(node->child, 0, 1);
     fprintf(stdout, "} \n");
 }
-
-
-
