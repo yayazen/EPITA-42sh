@@ -34,25 +34,33 @@ char *symexp_word(struct symtab *symtab, const char *word)
     char c;
     while ((c = *word++) != '\0')
     {
+        /* enter / leave simple quote mode */
         if (!(mode & DOUBLE_QUOTE) && c == '\'')
         {
             mode ^= SINGLE_QUOTE;
-            continue;
         }
 
+        /* enter / leave double quote mode */
         else if (!(mode & SINGLE_QUOTE) && c == '"')
         {
-            printf("toggle dl\n");
             mode ^= DOUBLE_QUOTE;
-            continue;
         }
 
+        /* Switch to dolar */
         else if (!(mode & SINGLE_QUOTE) && c == '$')
         {
             i = 0;
             mode |= EXP_DOLLAR;
         }
 
+        /* Quit dolar mode */
+        else if (mode & EXP_DOLLAR && c == ' ')
+        {
+            mode &= ~EXP_DOLLAR;
+            vec_push(&expvec, c);
+        }
+
+        /* Search for symbol */
         else if (!(mode & SINGLE_QUOTE) && (mode & EXP_DOLLAR))
         {
             key[i++] = c;
@@ -66,6 +74,7 @@ char *symexp_word(struct symtab *symtab, const char *word)
                 mode &= ~EXP_DOLLAR;
             }
         }
+
         else
         {
             vec_push(&expvec, c);
