@@ -48,14 +48,14 @@ Test(bi_cd, check_invalid)
 
 Test(bi_cd, validate_expansion)
 {
-    __invoke_cd("/usr");
-    cr_assert_str_eq("/usr", getenv("PWD"));
+    __invoke_cd("/proc");
+    cr_assert_str_eq("/proc", getenv("PWD"));
 
-    __invoke_cd("bin");
-    cr_assert_str_eq("/usr/bin", getenv("PWD"));
+    __invoke_cd("sys");
+    cr_assert_str_eq("/proc/sys", getenv("PWD"));
 
     __invoke_cd("..");
-    cr_assert_str_eq("/usr", getenv("PWD"));
+    cr_assert_str_eq("/proc", getenv("PWD"));
 
     __invoke_cd("bin/../../tmp");
     cr_assert_str_eq("/tmp", getenv("PWD"));
@@ -66,8 +66,8 @@ Test(bi_cd, validate_expansion)
 
 Test(bi_cd, no_argument_with_home)
 {
-    __invoke_cd("/usr");
-    cr_assert_str_eq("/usr", getenv("PWD"));
+    __invoke_cd("/proc");
+    cr_assert_str_eq("/proc", getenv("PWD"));
 
     assert(setenv("HOME", "/bin", 1) == 0);
     char *args[] = { "cd", NULL };
@@ -77,22 +77,22 @@ Test(bi_cd, no_argument_with_home)
 
 Test(bi_cd, no_argument_without_home)
 {
-    __invoke_cd("/usr");
-    cr_assert_str_eq("/usr", getenv("PWD"));
+    __invoke_cd("/proc");
+    cr_assert_str_eq("/proc", getenv("PWD"));
 
     assert(unsetenv("HOME") == 0);
     char *args[] = { "cd", NULL };
     cr_assert_eq(bi_cd(args), 0);
-    cr_assert_str_eq("/usr", getenv("PWD"));
+    cr_assert_str_eq("/proc", getenv("PWD"));
 }
 
 Test(bi_cd, no_argument_with_empty_home)
 {
-    __invoke_cd("/usr");
-    cr_assert_str_eq("/usr", getenv("PWD"));
+    __invoke_cd("/proc");
+    cr_assert_str_eq("/proc", getenv("PWD"));
 
     assert(setenv("HOME", "", 1) == 0);
     char *args[] = { "cd", NULL };
     cr_assert_eq(bi_cd(args), 0);
-    cr_assert_str_eq("/usr", getenv("PWD"));
+    cr_assert_str_eq("/proc", getenv("PWD"));
 }
