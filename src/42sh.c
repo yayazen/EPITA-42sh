@@ -6,6 +6,7 @@
 
 #include "constants.h"
 #include "parser.h"
+#include "symtab.h"
 
 static const char *__usages =
     PACKAGE ", version " VERSION "\n"
@@ -89,6 +90,9 @@ err_parse_args:
 end_loop:
     if (err && err != REACHED_EOF)
         perror(PACKAGE);
+    if (flag & OPT_PRINT_AST)
+        symtab_print(symtab);
+    symtab_free(symtab);
     if (cs)
         cstream_free(cs);
     if (err == REACHED_EOF)

@@ -107,10 +107,19 @@ int symtab_add(struct symtab *st, char *kvs)
     *p = '\0';
     char *key = kvs;
     char *value = p + 1;
+    struct kvpair *kv = symtab_lookup(st, key);
+
+    if (kv)
+    {
+        free(kv->key);
+        kv->key = key;
+        kv->value = value;
+        return 0;
+    }
+
     uint32_t hkey = __hash(key);
     size_t i = hkey % st->capacity;
-
-    struct kvpair *kv = zalloc(sizeof(struct kvpair));
+    kv = zalloc(sizeof(struct kvpair));
     kv->hkey = hkey;
     kv->key = key;
     kv->value = value;

@@ -1,5 +1,6 @@
 #include <utils/vec.h>
 
+#include "constants.h"
 #include "rule.h"
 #include "token.h"
 
@@ -10,6 +11,7 @@ int rl_prefix(struct rl_state *s)
     if (rl_redirection(s) == true)
         return true;
 
+    s->flag |= LEX_CMDSTART;
     if (rl_accept(s, T_ASSIGN_WORD) <= 0)
         return -s->err;
 
