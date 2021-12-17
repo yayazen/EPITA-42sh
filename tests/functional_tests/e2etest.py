@@ -6,6 +6,7 @@ import time
 
 err = 0
 successes = 0
+test_dir = "/tmp/test_42sh"
 
 
 def print_info(str):
@@ -30,12 +31,15 @@ def test_simple_cmd(cmd, stdout=None,
                     stderr=None,
                     status=None,
                     validate_status=None,
+                    empty_stdout=None,
                     empty_stderr=None,
                     env=None,
-                    max_exec_time=None):
+                    max_exec_time=None,
+                    working_directory=None):
     """
     Run a simple command, and check its output
     """
+    global test_dir
     t = time.time()
     errors = []
     try:
@@ -46,6 +50,7 @@ def test_simple_cmd(cmd, stdout=None,
             check=False,
             timeout=1,
             env=env,
+           # cwd=test_dir if working_directory is None else working_directory
         )
 
         if status is not None and res.returncode != status:
@@ -62,6 +67,18 @@ def test_simple_cmd(cmd, stdout=None,
                 )
             )
 
+        if empty_stdout == True and res.stdout != b"":
+            errors.append(
+                "* stdout\texpected empty\n\t\tgot instead\t: {}\n".format(
+                    stdout
+                )
+            )
+        
+        if empty_stdout == False and res.stdout == b"":
+            errors.append(
+                "* stdout\texpected not empty stdout, but it is !\n"
+            )
+
         if stderr is not None and res.stderr != stderr:
             errors.append(
                 "* stderr\texpected\t: {}\n\t\tgot instead\t: {}\n".format(
@@ -74,8 +91,11 @@ def test_simple_cmd(cmd, stdout=None,
             errors.append(
                 "* stderr\texpected empty\n\t\tgot instead\t: {}\n".format(
                     stderr,
-                    res.stderr,
                 )
+            )
+        if empty_stderr == False and res.stderr == b"":
+            errors.append(
+                "* stderr\texpected not empty, but it was!\n"
             )
 
         if validate_status is not None and not validate_status(res.returncode):
@@ -110,8 +130,14 @@ def test_simple_cmd(cmd, stdout=None,
 print_info("Using shell {}".format(shell_to_use()))
 
 
-# Test simple commands
+
 print()
+
+print_info("Setup environment...")
+test_simple_cmd("rm -rf "+test_dir+";", b"", b"", 0, working_directory="/tmp")
+test_simple_cmd("mkdir -p "+test_dir+"/repa "+test_dir+"/repb "+test_dir+"/toat", b"", b"", 0, working_directory="/tmp")
+
+# Test simple commands
 print_info("Simple commands...")
 test_simple_cmd("uname", b"Linux\n", b"", 0)
 test_simple_cmd(
@@ -120,7 +146,6 @@ test_simple_cmd(
     b"ln: invalid option -- 'h'\nTry 'ln --help' for more information.\n",
     1
 )
-# Quotes are not supported yet
 test_simple_cmd("/bin/sh -c \"echo 'toto'\"", b"toto\n", b"", 0)
 test_simple_cmd("nonexisting_command", b"", None, 127)
 
@@ -198,12 +223,14 @@ test_simple_cmd("{ uname; uname; } | cat -e", b"Linux$\nLinux$\n", b"", 0)
 print_info("Redirections...")
 test_simple_cmd("uname > /tmp/lolo;cat /tmp/lolo; rm /tmp/lolo",
                 b"Linux\n", b"", 0)
-test_simple_cmd("ls / | grep tmp > /tmp/lolo; cat /tmp/lolo; rm /tmp/lolo",
-                b"tmp\n", b"", 0)
+test_simple_cmd("ls "+test_dir+" | grep to > /tmp/lolo; cat /tmp/lolo; rm /tmp/lolo",
+                b"toat\n", b"", 0)
 test_simple_cmd("uname > /tmp/lolo;cat /tmp/lolo; uname >> /tmp/lolo;cat -e /tmp/lolo; rm /tmp/lolo",
                 b"Linux\nLinux$\nLinux$\n", b"", 0)
 test_simple_cmd("uname > /tmp/lolo;cat /tmp/lolo; uname > /tmp/lolo;cat -e /tmp/lolo; rm /tmp/lolo",
                 b"Linux\nLinux$\n", b"", 0)
+test_simple_cmd("uname 1>&2", b"", b"Linux\n", 0)
+test_simple_cmd("find /qsdfqsd 2>&1", empty_stdout=False, stderr=b"", validate_status=lambda s: s !=0)
 
 
 print_info("Until loops")
@@ -234,6 +261,10 @@ test_simple_cmd(
     status=0
 )
 
+
+# Clean environment
+print_info("Clean test environment")
+test_simple_cmd("rm -rf "+test_dir+"", b"", b"", 0, working_directory="/tmp")
 
 # . end of tests
 print("{} / {} tests failed".format(err, successes + err))
