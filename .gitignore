@@ -24,3 +24,7 @@ build
 
 # NIX
 /result
+
+# Dots
+*.dot
+*.png

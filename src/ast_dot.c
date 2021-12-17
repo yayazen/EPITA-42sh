@@ -1,12 +1,55 @@
 #include "ast_dot.h"
 
 #include <stdio.h>
+#include <assert.h>
 
 #include "rule.h"
 #include "token.h"
 
+
+
+static void __aux_ast_dot(struct rl_exectree *node, int p, int c)
+{
+    if (!node)
+        return;
+    
+    fprintf(stdout, "%d", c);
+    if (node->type == RL_WORD)
+    {
+        fprintf(stdout, " [label= \"%s\"]\n", node->attr.word);
+    }
+    else if (node->type == RL_ASSIGN_WORD)
+    {
+        fprintf(stdout, " [label= \"%s\"]\n", node->attr.word);
+    }
+    else if (node->type == RL_REDIRECTION)
+    {
+        struct attr_redir *redir = &node->attr.redir;
+        fprintf(stdout, " [label= \"%d %s %s\"]\n", redir->ionumber,
+               TOKEN_STR(redir->token), redir->file);
+    }
+    else
+    {
+#define RULE(Rl, Str)                                                          \
+    if (Rl == node->type)                                                      \
+        fprintf(stdout, " [label= \"%s\"]\n", Str);
+#include "rule.def"
+#undef RULE
+    }
+
+    fprintf(stdout, "%d -- %d\n", p, c);
+    __aux_ast_dot(node->child, c, c + 1);
+    __aux_ast_dot(node->sibling, p, c + 2);
+}
+
+
 void ast_dot_print(struct rl_exectree *node)
 {
-    if (node != NULL)
-        printf("TODO : print dot file.\n");
+    fprintf(stdout, "graph {\n");
+    fprintf(stdout, "0 [label= \"input\"]\n");
+    __aux_ast_dot(node->child, 0, 1);
+    fprintf(stdout, "} \n");
 }
+
+
+
