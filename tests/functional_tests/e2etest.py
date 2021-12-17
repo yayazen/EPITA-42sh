@@ -7,6 +7,7 @@ import time
 err = 0
 successes = 0
 
+
 def print_info(str):
     print("[\033[94m*\033[0m] {}".format(str))
 
@@ -19,9 +20,11 @@ def test_failed():
     global err
     err += 1
 
+
 def test_passed():
     global successes
     successes += 1
+
 
 def test_simple_cmd(cmd, stdout=None,
                     stderr=None,
@@ -178,14 +181,56 @@ test_simple_cmd(
     status=0,
     max_exec_time=0.2
 )
-test_simple_cmd("! uname", b"Linux\n", empty_stderr=True, validate_status=lambda s: s != 0)
-test_simple_cmd("! { uname; }", b"Linux\n", empty_stderr=True, validate_status=lambda s: s != 0)
+test_simple_cmd("! uname", b"Linux\n", empty_stderr=True,
+                validate_status=lambda s: s != 0)
+test_simple_cmd("! { uname; }", b"Linux\n",
+                empty_stderr=True, validate_status=lambda s: s != 0)
 
 print_info("Compound lists")
 test_simple_cmd("{ uname; uname; }", b"Linux\nLinux\n", b"", 0)
 test_simple_cmd("{ echo yes; }\n{ uname; }", b"yes\nLinux\n", b"", 0)
 test_simple_cmd("{ echo a; echo b; } | cat -e", b"a$\nb$\n", b"", 0)
 test_simple_cmd("{ uname; uname; } | cat -e", b"Linux$\nLinux$\n", b"", 0)
+
+
+print_info("Redirections...")
+test_simple_cmd("uname > /tmp/lolo;cat /tmp/lolo; rm /tmp/lolo",
+                b"Linux\n", b"", 0)
+test_simple_cmd("ls / | grep tmp > /tmp/lolo; cat /tmp/lolo; rm /tmp/lolo",
+                b"tmp\n", b"", 0)
+test_simple_cmd("uname > /tmp/lolo;cat /tmp/lolo; uname >> /tmp/lolo;cat -e /tmp/lolo; rm /tmp/lolo",
+                b"Linux\nLinux$\nLinux$\n", b"", 0)
+test_simple_cmd("uname > /tmp/lolo;cat /tmp/lolo; uname > /tmp/lolo;cat -e /tmp/lolo; rm /tmp/lolo",
+                b"Linux\nLinux$\n", b"", 0)
+
+
+print_info("Until loops")
+test_simple_cmd(
+    "until cat /tmp/titi; do touch /tmp/titi; echo a; done; rm /tmp/titi",
+    b"a\n",
+    stderr=None,
+    status=0
+)
+test_simple_cmd(
+    "touch /tmp/titi;until cat /tmp/titi; do touch /tmp/titi; echo a; done; rm /tmp/titi",
+    stdout=b"",
+    stderr=b"",
+    status=0
+)
+
+print_info("While loop")
+test_simple_cmd(
+    "touch /tmp/titi;while ! cat /tmp/titi; do touch /tmp/titi; echo a; done; rm /tmp/titi",
+    stdout=b"",
+    stderr=b"",
+    status=0
+)
+test_simple_cmd(
+    "touch /tmp/tatu;while cat /tmp/tatu; do rm /tmp/tatu; echo hihi; done;",
+    stdout=b"hihi\n",
+    stderr=None,
+    status=0
+)
 
 
 # . end of tests
