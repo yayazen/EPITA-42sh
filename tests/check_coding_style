@@ -10,19 +10,19 @@ cd "$(dirname "$0")"
 if [ ! -f "$TOOL_EXE" ];
 then
     echo Download tool...
-    wget "$TOOL_URL" -O "$TOOL_EXE" || { rm -f "$TOOL_EXE"; echo "Failed to download tool!"; exit 1; } 
+    wget "$TOOL_URL" -O "$TOOL_EXE" || { rm -f "$TOOL_EXE"; echo "Failed to download tool!"; exit 1; }
     chmod +x "$TOOL_EXE"
 fi
 
 # Recursively check code
 FOUND_ERRORS=0
 for i in $(find ../src ../tests | grep -E "\.(c|h)$"); do
-	./"$TOOL_EXE" "$i" 2> /dev/null > /dev/null;
+	./"$TOOL_EXE" -Dallow_explicit_casts=true -Dmax_lines_size=50 "$i" 2> /dev/null > /dev/null;
 
     if [ ! $? -eq 0 ];
     then
         echo "* Errors in $i :"
-        ./"$TOOL_EXE" "$i"
+        ./"$TOOL_EXE" -Dallow_explicit_casts=true -Dmax_lines_size=50 "$i"
 
         FOUND_ERRORS=1
     fi
