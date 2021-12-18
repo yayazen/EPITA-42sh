@@ -23,6 +23,10 @@ def shell_to_use():
     return "dash" if len(sys.argv) == 1 else sys.argv[1]
 
 
+def verbose_mode():
+    return len(sys.argv) > 2
+
+
 def test_failed():
     global err
     err += 1
@@ -127,8 +131,9 @@ def test_simple_cmd(cmd, stdout=None,
 
     if len(errors) == 0:
         test_passed()
-        # print("[\033[92m+\033[0m] {}s ".format(round(exec_time, 2)) +
-        #      cmd.replace("\n", "<NEWLINE>"))
+        if verbose_mode():
+            print("[\033[92m+\033[0m] {}s ".format(round(exec_time, 2)) +
+                  cmd.replace("\n", "<NEWLINE>"))
         return
 
     else:
