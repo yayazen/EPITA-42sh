@@ -104,7 +104,7 @@ static inline void __add_symbol(struct rl_exectree *arg)
             char *str = strdup(arg->attr.word);
             char *eq = strchr(str, '=');
             *eq = '\0';
-            symtab_add(symtab, str, KV_WORD, eq + 1);
+            symtab_add(symtab, str, KV_WORD, symexp_word(symtab, eq + 1));
 
             free(str);
         }

@@ -50,7 +50,7 @@ def test_simple_cmd(cmd, stdout=None,
             check=False,
             timeout=1,
             env=env,
-           # cwd=test_dir if working_directory is None else working_directory
+            # cwd=test_dir if working_directory is None else working_directory
         )
 
         if status is not None and res.returncode != status:
@@ -73,7 +73,7 @@ def test_simple_cmd(cmd, stdout=None,
                     stdout
                 )
             )
-        
+
         if empty_stdout == False and res.stdout == b"":
             errors.append(
                 "* stdout\texpected not empty stdout, but it is !\n"
@@ -130,12 +130,12 @@ def test_simple_cmd(cmd, stdout=None,
 print_info("Using shell {}".format(shell_to_use()))
 
 
-
 print()
 
 print_info("Setup environment...")
 test_simple_cmd("rm -rf "+test_dir+";", b"", b"", 0, working_directory="/tmp")
-test_simple_cmd("mkdir -p "+test_dir+"/repa "+test_dir+"/repb "+test_dir+"/toat", b"", b"", 0, working_directory="/tmp")
+test_simple_cmd("mkdir -p "+test_dir+"/repa "+test_dir+"/repb " +
+                test_dir+"/toat", b"", b"", 0, working_directory="/tmp")
 
 # Test simple commands
 print_info("Simple commands...")
@@ -167,6 +167,25 @@ test_simple_cmd("echo 'yes'72'non'", b"yes72non\n", b"", 0)
 test_simple_cmd("echo '$PATH'72", b"$PATH72\n", b"", 0)
 test_simple_cmd("echo ''", b"\n", b"", 0)
 test_simple_cmd("echo 'a\nb\nc'", b"a\nb\nc\n", b"", 0)
+test_simple_cmd("echo '$HAPPY_42SH'", b"$HAPPY_42SH\n", b"",
+                0, env={"HAPPY_42SH": "I love 42sh"})
+
+print_info("Double quotes expansion...")
+test_simple_cmd("echo $HAPPY_42SH", b"\n", b"", 0)
+test_simple_cmd("echo $HAPPY_42SH", b"I love 42sh\n", b"",
+                0, env={"HAPPY_42SH": "I love 42sh"})
+test_simple_cmd("echo \"$HAPPY_42SH\"", b"I love 42sh\n", b"",
+                0, env={"HAPPY_42SH": "I love 42sh"})
+test_simple_cmd("echo \"$HAPPY_42SH$NONEXISTING_VAR\"", b"I love 42sh\n", b"",
+                0, env={"HAPPY_42SH": "I love 42sh"})
+test_simple_cmd("echo \"hop hop hop\"", b"hop hop hop\n", b"", 0)
+
+
+print_info("Variables assignments...")
+test_simple_cmd("X=ABC; echo $X", b"ABC\n", b"", 0)
+test_simple_cmd("X=TOTO;X=ABC;Y=TOT; echo $X", b"ABC\n", b"", 0)
+test_simple_cmd("HAPPY_42SH=\"I love 42sh\";echo $HAPPY_42SH", b"I love 42sh\n", b"",
+                0, env={"HAPPY_42SH": "I hate 42sh"})
 
 
 print_info("echo builtin...")
@@ -230,7 +249,8 @@ test_simple_cmd("uname > /tmp/lolo;cat /tmp/lolo; uname >> /tmp/lolo;cat -e /tmp
 test_simple_cmd("uname > /tmp/lolo;cat /tmp/lolo; uname > /tmp/lolo;cat -e /tmp/lolo; rm /tmp/lolo",
                 b"Linux\nLinux$\n", b"", 0)
 test_simple_cmd("uname 1>&2", b"", b"Linux\n", 0)
-test_simple_cmd("find /qsdfqsd 2>&1", empty_stdout=False, stderr=b"", validate_status=lambda s: s !=0)
+test_simple_cmd("find /qsdfqsd 2>&1", empty_stdout=False,
+                stderr=b"", validate_status=lambda s: s != 0)
 
 
 print_info("Until loops")
@@ -261,6 +281,14 @@ test_simple_cmd(
     status=0
 )
 
+
+print_info("Invalid commands")
+test_simple_cmd("if", b"", empty_stderr=False,
+                validate_status=lambda x: x != 0)
+test_simple_cmd("if true; then ", b"", empty_stderr=False,
+                validate_status=lambda x: x != 0)
+test_simple_cmd("{ { { { { ls; } } } }", b"", empty_stderr=False,
+                validate_status=lambda x: x != 0)
 
 # Clean environment
 print_info("Clean test environment")

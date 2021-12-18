@@ -134,6 +134,7 @@ int parser(struct cstream *cs, int flag, int *exit_status)
     else
     {
         fprintf(stderr, PACKAGE ": rule mismatch or unimplemented\n");
+        *exit_status = 2;
     }
 
     rl_exectree_free(s.node);

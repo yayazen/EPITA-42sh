@@ -85,7 +85,7 @@ static inline void __setkv(struct kvpair *kv, int type, void *value)
     kv->type = type;
     if (kv->type == KV_WORD || kv->type == KV_ALIAS)
     {
-        kv->value.word = strdup(value);
+        kv->value.word = value;
     }
 
     else if (kv->type == KV_FUNC)
