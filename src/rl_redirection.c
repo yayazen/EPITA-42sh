@@ -42,7 +42,6 @@ int rl_redirection(struct rl_state *s)
 {
     int token;
     int ionumber = STDOUT_FILENO;
-    int dest_io_number = -1;
     struct rl_exectree *node;
     int got_io_number = 0;
 
@@ -61,10 +60,10 @@ int rl_redirection(struct rl_state *s)
     if (!got_io_number && (token == T_LESS || token == T_LESSAND))
         ionumber = STDIN_FILENO;
 
-    /* WORD */
-    if (rl_accept(s, T_IONUMBER) == true)
-        dest_io_number = atoi(vec_cstring(&s->word));
-    else if (rl_expect(s, T_WORD) <= 0)
+    /* IONUMBER | WORD */
+    if (!((token == T_LESSAND || token == T_GREATAND)
+          && rl_accept(s, T_IONUMBER) == true)
+        && (rl_expect(s, T_WORD) <= 0))
         return -s->err;
     node = rl_exectree_new(RL_REDIRECTION);
     if (!node || !(node->attr.redir.file = strdup(vec_cstring(&s->word))))
@@ -72,7 +71,6 @@ int rl_redirection(struct rl_state *s)
 
     node->attr.redir.ionumber = ionumber;
     node->attr.redir.token = token;
-    node->attr.redir.dest_io_number = dest_io_number;
     s->node = node;
     return 1;
 }
@@ -113,7 +111,7 @@ int rl_exec_redirection(struct rl_exectree *node)
 
     /* >& | <& => reuse file descriptors */
     else if (redir->token == T_GREATAND || redir->token == T_LESSAND)
-        fd = redir->dest_io_number;
+        fd = atoi(redir->file);
 
     /* unsupported case */
     else
@@ -122,7 +120,9 @@ int rl_exec_redirection(struct rl_exectree *node)
     fd = fd > 0 ? fd : open(redir->file, flags, DEFAULT_MODE);
     if (fd == -1
         || __redirect(fd, redir->ionumber, flags == 0 ? false : true) != 0)
+    {
         return EXECUTION_ERROR;
+    }
 
     return NO_ERROR;
 }

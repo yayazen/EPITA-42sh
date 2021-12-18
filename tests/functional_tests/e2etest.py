@@ -8,6 +8,12 @@ err = 0
 successes = 0
 test_dir = "/tmp/test_42sh"
 
+#
+#
+# Functions part
+#
+#
+
 
 def print_info(str):
     print("[\033[94m*\033[0m] {}".format(str))
@@ -35,7 +41,8 @@ def test_simple_cmd(cmd, stdout=None,
                     empty_stderr=None,
                     env=None,
                     max_exec_time=None,
-                    working_directory=None):
+                    working_directory=None,
+                    additional_checks=None):
     """
     Run a simple command, and check its output
     """
@@ -50,6 +57,7 @@ def test_simple_cmd(cmd, stdout=None,
             check=False,
             timeout=1,
             env=env,
+
             # cwd=test_dir if working_directory is None else working_directory
         )
 
@@ -101,6 +109,10 @@ def test_simple_cmd(cmd, stdout=None,
         if validate_status is not None and not validate_status(res.returncode):
             errors.append("* Exit code failed to validate!")
 
+        if additional_checks is not None:
+            for err in additional_checks():
+                errors.append(err)
+
         exec_time = time.time() - t
         if max_exec_time is not None:
             if exec_time > max_exec_time:
@@ -127,6 +139,20 @@ def test_simple_cmd(cmd, stdout=None,
         print()
 
 
+def count_lines_in_file(path: str) -> int:
+    with open(path) as f:
+        return len(f.readlines())
+
+
+#
+#
+# Tests part
+#
+# These tests where meant to be temporary, but it seems
+# that it won't be the case. I am sorry for the ugly code,
+# but fortunately, it is working as expected
+#
+#
 print_info("Using shell {}".format(shell_to_use()))
 
 
@@ -134,8 +160,8 @@ print()
 
 print_info("Setup environment...")
 test_simple_cmd("rm -rf "+test_dir+";", b"", b"", 0, working_directory="/tmp")
-test_simple_cmd("mkdir -p "+test_dir+"/repa "+test_dir+"/repb " +
-                test_dir+"/toat", b"", b"", 0, working_directory="/tmp")
+test_simple_cmd("mkdir -p "+test_dir+"/repa "+test_dir+"/forbidden "+test_dir+"/repb " +
+                test_dir+"/toat; chmod a-r "+test_dir+"/forbidden", b"", b"", 0, working_directory="/tmp")
 
 # Test simple commands
 print_info("Simple commands...")
@@ -231,6 +257,10 @@ test_simple_cmd("! uname", b"Linux\n", empty_stderr=True,
                 validate_status=lambda s: s != 0)
 test_simple_cmd("! { uname; }", b"Linux\n",
                 empty_stderr=True, validate_status=lambda s: s != 0)
+test_simple_cmd("ls /proc/self/fd | wc -l", b"4\n", b"", 0)
+test_simple_cmd("ls /proc/self/fd | cat | cat | wc -l", b"4\n", b"", 0)
+test_simple_cmd(
+    "uname | cat | ls /proc/self/fd | cat | cat | wc -l", b"4\n", b"", 0)
 
 print_info("Compound lists")
 test_simple_cmd("{ uname; uname; }", b"Linux\nLinux\n", b"", 0)
@@ -251,6 +281,23 @@ test_simple_cmd("uname > /tmp/lolo;cat /tmp/lolo; uname > /tmp/lolo;cat -e /tmp/
 test_simple_cmd("uname 1>&2", b"", b"Linux\n", 0)
 test_simple_cmd("find /qsdfqsd 2>&1", empty_stdout=False,
                 stderr=b"", validate_status=lambda s: s != 0)
+test_simple_cmd(
+    "uname > /dev/null | cat 2>&1 | ls /proc/self/fd | wc -l", b"4\n", b"", 0)
+
+
+def postcheck():
+    if count_lines_in_file(test_dir + "/out") == 0:
+        yield "* stdout  is empty! (it should not be)"
+    if count_lines_in_file(test_dir + "/err") == 0:
+        yield "* stderr  is empty! (it should not be)"
+
+
+test_simple_cmd("find "+test_dir + " > "+test_dir +
+                "/out 2> "+test_dir+"/err",
+                empty_stderr=True,
+                empty_stdout=True,
+                validate_status=lambda s: s != 0,
+                additional_checks=postcheck)
 
 
 print_info("Until loops")

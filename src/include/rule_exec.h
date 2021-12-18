@@ -39,7 +39,6 @@ struct attr_redir
     int ionumber;
     /* right side file */
     char *file;
-    int dest_io_number;
 };
 
 union attr

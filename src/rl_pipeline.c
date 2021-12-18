@@ -56,6 +56,10 @@ static inline int __piperun(struct rl_exectree *rl_pipe)
         if (pipe(p->fd) < 0)
             return EXECUTION_ERROR;
 
+        /* Set the file descriptors to close on fork */
+        fcntl(p->fd[0], F_SETFD, FD_CLOEXEC);
+        fcntl(p->fd[1], F_SETFD, FD_CLOEXEC);
+
         node->attr.cmd.fd[0] = fdin;
         node->attr.cmd.fd[1] = (node->sibling) ? p->fd[1] : STDOUT_FILENO;
 
