@@ -82,7 +82,7 @@ def test_simple_cmd(cmd, stdout=None,
         if empty_stdout == True and res.stdout != b"":
             errors.append(
                 "* stdout\texpected empty\n\t\tgot instead\t: {}\n".format(
-                    stdout
+                    res.stdout
                 )
             )
 
@@ -102,7 +102,7 @@ def test_simple_cmd(cmd, stdout=None,
         if empty_stderr == True and res.stderr != b"":
             errors.append(
                 "* stderr\texpected empty\n\t\tgot instead\t: {}\n".format(
-                    stderr,
+                    res.stderr,
                 )
             )
         if empty_stderr == False and res.stderr == b"":
@@ -111,7 +111,8 @@ def test_simple_cmd(cmd, stdout=None,
             )
 
         if validate_status is not None and not validate_status(res.returncode):
-            errors.append("* Exit code failed to validate!")
+            errors.append(
+                "* Exit code failed to validate (got {})!".format(res.returncode))
 
         if additional_checks is not None:
             for err in additional_checks():
@@ -297,7 +298,7 @@ def postcheck():
         yield "* stderr  is empty! (it should not be)"
 
 
-test_simple_cmd("find "+test_dir + " > "+test_dir +
+test_simple_cmd("echo yes > "+test_dir+"/afile; cat "+test_dir + "/afile /nonexisting/file > "+test_dir +
                 "/out 2> "+test_dir+"/err",
                 empty_stderr=True,
                 empty_stdout=True,
