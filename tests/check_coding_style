@@ -17,12 +17,12 @@ fi
 # Recursively check code
 FOUND_ERRORS=0
 for i in $(find ../src ../tests | grep -E "\.(c|h)$"); do
-	./"$TOOL_EXE" -Dallow_explicit_casts=true -Dmax_lines_size=50 "$i" 2> /dev/null > /dev/null;
+	./"$TOOL_EXE" -Dallow_explicit_casts=true -Dmax_functions_size=50 "$i" 2> /dev/null > /dev/null;
 
     if [ ! $? -eq 0 ];
     then
         echo "* Errors in $i :"
-        ./"$TOOL_EXE" -Dallow_explicit_casts=true -Dmax_lines_size=50 "$i"
+        ./"$TOOL_EXE" -Dallow_explicit_casts=true -Dmax_functions_size=50 "$i"
 
         FOUND_ERRORS=1
     fi
