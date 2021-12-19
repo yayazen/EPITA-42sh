@@ -236,6 +236,7 @@ else:
     test_simple_cmd("echo -e h\\tello", b"h\tello\n", b"", 0)
     test_simple_cmd("echo -e h\\nello", b"h\nello\n", b"", 0)
     test_simple_cmd("echo -e h\\nel\\\\lo", b"h\nel\\lo\n", b"", 0)
+test_simple_cmd("echo p t", b"p t\n", b"", 0)
 
 print_info("cd builtin...")
 test_simple_cmd("cd /tmp", b"", b"", 0)
@@ -346,6 +347,14 @@ test_simple_cmd(
     status=0
 )
 
+
+print_info("Aliases definition")
+test_simple_cmd("alias;", b"", b"", 0)
+test_simple_cmd("alias invalid", b"", empty_stderr=False, status=1)
+test_simple_cmd("alias; alias p=pierre", b"", b"", 0)
+test_simple_cmd("alias p=pierre;echo; alias", b"\np='pierre'\n", b"", 0)
+test_simple_cmd("alias p=pierre;echo; alias p t=toto; echo; alias p t;",
+                b"\np='pierre'\n\np='pierre'\nt='toto'\n", b"", 0)
 
 print_info("Invalid commands")
 test_simple_cmd("if", b"", empty_stderr=False,

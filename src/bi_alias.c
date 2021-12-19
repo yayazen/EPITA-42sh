@@ -5,7 +5,7 @@
 /** \brief Print a single alias entry */
 static void __print_alias(struct kvpair *pair)
 {
-    printf("%s=%s\n", pair->key, pair->value.word);
+    printf("%s='%s'\n", pair->key, pair->value.word);
 }
 
 /** \brief Show the entire alias available in symtab */
@@ -53,7 +53,10 @@ int bi_alias(char **args, struct symtab *s)
         {
             struct kvpair *pair = symtab_lookup(s, *args);
             if (!pair || pair->type != KV_ALIAS)
+            {
+                fprintf(stderr, "alias: %s not found\n", *args);
                 ret = 1;
+            }
             else
                 __print_alias(pair);
         }

@@ -101,6 +101,9 @@
 
 * CASE COMMANDS                          [ -- ]
 
-* ALIASES                                [ -- ]
+* ALIASES                                [ ++ ]
+    | * alias builtin                    [ OK ]
+    | * unalias builtin                  [ -- ]
+    | * lexer modification               [ -- ]
 
 * FIELD SPLITTING                        [ -- ]
