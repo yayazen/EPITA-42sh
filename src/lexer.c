@@ -92,7 +92,11 @@ static int __lexaux(struct rl_state *rls, int state, int mode)
 {
     int c;
     if ((rls->err = cstream_peek(rls->cs, &c)) != NO_ERROR || c == EOF)
+    {
+        if (rls->token == T_EOF && rls->word.size > 0)
+            rls->token = T_WORD;
         return rls->err;
+    }
 
     state = DFA(c, state);
 
@@ -101,8 +105,7 @@ static int __lexaux(struct rl_state *rls, int state, int mode)
         if (rls->token == T_EOF)
             rls->token = T_WORD;
 
-        if (TOKEN_TYPE(rls->token) == SPECIAL
-            || (!mode && strchr(TOKEN_DELIM, c)))
+        if (TOKEN_TYPE(rls->token) == SPECIAL || (!mode && TOKEN_DELIM(c)))
             return rls->err;
 
         rls->token = T_WORD;

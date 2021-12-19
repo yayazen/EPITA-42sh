@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stddef.h>
+#include <string.h>
 
 /*!
  * \file token.h
@@ -40,14 +41,15 @@
 #define TOKEN_STRLEN(Key) _token_get_strlen(Key)
 
 /*!
+ * Return True if `Char` is a token delimiter
+ */
+#define TOKEN_DELIM(Char) strchr("|&;()<> \t\n", Char) != NULL
+
+/*!
  * Upper bound for TOKEN_STRLEN
  */
 #define TOKEN_UBLEN 32
 
-/*!
- * Delimiters for token
- */
-#define TOKEN_DELIM "|&;()<> \t\n"
 
 /// \cond DEV_DOC
 enum
