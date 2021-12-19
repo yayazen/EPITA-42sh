@@ -16,53 +16,8 @@
 #                                                                             #
 ###############################################################################
 
-* GRAMMAR                              [ -- ]
-    | * input                          [ -- ]
-    | * list                           [ -- ]
-    | * and_or                         [ -- ]
-    | * pipeline                       [ -- ]
-    | * command                        [ -- ]
-    | * simple_command                 [ -- ]
-    | * shell_command                  [ -- ]
-    | * funcdec                        [ -- ]
-    | * redirection                    [ -- ]
-    | * prefix                         [ -- ]
-    | * element                        [ -- ]
-    | * compound_list                  [ -- ]
-    | * compound_list_break            [ -- ]
-    | * rule_for                       [ -- ]
-    | * rule_while                     [ -- ]
-    | * rule_until                     [ -- ]
-    | * rule_case                      [ -- ]
-    | * rule_if                        [ -- ]
-    | * else_clause                    [ -- ]
-    | * do_group                       [ -- ]
-    | * case_clause                    [ -- ]
-    | * case_item                      [ -- ]
+* Testsuite                            [ ++ ]
 
-* NODE TYPE                            [ -- ]
-    | * input                          [ -- ]
-    | * list                           [ -- ]
-    | * and_or                         [ -- ]
-    | * pipeline                       [ -- ]
-    | * command                        [ -- ]
-    | * simple_command                 [ -- ]
-    | * shell_command                  [ -- ]
-    | * funcdec                        [ -- ]
-    | * redirection                    [ -- ]
-    | * prefix                         [ -- ]
-    | * element                        [ -- ]
-    | * compound_list                  [ -- ]
-    | * compound_list_break            [ -- ]
-    | * rule_for                       [ -- ]
-    | * rule_while                     [ -- ]
-    | * rule_until                     [ -- ]
-    | * rule_case                      [ -- ]
-    | * rule_if                        [ -- ]
-    | * else_clause                    [ -- ]
-    | * do_group                       [ -- ]
-    | * case_clause                    [ -- ]
-    | * case_item                      [ -- ]
 
 ###############################################################################
 #                                                                             #
@@ -70,51 +25,82 @@
 #                                                                             #
 ###############################################################################
 
-* MESON                                [ OK ]
-    | * Build system in place          [ OK ]
+* Gitlab CI                            [ OK ]
 
-* OPTIONS PARSER                       [ -- ]
+* OPTIONS PARSER                       [ OK ]
     | * -c <command>                   [ OK ]
-    | * [-+]0                          [ -- ]
-    | * --norc                         [ -- ]
-    | * --ast-print                    [ -- ]
+    | * --ast-print                    [ OK ]
+    | * standard input                 [ OK ]
 
-* STANDARD INPUT                       [ -- ]
-    | * from pipe                      [ -- ]
+* COMMANDS LIST                        [ OK ]
 
-* AST PRINTER                          [ -- ]
-    | * generate dot                   [ -- ]
+* IF COMMANDS                          [ OK ]
 
-* EXECUTION                            [ -- ]
-    | * simple commands                [ OK ]
-    | * IF                             [ OK ]
+* COMPOUND LISTS                       [ OK ]
 
-* INTERACTIVE                          [ -- ]
-    | * interactive mode               [ -- ]
-    | * catch SIGINT                   [ -- ]
-    | * clean exit with ctrl+d         [ OK ]
+* SINGLE QUOTES EXPANSION              [ OK ]
 
-* PROMPT                               [ -- ]
-    | * PS1                            [ -- ]
-    | * PS2                            [ -- ]
+* ECHO BUILTIN                         [ OK ]
 
-* STRING AND FILE INPUTS               [ -- ]
-    | * input as string                [ -- ]
-    | * input as script                [ -- ]
 
-* RESOURCE FILES                       [ -- ]
-    | * /etc/42shrc                    [ -- ]
-    | * ~/.42shrc                      [ -- ]
+###############################################################################
+#                                                                             #
+#                                   WEEK 2                                    #
+#                                                                             #
+###############################################################################
 
-* TESTS SUITE                          [ -- ]
-    | * tests format                   [ -- ]
-    | * options format                 [ -- ]
-    | * timeout management             [ -- ]
-    | * Advanced features              [ -- ]
+* REDIRECTIONS                         [ OK ]
 
-* MANUAL                               [ -- ]
-    | * Doxygen generation             [ OK ]
-    | * Name                           [ -- ]
-    | * Synopsis                       [ -- ]
-    | * Description                    [ -- ]
-    | * Authors                        [ -- ]
+* PIPELINES                            [ OK ]
+
+* WHILE                                [ OK ]
+
+* UNTIL                                [ OK ]
+
+* FOR                                  [ -- ]
+
+* OPERATORS                            [ OK ]
+
+* DOUBLE QUOTES AND ESCAPE CHARACTERS  [ ++ ]
+
+* VARIABLES                            [ ++ ]
+
+
+
+
+###############################################################################
+#                                                                             #
+#                                   WEEK 3                                    #
+#                                                                             #
+###############################################################################
+
+* BUILTINS                              [ ++ ]
+    | * exit                            [ -- ]
+    | * cd                              [ OK ]
+    | * export                          [ -- ]
+    | * continue                        [ -- ]
+    | * break                           [ -- ]
+    | * dot                             [ -- ]
+    | * unset                           [ -- ]
+
+* COMMAND BLOCKS                        [ OK ]
+
+* FUNCTIONS                             [ -- ]
+
+* COMMAND SUBSTITUTION                  [ -- ]
+
+* SUBSHELLS                             [ -- ]
+
+
+
+###############################################################################
+#                                                                             #
+#                                   WEEK 4                                    #
+#                                                                             #
+###############################################################################
+
+* CASE COMMANDS                          [ -- ]
+
+* ALIASES                                [ -- ]
+
+* FIELD SPLITTING                        [ -- ]
