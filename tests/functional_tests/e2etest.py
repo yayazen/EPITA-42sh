@@ -250,6 +250,16 @@ test_simple_cmd("cd /tmp;cd;pwd", test_dir.encode('ascii')+b"\n",
 test_simple_cmd("cd /tmp;cd;pwd", b"/tmp\n", b"", 0, env={"HOME": ""})
 
 
+print_info("And or")
+test_simple_cmd("false && echo yes", b"", b"", 1)
+test_simple_cmd("false || echo yes", b"yes\n", b"", 0)
+test_simple_cmd("true || false && echo yes", b"yes\n", b"", 0)
+test_simple_cmd("true || (false && echo yes)", b"", b"", 0)
+test_simple_cmd("false || false || echo yes", b"yes\n", b"", 0)
+test_simple_cmd("false && false || echo yes", b"yes\n", b"", 0)
+test_simple_cmd("echo yes && false && echo ya", b"yes\n", b"", 1)
+test_simple_cmd("echo yes && true || echo ya", b"yes\n", b"", 0)
+
 print_info("Pipelines")
 test_simple_cmd("uname -a | cut -f 1 -d x", b"Linu\n", b"", 0)
 test_simple_cmd(
@@ -351,3 +361,7 @@ test_simple_cmd("rm -rf "+test_dir+"", b"", b"", 0, working_directory="/tmp")
 print("{} / {} tests failed".format(err, successes + err))
 if err:
     sys.exit(-1)
+
+
+# to add
+# { echo {; }

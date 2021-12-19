@@ -27,6 +27,9 @@ struct attr_cmd
 
 struct attr_pipeline
 {
+    /* AND_OR operator */
+    int and_or_op;
+
     int negate;
     int fd[2];
 };
