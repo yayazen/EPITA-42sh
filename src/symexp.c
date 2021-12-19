@@ -54,15 +54,17 @@ char *symexp_word(struct symtab *symtab, const char *word)
         }
 
         /* Quit dolar mode */
-        else if (mode & EXP_DOLLAR && c == ' ')
+        else if (mode & EXP_DOLLAR && (c == ' ' || c == '}' || c == ')'))
         {
             mode &= ~EXP_DOLLAR;
-            vec_push(&expvec, c);
+            // vec_push(&expvec, c);
         }
 
         /* Search for symbol */
         else if (!(mode & SINGLE_QUOTE) && (mode & EXP_DOLLAR))
         {
+            if (c == '(' || c == '{')
+                continue;
             key[i++] = c;
             key[i] = '\0';
 

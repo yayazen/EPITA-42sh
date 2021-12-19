@@ -44,6 +44,11 @@
  */
 #define TOKEN_UBLEN 32
 
+/*!
+ * Delimiters for token
+ */
+#define TOKEN_DELIM "|&;()<> \t\n"
+
 /// \cond DEV_DOC
 enum
 {

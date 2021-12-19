@@ -57,14 +57,6 @@ static void __dfa_init(void)
         dfa[i]['\0'] = i;
         dfa[i][DFA_TOKEN] = key;
     }
-
-    /* IONUMBER */
-    for (int n = 0; n < 10; n++)
-    {
-        dfa[DFA_ENTRY_STATE][n + '0'] = it;
-        dfa[it][n + '0'] = it;
-    }
-    dfa[it++][DFA_TOKEN] = T_IONUMBER;
 }
 
 int dfa_term(int state)

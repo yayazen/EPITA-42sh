@@ -2,11 +2,19 @@
 
 #include <assert.h>
 #include <io/cstream.h>
+#include <stdio.h>
 #include <utils/vec.h>
 
 #include "constants.h"
 #include "rule.h"
 #include "token.h"
+
+#define DIGIT(N) ('0' <= (N) && (N) <= '9')
+#define ABS(N) (((N) < 0) ? -(N) : (N))
+
+#define DFA(C, S) (dfa_eval((C), (S)))
+#define DFA_TERM(S) (dfa_term((S)))
+#define DFA_TOKEN(S) (dfa_token((S)))
 
 #define LEX_MODE_SQUOTE (1 << 1)
 #define LEX_MODE_DQUOTE (1 << 2)
@@ -15,12 +23,6 @@
 #define LEX_MODE_CMD_SUB (1 << 5)
 #define LEX_MODE_PARAM_EXP (1 << 6)
 #define LEX_MODE_ARITH_EXP (1 << 7)
-
-#define DIGIT(N) ('0' <= (N) && (N) <= '9')
-
-#define DFA(C, S) (dfa_eval((C), (S)))
-#define DFA_TERM(S) (dfa_term((S)))
-#define DFA_TOKEN(S) (dfa_token((S)))
 
 /**
  * \brief  move `stream` to the next non-blank character
@@ -35,37 +37,9 @@ static inline struct cstream *__eatwhitespaces(struct cstream *cs)
 }
 
 /**
- * \brief  true if `c` is a meta character
- *         i.e a one char token marked as SPECIAL.
- */
-static inline int __ismeta(int c)
-{
-    int s = DFA(c, DFA_ENTRY_STATE);
-    if (s != DFA_ERR_STATE && DFA_TERM(s)
-        && TOKEN_TYPE(DFA_TOKEN(s)) == SPECIAL)
-        return 1;
-    return 0;
-}
-
-/**
- * \brief true if `c` start a redirection token
- */
-static inline int __isredir(int c)
-{
-    int s = DFA(c, DFA_ENTRY_STATE);
-    if (s == DFA_ERR_STATE)
-        return 0;
-    return DFA_TERM(s) && (DFA_TOKEN(s) == T_LESS || DFA_TOKEN(s) == T_GREAT);
-}
-
-/**
- * \brief return true if `c`
- */
-
-/**
  * \brief set mode for the lexer depending on `c`
  */
-static inline int __lexmode(int mode, int c)
+static inline int __lexmode(int c, int mode)
 {
     if (mode & LEX_MODE_BACKSLASH)
         return mode & ~LEX_MODE_BACKSLASH;
@@ -96,35 +70,45 @@ static inline int __lexmode(int mode, int c)
     return mode & ~LEX_MODE_DOLLAR;
 }
 
-/**
- * \brief recursively collect a token
- * \return NO_ERROR or an error code as defined in utils/error.h
- */
-static int __lexer(struct rl_state *rls, int s, int mode)
+static inline int __evalword(struct rl_state *rls)
 {
     int c;
-    int type = TOKEN_TYPE(rls->token);
+    if ((rls->err = cstream_peek(rls->cs, &c)) != NO_ERROR)
+        return rls->err;
+
+    if (rls->token != T_WORD)
+        return rls->err;
+    else if (rls->word.size == 1 && DIGIT(rls->word.data[0])
+             && (c == '<' || c == '>'))
+        rls->token = T_IONUMBER;
+    else if (rls->flag & LEX_CMDSTART && strchr(vec_cstring(&rls->word), '='))
+        rls->token = T_ASSIGN_WORD;
+
+    return rls->err;
+}
+
+/* Recursively collect a token */
+static int __lexaux(struct rl_state *rls, int state, int mode)
+{
+    int c;
     if ((rls->err = cstream_peek(rls->cs, &c)) != NO_ERROR || c == EOF)
         return rls->err;
 
-    s = DFA(c, s);
+    state = DFA(c, state);
 
-    if (s == DFA_ERR_STATE || type == DEFAULT)
+    if (state == DFA_ERR_STATE || rls->token == T_WORD)
     {
-        s = DFA_ENTRY_STATE;
-        mode = __lexmode(mode, c);
-        if (rls->token == T_EOF || (type == KEYWORD && !__ismeta(c))
-            || (rls->token == T_IONUMBER && !__isredir(c)))
-            rls->token = T_WORD;
-        if (rls->flag & LEX_CMDSTART && c == '=' && !mode && rls->word.size
-            && !DIGIT(rls->word.data[0]))
-            rls->token = T_ASSIGN_WORD;
-        if (type == SPECIAL || (!mode && __ismeta(c)))
-            return NO_ERROR;
+        if (TOKEN_TYPE(rls->token) == SPECIAL
+            || (!mode && strchr(TOKEN_DELIM, c)))
+            return rls->err;
+
+        rls->token = T_WORD;
+        state = DFA_ENTRY_STATE;
     }
-    else if (DFA_TERM(s))
+    else if (DFA_TERM(state))
     {
-        rls->token = DFA_TOKEN(s);
+        rls->token = DFA_TOKEN(state);
+
         if (TOKEN_TYPE(rls->token) == KEYWORD && !(rls->flag & LEX_CMDSTART))
             rls->token = T_WORD;
     }
@@ -135,14 +119,30 @@ static int __lexer(struct rl_state *rls, int s, int mode)
     if ((rls->err = cstream_pop(rls->cs, &c)) != NO_ERROR || rls->token == T_LF)
         return rls->err;
 
-    return __lexer(rls, s, mode);
+    int submode;
+    if ((submode = __lexmode(c, mode)) != mode)
+    {
+        /* lexer is leving a mode */
+        if (!submode)
+            return rls->err;
+
+        /* lexer is entering a new sub mode */
+        mode &= ~LEX_MODE_DOLLAR;
+        __lexaux(rls, state, submode);
+    }
+
+    return __lexaux(rls, state, mode);
 }
 
 int lexer(struct rl_state *rls)
 {
-    rls->token = T_EOF;
-    vec_reset(&rls->word);
     __eatwhitespaces(rls->cs);
+    vec_reset(&rls->word);
+    rls->token = T_EOF;
 
-    return __lexer(rls, DFA_ENTRY_STATE, 0);
+    rls->err = __lexaux(rls, DFA_ENTRY_STATE, 0);
+    if (rls->token == T_WORD)
+        __evalword(rls);
+
+    return rls->err;
 }

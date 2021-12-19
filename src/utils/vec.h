@@ -24,5 +24,8 @@ void vec_reset(struct vec *vec);
 /** Add a character at the end of the vector */
 void vec_push(struct vec *vec, char c);
 
+/** Add a string at the end of the vector */
+void vec_pushstr(struct vec *vec, const char *s);
+
 /** Ensures the array has a NUL byte at the end, and returns it */
 char *vec_cstring(struct vec *vec);

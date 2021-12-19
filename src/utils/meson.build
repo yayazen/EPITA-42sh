@@ -1,4 +1,1 @@
-all_sources += files(
-    'vec.c',
-    'error.c',
-)
+all_sources += files('vec.c', 'error.c', )
