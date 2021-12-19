@@ -50,7 +50,6 @@
  */
 #define TOKEN_UBLEN 32
 
-
 /// \cond DEV_DOC
 enum
 {
