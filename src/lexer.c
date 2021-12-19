@@ -125,16 +125,17 @@ static int __lexaux(struct rl_state *rls, int state, int mode)
     if ((rls->err = cstream_pop(rls->cs, &c)) != NO_ERROR || rls->token == T_LF)
         return rls->err;
 
-    int submode;
-    if ((submode = __lexmode(c, mode)) != mode)
+    if (__lexmode(c, mode) != mode)
     {
-        /* lexer is leving a mode */
-        if (!submode)
+        /* lexer is leaving a mode */
+        if (!__lexmode(c, mode))
             return rls->err;
 
         /* lexer is entering a new sub mode */
-        mode &= ~LEX_MODE_DOLLAR;
-        __lexaux(rls, state, submode);
+        __lexaux(rls, state, __lexmode(c, mode & LEX_MODE_DOLLAR));
+
+        if (mode & LEX_MODE_DOLLAR)
+            return rls->err;
     }
 
     return __lexaux(rls, state, mode);
