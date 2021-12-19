@@ -174,22 +174,3 @@ struct kvpair *symtab_lookup(struct symtab *st, const char *key)
 
     return kv;
 }
-
-void symtab_print(struct symtab *st)
-{
-    if (!st)
-        return;
-
-    for (size_t i = 0; i < st->capacity; i++)
-    {
-        struct kvpair *kv = st->data[i];
-        printf("[%zu]", i);
-        while (kv)
-        {
-            printf(" --> %s = %s", kv->key,
-                   kv->type == KV_FUNC ? "function" : kv->value.word);
-            kv = kv->next;
-        }
-        printf("\n");
-    }
-}

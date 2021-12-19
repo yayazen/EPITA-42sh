@@ -66,6 +66,25 @@ static int __parse_opts(int optc, char **optv, struct cstream **cs, int *flag)
     return *cs == NULL;
 }
 
+void symtab_print(struct symtab *st)
+{
+    if (!st)
+        return;
+
+    for (size_t i = 0; i < st->capacity; i++)
+    {
+        struct kvpair *kv = st->data[i];
+        printf("[%zu]", i);
+        while (kv)
+        {
+            printf(" --> %s = %s", kv->key,
+                   kv->type == KV_FUNC ? "function" : kv->value.word);
+            kv = kv->next;
+        }
+        printf("\n");
+    }
+}
+
 int main(int argc, char *argv[])
 {
     int flag = 0;
