@@ -98,6 +98,9 @@ static int __lexaux(struct rl_state *rls, int state, int mode)
 
     if (state == DFA_ERR_STATE || rls->token == T_WORD)
     {
+        if (rls->token == T_EOF)
+            rls->token = T_WORD;
+
         if (TOKEN_TYPE(rls->token) == SPECIAL
             || (!mode && strchr(TOKEN_DELIM, c)))
             return rls->err;

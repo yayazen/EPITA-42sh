@@ -43,13 +43,6 @@ void vec_push(struct vec *vec, char c)
     vec->data[vec->size++] = c;
 }
 
-void vec_pushstr(struct vec *vec, const char *s)
-{
-    char c;
-    while ((c = *s++) != '\0')
-        vec_push(vec, c);
-}
-
 char *vec_cstring(struct vec *vec)
 {
     if (vec->size == 0 || vec->data[vec->size - 1] != '\0')
