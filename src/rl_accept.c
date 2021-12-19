@@ -7,7 +7,8 @@ int rl_accept(struct rl_state *s, int token)
 {
     while (s->err == KEYBOARD_INTERRUPT || s->flag & LEX_COLLECT)
     {
-        if (s->token == T_LF || s->token == T_SEMICOL)
+        if (s->token == T_LF || s->token == T_SEMICOL || s->token == T_AND_IF
+            || s->token == T_OR_IF)
             s->flag |= LEX_CMDSTART;
         lexer(s);
         s->flag &= ~(LEX_COLLECT | LEX_CMDSTART);
