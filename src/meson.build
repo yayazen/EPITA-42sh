@@ -38,4 +38,5 @@ all_sources += files(
     'builtins.c',
     'bi_echo.c',
     'bi_cd.c',
+    'bi_alias.c',
 )

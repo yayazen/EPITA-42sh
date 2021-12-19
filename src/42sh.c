@@ -97,6 +97,8 @@ int main(int argc, char *argv[])
     if (err)
         goto end_loop;
 
+    symtab = symtab_new();
+
     while ((err = parser(cs, flag, &exit_status)) == NO_ERROR
            && !(flag & OPT_HELP))
     {

@@ -138,8 +138,10 @@ static int __chdir(char *dir)
  *
  * \ref https://pubs.opengroup.org/onlinepubs/9699919799/utilities/cd.html
  */
-int bi_cd(char **args)
+int bi_cd(char **args, struct symtab *s)
 {
+    assert(args && s);
+
     // No argument
     if (!args[1])
     {

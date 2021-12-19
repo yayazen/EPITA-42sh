@@ -6,10 +6,16 @@
 
 #include "builtins.h"
 
+static int __cd(char **arg)
+{
+    void *a = arg + 10000;
+    return bi_cd(arg, a);
+}
+
 static void __invoke_cd(char *arg)
 {
     char *args[] = { "cd", arg, NULL };
-    cr_assert_eq(bi_cd(args), 0);
+    cr_assert_eq(__cd(args), 0);
 }
 
 TestSuite(bi_cd, .init = cr_redirect_stdout, .timeout = 15);
@@ -42,7 +48,7 @@ Test(bi_cd, check_invalid)
 {
     cr_redirect_stderr();
     char *args[] = { "cd", "/nonexisting", NULL };
-    cr_assert_neq(bi_cd(args), 0);
+    cr_assert_neq(__cd(args), 0);
     cr_assert_stdout_neq_str("");
 }
 
@@ -71,7 +77,7 @@ Test(bi_cd, no_argument_with_home)
 
     assert(setenv("HOME", "/bin", 1) == 0);
     char *args[] = { "cd", NULL };
-    cr_assert_eq(bi_cd(args), 0);
+    cr_assert_eq(__cd(args), 0);
     cr_assert_str_eq("/bin", getenv("PWD"));
 }
 
@@ -82,7 +88,7 @@ Test(bi_cd, no_argument_without_home)
 
     assert(unsetenv("HOME") == 0);
     char *args[] = { "cd", NULL };
-    cr_assert_eq(bi_cd(args), 0);
+    cr_assert_eq(__cd(args), 0);
     cr_assert_str_eq("/proc", getenv("PWD"));
 }
 
@@ -93,6 +99,6 @@ Test(bi_cd, no_argument_with_empty_home)
 
     assert(setenv("HOME", "", 1) == 0);
     char *args[] = { "cd", NULL };
-    cr_assert_eq(bi_cd(args), 0);
+    cr_assert_eq(__cd(args), 0);
     cr_assert_str_eq("/proc", getenv("PWD"));
 }

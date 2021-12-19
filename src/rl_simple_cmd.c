@@ -94,9 +94,6 @@ static inline int __push_args(struct rl_exectree *arg, char **argv)
 
 static inline void __add_symbol(struct rl_exectree *arg)
 {
-    if (!symtab)
-        symtab = symtab_new();
-
     while (arg != NULL)
     {
         if (arg->type == RL_ASSIGN_WORD)
@@ -132,7 +129,7 @@ int rl_exec_simple_cmd(struct rl_exectree *node)
     {
         if ((blt = builtin_find(argv[0])))
         {
-            node->attr.cmd.status = blt(argv);
+            node->attr.cmd.status = blt(argv, symtab);
         }
         else
         {
