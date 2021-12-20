@@ -113,7 +113,7 @@ static inline void __add_symbol(struct rl_exectree *arg)
     }
 }
 
-static void __apply_env(struct symtab *st)
+static void __apply_env(struct symtab *st, struct rl_exectree *arg)
 {
     assert(st);
 
@@ -130,6 +130,24 @@ static void __apply_env(struct symtab *st)
                 setenv(kv->key, kv->value.word.word, 1);
             kv = kv->next;
         }
+    }
+
+    /* Lastly, apply all symbols specified in command */
+    while (arg != NULL)
+    {
+        if (arg->type == RL_ASSIGN_WORD)
+        {
+            char *str = strdup(arg->attr.word);
+            char *eq = strchr(str, '=');
+            *eq = '\0';
+            char *val = symexp_word(symtab, eq + 1);
+
+            setenv(str, val, 1);
+
+            free(str);
+            free(val);
+        }
+        arg = arg->sibling;
     }
 }
 
@@ -160,7 +178,7 @@ int rl_exec_simple_cmd(struct rl_exectree *node)
             node->attr.cmd.pid = fork();
             if (node->attr.cmd.pid == 0)
             {
-                __apply_env(symtab);
+                __apply_env(symtab, node->child);
 
                 execvp(argv[0], argv);
                 fprintf(stderr, PACKAGE ": %s: command not found...\n",
@@ -170,13 +188,16 @@ int rl_exec_simple_cmd(struct rl_exectree *node)
         }
     }
 
+    else
+    {
+        __add_symbol(node->child);
+    }
+
     for (int i = 0; i < 3; i++)
     {
         if (__redirect(savedfd[i], i, true) != 0)
             return EXECUTION_ERROR;
     }
-
-    __add_symbol(node->child);
 
     return (node->attr.cmd.pid == -1 && !blt) ? EXECUTION_ERROR : NO_ERROR;
 }
