@@ -255,6 +255,7 @@ test_simple_cmd("cd /tmp;cd;pwd", b"/tmp\n", b"", 0, env={"HOME": ""})
 print_info("export builtin (TODO) ...")
 test_simple_cmd("AAAA=ccc; printenv AAAA", b"ccc\n",
                 b"", 0, env={"AAAA": "bbb"})
+test_simple_cmd("AAAA=ccc; printenv AAAA", b"", b"", 1)
 
 
 print_info("unset builtin...")
