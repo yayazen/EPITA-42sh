@@ -43,6 +43,8 @@ extern struct symtab *symtab;
 
 /* alloc a new hash table */
 struct symtab *symtab_new(void);
+/* resize allocated memory for symtab */
+struct symtab *symtab_realloc(struct symtab *st, size_t capacity);
 /* clear hash table and free kvpairs */
 void symtab_clear(struct symtab *st);
 /* free the memory used by st */
