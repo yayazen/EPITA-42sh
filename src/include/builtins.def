@@ -1,3 +1,4 @@
 BUILTIN("echo", bi_echo)
 BUILTIN("cd", bi_cd)
 BUILTIN("alias", bi_alias)
+BUILTIN("unalias", bi_unalias)

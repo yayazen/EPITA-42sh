@@ -40,4 +40,5 @@ all_sources += files(
     'bi_echo.c',
     'bi_cd.c',
     'bi_alias.c',
+    'bi_unalias.c',
 )

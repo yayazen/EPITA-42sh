@@ -348,13 +348,21 @@ test_simple_cmd(
 )
 
 
-print_info("Aliases definition")
+print_info("Aliases definition / unalias")
 test_simple_cmd("alias;", b"", b"", 0)
 test_simple_cmd("alias invalid", b"", empty_stderr=False, status=1)
 test_simple_cmd("alias; alias p=pierre", b"", b"", 0)
 test_simple_cmd("alias p=pierre;echo; alias", b"\np='pierre'\n", b"", 0)
 test_simple_cmd("alias p=pierre;echo; alias p t=toto; echo; alias p t;",
                 b"\np='pierre'\n\np='pierre'\nt='toto'\n", b"", 0)
+test_simple_cmd("unalias invalid;", b"", empty_stderr=False, status=1)
+test_simple_cmd("alias a=1 b=2 c=3 d=4 e=5 f=6 g=7 h=8; unalias -a; alias;",
+                b"", empty_stderr=True, status=0)
+test_simple_cmd("alias a=1 b=2; unalias b; alias", b"a='1'\n", b"", 0)
+test_simple_cmd("alias a=1 b=2; unalias a; alias", b"b='2'\n", b"", 0)
+test_simple_cmd("alias a=1 b=2; unalias d a c; alias",
+                b"b='2'\n", empty_stderr=False, status=0)
+test_simple_cmd("alias a=1 b=2; unalias a b; alias", b"", b"", 0)
 
 print_info("Invalid commands")
 test_simple_cmd("if", b"", empty_stderr=False,
