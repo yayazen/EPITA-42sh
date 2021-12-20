@@ -12,15 +12,18 @@ enum
     KV_ALIAS,
 };
 
-struct vword
+struct symword
 {
     char *word;
+
+    /* Only for word tokens. Specify whether these tokens
+        should be applied as child environment variable */
     int exported;
 };
 
 union symval
 {
-    struct vword word;
+    struct symword word;
     struct rl_exectree *func;
 };
 
