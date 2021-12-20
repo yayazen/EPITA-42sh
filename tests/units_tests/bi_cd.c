@@ -8,8 +8,10 @@
 
 static int __cd(char **arg)
 {
-    void *a = arg + 10000;
-    return bi_cd(arg, a);
+    struct symtab *s = symtab_new();
+    int res = bi_cd(arg, s);
+    symtab_free(s);
+    return res;
 }
 
 static void __invoke_cd(char *arg)
