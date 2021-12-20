@@ -12,7 +12,7 @@ Test(symtab, insert)
 
     struct kvpair *pair = symtab_lookup(st, "NAME", KV_WORD);
     cr_assert_eq(pair->type, KV_WORD);
-    cr_assert_str_eq(pair->value.word, "HELLO WORLD");
+    cr_assert_str_eq(pair->value.word.word, "HELLO WORLD");
 
     cr_assert_eq(NULL, symtab_lookup(st, "NAME1", KV_WORD));
 
@@ -51,7 +51,7 @@ Test(symtab, delete)
 
     struct kvpair *pair = symtab_lookup(st, "NAME", KV_WORD);
     cr_assert_eq(pair->type, KV_WORD);
-    cr_assert_str_eq(pair->value.word, "HELLO WORLD");
+    cr_assert_str_eq(pair->value.word.word, "HELLO WORLD");
 
     cr_assert_eq(0, symtab_del(st, pair));
 

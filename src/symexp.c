@@ -17,7 +17,7 @@ static char *__search_sym(struct symtab *symtab, const char *key)
     struct kvpair *kv = symtab_lookup(symtab, key, KV_WORD);
     if (kv && kv->type == KV_WORD)
     {
-        return kv->value.word;
+        return kv->value.word.word;
     }
 
     return getenv(key);

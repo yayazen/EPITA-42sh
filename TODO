@@ -81,7 +81,7 @@
     | * continue                        [ -- ]
     | * break                           [ -- ]
     | * dot                             [ -- ]
-    | * unset                           [ -- ]
+    | * unset                           [ OK ]
 
 * COMMAND BLOCKS                        [ OK ]
 

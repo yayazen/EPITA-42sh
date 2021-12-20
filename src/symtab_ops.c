@@ -27,8 +27,8 @@ static inline void __setkv(struct kvpair *kv, int type, void *value)
     // Clean previous content
     if (kv->type == KV_WORD || kv->type == KV_ALIAS)
     {
-        if (kv->value.word)
-            free(kv->value.word);
+        if (kv->value.word.word)
+            free(kv->value.word.word);
     }
 
     else if (kv->type == KV_FUNC)
@@ -41,7 +41,8 @@ static inline void __setkv(struct kvpair *kv, int type, void *value)
     kv->type = type;
     if (kv->type == KV_WORD || kv->type == KV_ALIAS)
     {
-        kv->value.word = value;
+        kv->value.word.word = value;
+        kv->value.word.exported = 0;
     }
 
     else if (kv->type == KV_FUNC)
@@ -50,7 +51,8 @@ static inline void __setkv(struct kvpair *kv, int type, void *value)
     }
 }
 
-int symtab_add(struct symtab *st, const char *key, int type, void *value)
+struct kvpair *symtab_add(struct symtab *st, const char *key, int type,
+                          void *value)
 {
     struct kvpair *kv = symtab_lookup(st, key, type);
 
@@ -74,7 +76,7 @@ int symtab_add(struct symtab *st, const char *key, int type, void *value)
 
     __setkv(kv, type, value);
 
-    return 0;
+    return kv;
 }
 
 int symtab_del(struct symtab *st, struct kvpair *pair)
@@ -130,7 +132,7 @@ void symtab_print(struct symtab *st)
         while (kv)
         {
             printf(" --> %s = %s", kv->key,
-                   kv->type == KV_FUNC ? "function" : kv->value.word);
+                   kv->type == KV_FUNC ? "function" : kv->value.word.word);
             kv = kv->next;
         }
         printf("\n");

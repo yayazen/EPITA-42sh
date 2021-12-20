@@ -73,7 +73,7 @@ void symtab_clear(struct symtab *st)
 void kv_free(struct kvpair *kv)
 {
     if (kv->type == KV_WORD || kv->type == KV_ALIAS)
-        free(kv->value.word);
+        free(kv->value.word.word);
     else if (kv->type == KV_FUNC)
         rl_exectree_free(kv->value.func);
     free(kv->key);

@@ -12,9 +12,15 @@ enum
     KV_ALIAS,
 };
 
-union symval
+struct vword
 {
     char *word;
+    int exported;
+};
+
+union symval
+{
+    struct vword word;
     struct rl_exectree *func;
 };
 
@@ -52,7 +58,8 @@ void kv_free(struct kvpair *pair);
 /* free the memory used by st */
 void symtab_free(struct symtab *st);
 /* add a new kv of the form K=V to a hash table */
-int symtab_add(struct symtab *st, const char *key, int type, void *value);
+struct kvpair *symtab_add(struct symtab *st, const char *key, int type,
+                          void *value);
 /* remove a k from the hashtable */
 int symtab_del(struct symtab *st, struct kvpair *pair);
 /* search for a key in the symbol table */

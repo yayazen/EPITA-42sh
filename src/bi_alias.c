@@ -5,7 +5,7 @@
 /** \brief Print a single alias entry */
 static void __print_alias(struct kvpair *pair)
 {
-    printf("%s='%s'\n", pair->key, pair->value.word);
+    printf("%s='%s'\n", pair->key, pair->value.word.word);
 }
 
 /** \brief Show the entire alias available in symtab */
