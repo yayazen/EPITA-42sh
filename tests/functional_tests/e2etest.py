@@ -251,6 +251,16 @@ test_simple_cmd("cd /tmp;cd;pwd", test_dir.encode('ascii')+b"\n",
 test_simple_cmd("cd /tmp;cd;pwd", b"/tmp\n", b"", 0, env={"HOME": ""})
 
 
+print_info("unset builtin...")
+test_simple_cmd("unset nonexsiting", b"", b"", 0)
+test_simple_cmd("unset -badopt nonexitsing", b"",
+                empty_stderr=False, validate_status=lambda x: x != 0)
+test_simple_cmd("XX=tt;unset XX;echo $XX", b"\n", b"", 0)
+test_simple_cmd("XX=tt;unset -f XX;echo $XX", b"tt\n", b"", 0)
+test_simple_cmd("XX=tt;unset -v XX;echo $XX", b"\n", b"", 0)
+test_simple_cmd("XX=tt;unset -fv XX;echo $XX", b"\n", b"", 0)
+
+
 print_info("And or")
 test_simple_cmd("false && echo yes", b"", b"", 1)
 test_simple_cmd("false || echo yes", b"yes\n", b"", 0)

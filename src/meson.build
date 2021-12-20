@@ -35,10 +35,12 @@ all_sources += files(
     'rl_until.c',
     'rl_do_group.c',
 
-    'ast_dot.c',
     'builtins.c',
     'bi_echo.c',
     'bi_cd.c',
+    'bi_unset.c',
     'bi_alias.c',
     'bi_unalias.c',
+
+    'ast_dot.c',
 )
