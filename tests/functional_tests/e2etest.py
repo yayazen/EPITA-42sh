@@ -252,12 +252,6 @@ test_simple_cmd("cd /tmp;cd;pwd", test_dir.encode('ascii')+b"\n",
 test_simple_cmd("cd /tmp;cd;pwd", b"/tmp\n", b"", 0, env={"HOME": ""})
 
 
-print_info("export builtin (TODO) ...")
-test_simple_cmd("AAAA=ccc; printenv AAAA", b"ccc\n",
-                b"", 0, env={"AAAA": "bbb"})
-test_simple_cmd("AAAA=ccc; printenv AAAA", b"", b"", 1)
-
-
 print_info("unset builtin...")
 test_simple_cmd("unset nonexsiting", b"", b"", 0)
 test_simple_cmd("unset -badopt nonexitsing", b"",
@@ -367,6 +361,16 @@ test_simple_cmd(
     status=0
 )
 
+
+print_info("Environment variables")
+test_simple_cmd("AAAA=ccc; printenv AAAA", b"ccc\n",
+                b"", 0, env={"AAAA": "bbb"})
+test_simple_cmd("AAAA=ccc; printenv AAAA", b"", b"", 1)
+test_simple_cmd("AAAA=ccc; AAAA=b printenv AAAA", b"b\n", b"", 0)
+test_simple_cmd("AAAA=b printenv AAAA", b"b\n", b"", 0)
+test_simple_cmd("AAAA=b HOME=t printenv AAAA", b"b\n", b"", 0)
+test_simple_cmd("AAAA=b HOME=t printenv AAAA", b"b\n",
+                b"", 0, env={"AAAA": "other value"})
 
 print_info("Aliases definition / unalias")
 test_simple_cmd("alias;", b"", b"", 0)
