@@ -103,7 +103,7 @@
 
 * ALIASES                                [ ++ ]
     | * alias builtin                    [ OK ]
-    | * unalias builtin                  [ -- ]
+    | * unalias builtin                  [ OK ]
     | * lexer modification               [ -- ]
 
 * FIELD SPLITTING                        [ -- ]

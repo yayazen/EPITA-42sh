@@ -51,7 +51,7 @@ int bi_alias(char **args, struct symtab *s)
         /* Request to display alias */
         if (eqpos == NULL)
         {
-            struct kvpair *pair = symtab_lookup(s, *args);
+            struct kvpair *pair = symtab_lookup(s, *args, KV_ALIAS);
             if (!pair || pair->type != KV_ALIAS)
             {
                 fprintf(stderr, "alias: %s not found\n", *args);

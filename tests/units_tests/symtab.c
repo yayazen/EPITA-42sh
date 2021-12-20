@@ -6,15 +6,27 @@ Test(symtab, insert)
 {
     struct symtab *st = symtab_new();
 
-    cr_assert_eq(NULL, symtab_lookup(st, "NAME"));
+    cr_assert_eq(NULL, symtab_lookup(st, "NAME", KV_WORD));
     symtab_add(st, "NAME", KV_WORD, strdup("HELLO WORLD"));
-    cr_assert_neq(NULL, symtab_lookup(st, "NAME"));
+    cr_assert_neq(NULL, symtab_lookup(st, "NAME", KV_WORD));
 
-    struct kvpair *pair = symtab_lookup(st, "NAME");
+    struct kvpair *pair = symtab_lookup(st, "NAME", KV_WORD);
     cr_assert_eq(pair->type, KV_WORD);
     cr_assert_str_eq(pair->value.word, "HELLO WORLD");
 
-    cr_assert_eq(NULL, symtab_lookup(st, "NAME1"));
+    cr_assert_eq(NULL, symtab_lookup(st, "NAME1", KV_WORD));
+
+    symtab_free(st);
+}
+
+Test(symtab, use_different_types)
+{
+    struct symtab *st = symtab_new();
+
+    cr_assert_eq(NULL, symtab_lookup(st, "NAME", KV_WORD));
+    symtab_add(st, "NAME", KV_WORD, strdup("HELLO WORLD"));
+    cr_assert_neq(NULL, symtab_lookup(st, "NAME", KV_WORD));
+    cr_assert_eq(NULL, symtab_lookup(st, "NAME", KV_ALIAS));
 
     symtab_free(st);
 }
@@ -23,10 +35,10 @@ Test(symtab, delete)
 {
     struct symtab *st = symtab_new();
 
-    cr_assert_eq(NULL, symtab_lookup(st, "NAME"));
+    cr_assert_eq(NULL, symtab_lookup(st, "NAME", KV_WORD));
     symtab_add(st, "NAME", KV_WORD, strdup("HELLO WORLD"));
     symtab_add(st, "NAME_OF", KV_WORD, strdup("NAME_OF_L"));
-    cr_assert_neq(NULL, symtab_lookup(st, "NAME"));
+    cr_assert_neq(NULL, symtab_lookup(st, "NAME", KV_WORD));
 
     for (int i = 0; i < 250; i++)
     {
@@ -37,7 +49,7 @@ Test(symtab, delete)
         symtab_add(st, key, KV_WORD, strdup(val));
     }
 
-    struct kvpair *pair = symtab_lookup(st, "NAME");
+    struct kvpair *pair = symtab_lookup(st, "NAME", KV_WORD);
     cr_assert_eq(pair->type, KV_WORD);
     cr_assert_str_eq(pair->value.word, "HELLO WORLD");
 
@@ -47,10 +59,10 @@ Test(symtab, delete)
     {
         char key[100];
         sprintf(key, "name %d", i);
-        symtab_del(st, symtab_lookup(st, key));
+        symtab_del(st, symtab_lookup(st, key, KV_WORD));
     }
 
-    cr_assert_eq(NULL, symtab_lookup(st, "NAME"));
+    cr_assert_eq(NULL, symtab_lookup(st, "NAME", KV_WORD));
 
     symtab_free(st);
 }

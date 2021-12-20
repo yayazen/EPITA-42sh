@@ -56,6 +56,6 @@ int symtab_add(struct symtab *st, const char *key, int type, void *value);
 /* remove a k from the hashtable */
 int symtab_del(struct symtab *st, struct kvpair *pair);
 /* search for a key in the symbol table */
-struct kvpair *symtab_lookup(struct symtab *st, const char *key);
+struct kvpair *symtab_lookup(struct symtab *st, const char *key, int type);
 
 void symtab_print(struct symtab *st);

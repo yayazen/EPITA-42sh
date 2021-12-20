@@ -363,6 +363,10 @@ test_simple_cmd("alias a=1 b=2; unalias a; alias", b"b='2'\n", b"", 0)
 test_simple_cmd("alias a=1 b=2; unalias d a c; alias",
                 b"b='2'\n", empty_stderr=False, status=0)
 test_simple_cmd("alias a=1 b=2; unalias a b; alias", b"", b"", 0)
+test_simple_cmd(
+    "XX=abcd;alias;echo;alias XX=fromalias; alias; echo; echo $XX", b"\nXX='fromalias'\n\nabcd\n", b"", 0)
+test_simple_cmd("XXX=abcdef;alias XXX=abcdef; unalias XXX; echo XXX",
+                b"XXX\n", empty_stderr=True, status=0)
 
 print_info("Invalid commands")
 test_simple_cmd("if", b"", empty_stderr=False,

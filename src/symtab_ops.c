@@ -52,7 +52,7 @@ static inline void __setkv(struct kvpair *kv, int type, void *value)
 
 int symtab_add(struct symtab *st, const char *key, int type, void *value)
 {
-    struct kvpair *kv = symtab_lookup(st, key);
+    struct kvpair *kv = symtab_lookup(st, key, type);
 
     if (!kv)
     {
@@ -101,7 +101,7 @@ int symtab_del(struct symtab *st, struct kvpair *pair)
     return 0;
 }
 
-struct kvpair *symtab_lookup(struct symtab *st, const char *key)
+struct kvpair *symtab_lookup(struct symtab *st, const char *key, int type)
 {
     if (!st)
         return NULL;
@@ -110,7 +110,7 @@ struct kvpair *symtab_lookup(struct symtab *st, const char *key)
 
     while (kv)
     {
-        if (kv->hkey == hkey && !strcmp(kv->key, key))
+        if (kv->hkey == hkey && !strcmp(kv->key, key) && kv->type == type)
             break;
         kv = kv->next;
     }

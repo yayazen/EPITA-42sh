@@ -39,7 +39,7 @@ int bi_unalias(char **args, struct symtab *s)
 
     while (*args)
     {
-        struct kvpair *pair = symtab_lookup(s, *args);
+        struct kvpair *pair = symtab_lookup(s, *args, KV_ALIAS);
 
         /* the symbol is invalid / not found */
         if (!pair || pair->type != KV_ALIAS)
