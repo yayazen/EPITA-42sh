@@ -14,6 +14,7 @@ all_sources += files(
 
     'symtab_alloc.c',
     'symtab_ops.c',
+    'symtab_utils.c',
     'symexp.c',
 
     'rl_accept.c',

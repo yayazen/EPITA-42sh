@@ -211,6 +211,7 @@ test_simple_cmd("echo \"$HAPPY_42SH\"", b"I love 42sh\n", b"",
 test_simple_cmd("echo \"$HAPPY_42SH$NONEXISTING_VAR\"", b"I love 42sh\n", b"",
                 0, env={"HAPPY_42SH": "I love 42sh"})
 test_simple_cmd("echo \"hop hop hop\"", b"hop hop hop\n", b"", 0)
+test_simple_cmd("XXXX=ABCD; echo \"$XXXX\"", b"ABCD\n", b"", 0)
 
 
 print_info("Variables assignments...")
@@ -251,6 +252,11 @@ test_simple_cmd("cd /tmp;cd;pwd", test_dir.encode('ascii')+b"\n",
 test_simple_cmd("cd /tmp;cd;pwd", b"/tmp\n", b"", 0, env={"HOME": ""})
 
 
+print_info("export builtin (TODO) ...")
+test_simple_cmd("AAAA=ccc; printenv AAAA", b"ccc\n",
+                b"", 0, env={"AAAA": "bbb"})
+
+
 print_info("unset builtin...")
 test_simple_cmd("unset nonexsiting", b"", b"", 0)
 test_simple_cmd("unset -badopt nonexitsing", b"",
@@ -259,6 +265,9 @@ test_simple_cmd("XX=tt;unset XX;echo $XX", b"\n", b"", 0)
 test_simple_cmd("XX=tt;unset -f XX;echo $XX", b"tt\n", b"", 0)
 test_simple_cmd("XX=tt;unset -v XX;echo $XX", b"\n", b"", 0)
 test_simple_cmd("XX=tt;unset -fv XX;echo $XX", b"\n", b"", 0)
+test_simple_cmd("unset -fv PWD;echo $PWD", b"\n", b"", 0)
+test_simple_cmd("unset AAAA; printenv AAAA", b"", b"", 1, env={"AAAA": "bbb"})
+test_simple_cmd("cd /bin; unset PWD; cd ..; pwd", b"/\n", b"", 0)
 
 
 print_info("And or")

@@ -66,7 +66,7 @@ static int __parse_opts(int optc, char **optv, struct cstream **cs, int *flag)
     return *cs == NULL;
 }
 
-int main(int argc, char *argv[])
+int main(int argc, char *argv[], char **envp)
 {
     int flag = 0;
     struct cstream *cs = NULL;
@@ -79,6 +79,7 @@ int main(int argc, char *argv[])
         goto end_loop;
 
     symtab = symtab_new();
+    symtab_fill_with_env_vars(symtab, envp);
 
     while ((err = parser(cs, flag, &exit_status)) == NO_ERROR
            && !(flag & OPT_HELP))

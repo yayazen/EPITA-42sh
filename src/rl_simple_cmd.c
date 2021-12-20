@@ -1,3 +1,7 @@
+#define _DEFAULT_SOURCE
+#include <stdlib.h>
+#undef _DEFAULT_SOURCE
+
 #include <assert.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -109,6 +113,26 @@ static inline void __add_symbol(struct rl_exectree *arg)
     }
 }
 
+static void __apply_env(struct symtab *st)
+{
+    assert(st);
+
+    /* First, remove any inherited environment variable */
+    clearenv();
+
+    /* Second, apply all exported variables */
+    for (size_t i = 0; i < st->capacity; i++)
+    {
+        struct kvpair *kv = st->data[i];
+        while (kv)
+        {
+            if (kv->type == KV_WORD && kv->value.word.exported)
+                setenv(kv->key, kv->value.word.word, 1);
+            kv = kv->next;
+        }
+    }
+}
+
 int rl_exec_simple_cmd(struct rl_exectree *node)
 {
     assert(node && node->child && node->type == RL_SIMPLE_CMD);
@@ -136,6 +160,8 @@ int rl_exec_simple_cmd(struct rl_exectree *node)
             node->attr.cmd.pid = fork();
             if (node->attr.cmd.pid == 0)
             {
+                __apply_env(symtab);
+
                 execvp(argv[0], argv);
                 fprintf(stderr, PACKAGE ": %s: command not found...\n",
                         argv[0]);

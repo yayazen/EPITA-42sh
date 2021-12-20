@@ -102,7 +102,7 @@ static void __join_dirs(char *dest, const char *a, const char *b)
  * \param dir New directory name
  * \return 0 in case of success, or a positive value otherwise.
  */
-static int __chdir(char *dir)
+static int __chdir(char *dir, struct symtab *s)
 {
     if (dir == NULL)
     {
@@ -128,6 +128,10 @@ static int __chdir(char *dir)
     {
         assert(!setenv("PWD", new_pwd, 1));
         assert(!setenv("OLDPWD", new_old_pwd, 1));
+
+        symtab_add(s, "PWD", KV_WORD, strdup(new_pwd))->value.word.exported = 1;
+        symtab_add(s, "OLDPWD", KV_WORD, strdup(new_old_pwd))
+            ->value.word.exported = 1;
     }
 
     return res == 0 ? 0 : 1;
@@ -149,7 +153,7 @@ int bi_cd(char **args, struct symtab *s)
         char *home = getenv("HOME");
         if (home && *home)
         {
-            return __chdir(home);
+            return __chdir(home, s);
         }
 
         return 0;
@@ -161,8 +165,8 @@ int bi_cd(char **args, struct symtab *s)
         char *oldpwd = getenv("OLDPWD");
         printf("%s\n", oldpwd);
         fflush(stdout);
-        return __chdir(oldpwd);
+        return __chdir(oldpwd, s);
     }
 
-    return __chdir(args[1]);
+    return __chdir(args[1], s);
 }

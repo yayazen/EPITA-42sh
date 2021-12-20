@@ -42,7 +42,6 @@ static inline void __setkv(struct kvpair *kv, int type, void *value)
     if (kv->type == KV_WORD || kv->type == KV_ALIAS)
     {
         kv->value.word.word = value;
-        kv->value.word.exported = 0;
     }
 
     else if (kv->type == KV_FUNC)
@@ -118,23 +117,4 @@ struct kvpair *symtab_lookup(struct symtab *st, const char *key, int type)
     }
 
     return kv;
-}
-
-void symtab_print(struct symtab *st)
-{
-    if (!st)
-        return;
-
-    for (size_t i = 0; i < st->capacity; i++)
-    {
-        struct kvpair *kv = st->data[i];
-        printf("[%zu]", i);
-        while (kv)
-        {
-            printf(" --> %s = %s", kv->key,
-                   kv->type == KV_FUNC ? "function" : kv->value.word.word);
-            kv = kv->next;
-        }
-        printf("\n");
-    }
 }

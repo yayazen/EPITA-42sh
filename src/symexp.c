@@ -20,7 +20,7 @@ static char *__search_sym(struct symtab *symtab, const char *key)
         return kv->value.word.word;
     }
 
-    return getenv(key);
+    return NULL;
 }
 
 char *symexp_word(struct symtab *symtab, const char *word)

@@ -49,6 +49,8 @@ extern struct symtab *symtab;
 
 /* alloc a new hash table */
 struct symtab *symtab_new(void);
+/* fill the symtable with environment variables */
+int symtab_fill_with_env_vars(struct symtab *st, char **envp);
 /* resize allocated memory for symtab */
 struct symtab *symtab_realloc(struct symtab *st, size_t capacity);
 /* clear hash table and free kvpairs */
@@ -65,4 +67,5 @@ int symtab_del(struct symtab *st, struct kvpair *pair);
 /* search for a key in the symbol table */
 struct kvpair *symtab_lookup(struct symtab *st, const char *key, int type);
 
+/* print current symbols table */
 void symtab_print(struct symtab *st);
