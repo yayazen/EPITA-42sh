@@ -1,3 +1,5 @@
+#include <assert.h>
+
 #include "symtab.h"
 
 /* Jenkins's one_at_a_time hash */
@@ -72,6 +74,30 @@ int symtab_add(struct symtab *st, const char *key, int type, void *value)
 
     __setkv(kv, type, value);
 
+    return 0;
+}
+
+int symtab_del(struct symtab *st, struct kvpair *pair)
+{
+    assert(st && pair);
+
+    size_t index = pair->hkey % st->capacity;
+
+    if (st->data[index] == pair)
+        st->data[index] = pair->next;
+
+    else
+    {
+        struct kvpair *prev = st->data[index];
+        while (prev->next != pair)
+            prev = prev->next;
+
+        prev->next = pair->next;
+    }
+
+    st->size -= 1;
+
+    kv_free(pair);
     return 0;
 }
 

@@ -64,15 +64,20 @@ void symtab_clear(struct symtab *st)
         while (kv)
         {
             struct kvpair *tmp = kv->next;
-            if (kv->type == KV_WORD || kv->type == KV_ALIAS)
-                free(kv->value.word);
-            else if (kv->type == KV_FUNC)
-                rl_exectree_free(kv->value.func);
-            free(kv->key);
-            free(kv);
+            kv_free(kv);
             kv = tmp;
         }
     }
+}
+
+void kv_free(struct kvpair *kv)
+{
+    if (kv->type == KV_WORD || kv->type == KV_ALIAS)
+        free(kv->value.word);
+    else if (kv->type == KV_FUNC)
+        rl_exectree_free(kv->value.func);
+    free(kv->key);
+    free(kv);
 }
 
 void symtab_free(struct symtab *st)

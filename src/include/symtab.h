@@ -47,10 +47,14 @@ struct symtab *symtab_new(void);
 struct symtab *symtab_realloc(struct symtab *st, size_t capacity);
 /* clear hash table and free kvpairs */
 void symtab_clear(struct symtab *st);
+/* free memory used by a key-value pair */
+void kv_free(struct kvpair *pair);
 /* free the memory used by st */
 void symtab_free(struct symtab *st);
 /* add a new kv of the form K=V to a hash table */
 int symtab_add(struct symtab *st, const char *key, int type, void *value);
+/* remove a k from the hashtable */
+int symtab_del(struct symtab *st, struct kvpair *pair);
 /* search for a key in the symbol table */
 struct kvpair *symtab_lookup(struct symtab *st, const char *key);
 
