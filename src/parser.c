@@ -1,6 +1,7 @@
 #include "parser.h"
 
 #include <io/cstream.h>
+#include <setjmp.h>
 #include <utils/vec.h>
 
 #include "ast_dot.h"
@@ -130,10 +131,22 @@ int parser(struct cstream *cs, int flag, int *exit_status,
         /* Do not both print & execute tree at the same time */
         if (flag & OPT_PRINT_AST_DOT)
             ast_dot_print(s.node);
+
+        /* Execute the command & check for exit */
         else
         {
-            struct ctx ctx = ctx_new(symtab);
-            *exit_status = rl_exec_input(&ctx, s.node);
+            jmp_buf exit_buff;
+            int jmpval = setjmp(exit_buff);
+            if (jmpval != 0)
+            {
+                /* mimic end of stream */
+                s.token = T_EOF;
+            }
+            else
+            {
+                struct ctx ctx = ctx_new(symtab, exit_status, &exit_buff);
+                *exit_status = rl_exec_input(&ctx, s.node);
+            }
         }
     }
     else

@@ -239,6 +239,11 @@ else:
     test_simple_cmd("echo -e h\\nel\\\\lo", b"h\nel\\lo\n", b"", 0)
 test_simple_cmd("echo p t", b"p t\n", b"", 0)
 
+print_info("exit builtin...")
+test_simple_cmd("echo a;\nexit; echo yolo", b"a\n", b"", 0)
+test_simple_cmd("echo a;\nexit 15; echo yolo", b"a\n", b"", 15)
+test_simple_cmd("echo a;\nexit 15 a; echo yolo", b"a\n", b"", 15)
+
 print_info("cd builtin...")
 test_simple_cmd("cd /tmp", b"", b"", 0)
 test_simple_cmd("cd /tmp; pwd", b"/tmp\n", b"", 0)

@@ -9,7 +9,7 @@
 
 static int __cd(char **arg)
 {
-    struct ctx ctx = ctx_new(symtab_new());
+    struct ctx ctx = { .st = symtab_new() };
     int res = bi_cd(&ctx, arg);
     symtab_free(ctx.st);
     return res;

@@ -38,6 +38,7 @@ all_sources += files(
 
     'builtins.c',
     'bi_echo.c',
+    'bi_exit.c',
     'bi_cd.c',
     'bi_unset.c',
     'bi_alias.c',
