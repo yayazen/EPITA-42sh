@@ -38,12 +38,12 @@ int rl_while(struct rl_state *s)
     return true;
 }
 
-int rl_exec_while(struct rl_exectree *node, const struct ctx *ctx)
+int rl_exec_while(const struct ctx *ctx, struct rl_exectree *node)
 {
     assert(node && node->type == RL_WHILE);
 
-    while (rl_exec_compound_list(node->child, ctx) == 0)
-        rl_exec_compound_list(node->child->sibling, ctx);
+    while (rl_exec_compound_list(ctx, node->child) == 0)
+        rl_exec_compound_list(ctx, node->child->sibling);
 
     return 0;
 }

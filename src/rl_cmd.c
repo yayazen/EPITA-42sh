@@ -9,14 +9,14 @@ int rl_cmd(struct rl_state *s)
     return rl_shell_cmd(s) || rl_simple_cmd(s);
 }
 
-int rl_exec_cmd(struct rl_exectree *node, const struct ctx *ctx)
+int rl_exec_cmd(const struct ctx *ctx, struct rl_exectree *node)
 {
     assert(node);
 
     if (node->type == RL_SIMPLE_CMD)
-        return rl_exec_simple_cmd(node, ctx);
+        return rl_exec_simple_cmd(ctx, node);
     else if (node->type == RL_SHELL_CMD)
-        return rl_exec_shell_cmd(node, ctx);
+        return rl_exec_shell_cmd(ctx, node);
 
     assert(0);
 }

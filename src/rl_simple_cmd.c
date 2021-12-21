@@ -151,7 +151,7 @@ static void __apply_env(struct symtab *st, struct rl_exectree *arg)
     }
 }
 
-int rl_exec_simple_cmd(struct rl_exectree *node, const struct ctx *ctx)
+int rl_exec_simple_cmd(const struct ctx *ctx, struct rl_exectree *node)
 {
     assert(node && node->child && node->type == RL_SIMPLE_CMD);
 
@@ -171,7 +171,7 @@ int rl_exec_simple_cmd(struct rl_exectree *node, const struct ctx *ctx)
     {
         if ((blt = builtin_find(argv[0])))
         {
-            node->attr.cmd.status = blt(argv, ctx);
+            node->attr.cmd.status = blt(ctx, argv);
         }
         else
         {

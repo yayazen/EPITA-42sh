@@ -32,7 +32,7 @@ int rl_list(struct rl_state *s)
     return (s->err != NO_ERROR) ? -s->err : true;
 }
 
-int rl_exec_list(struct rl_exectree *node, const struct ctx *ctx)
+int rl_exec_list(const struct ctx *ctx, struct rl_exectree *node)
 {
     assert(node && node->child && node->type == RL_LIST);
 
@@ -40,7 +40,7 @@ int rl_exec_list(struct rl_exectree *node, const struct ctx *ctx)
     node = node->child;
     do
     {
-        status = rl_exec_and_or(node, ctx);
+        status = rl_exec_and_or(ctx, node);
     } while ((node = node->sibling));
 
     return status;

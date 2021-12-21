@@ -59,7 +59,7 @@ char **__parse_args(char **args, int *mode, int *ret)
  * \ref
  * https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#unset
  */
-int bi_unset(char **args, const struct ctx *ctx)
+int bi_unset(const struct ctx *ctx, char **args)
 {
     assert(args && ctx);
     args++;

@@ -18,7 +18,7 @@ int rl_input(struct rl_state *s)
     return (s->err != NO_ERROR) ? -s->err : false;
 }
 
-int rl_exec_input(struct rl_exectree *node, const struct ctx *ctx)
+int rl_exec_input(const struct ctx *ctx, struct rl_exectree *node)
 {
-    return (node) ? rl_exec_list(node, ctx) : 0;
+    return (node) ? rl_exec_list(ctx, node) : 0;
 }

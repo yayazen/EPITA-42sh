@@ -11,7 +11,7 @@ TestSuite(bi_echo, .init = cr_redirect_stdout, .timeout = 15);
 static int __echo(char **arg)
 {
     void *a = arg + 10000;
-    return bi_echo(arg, a);
+    return bi_echo(a, arg);
 }
 
 static void __check_stdout_content(const char *expected)

@@ -34,7 +34,7 @@ int rl_and_or(struct rl_state *s)
     return (s->err != NO_ERROR) ? -s->err : true;
 }
 
-int rl_exec_and_or(struct rl_exectree *node, const struct ctx *ctx)
+int rl_exec_and_or(const struct ctx *ctx, struct rl_exectree *node)
 {
     assert(node && node->child && node->type == RL_AND_OR);
 
@@ -44,7 +44,7 @@ int rl_exec_and_or(struct rl_exectree *node, const struct ctx *ctx)
     do
     {
         if (exec_next)
-            status = rl_exec_pipeline(node, ctx);
+            status = rl_exec_pipeline(ctx, node);
 
         exec_next = (node->attr.pipe.and_or_op == T_AND_IF && status == 0)
             || (node->attr.pipe.and_or_op == T_OR_IF && status != 0);

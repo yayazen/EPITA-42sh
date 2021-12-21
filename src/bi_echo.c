@@ -98,7 +98,7 @@ void __interpret_escapes(char *message)
     }
 }
 
-int bi_echo(char **args, const struct ctx *ctx)
+int bi_echo(const struct ctx *ctx, char **args)
 {
     assert(args && ctx);
 

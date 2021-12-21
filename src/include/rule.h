@@ -60,11 +60,11 @@ int rl_expect(struct rl_state *s, int token);
 /* simple_cmd: WORD* */
 int rl_simple_cmd(struct rl_state *s);
 /* return is similar to execvp (must be forked) */
-int rl_exec_simple_cmd(struct rl_exectree *node, const struct ctx *ctx);
+int rl_exec_simple_cmd(const struct ctx *ctx, struct rl_exectree *node);
 
 /* command: simple_command | shell_cmd */
 int rl_cmd(struct rl_state *s);
-int rl_exec_cmd(struct rl_exectree *node, const struct ctx *ctx);
+int rl_exec_cmd(const struct ctx *ctx, struct rl_exectree *node);
 
 /*   list
  * | list EOF
@@ -72,48 +72,48 @@ int rl_exec_cmd(struct rl_exectree *node, const struct ctx *ctx);
  * | EOF
  */
 int rl_input(struct rl_state *s);
-int rl_exec_input(struct rl_exectree *s, const struct ctx *ctx);
+int rl_exec_input(const struct ctx *ctx, struct rl_exectree *s);
 
 /* list: and_or ((';'|'&') and_or)* [';'|'&'] */
 int rl_list(struct rl_state *s);
-int rl_exec_list(struct rl_exectree *s, const struct ctx *ctx);
+int rl_exec_list(const struct ctx *ctx, struct rl_exectree *s);
 
 /* shell_cmd: if_clause */
 int rl_shell_cmd(struct rl_state *s);
-int rl_exec_shell_cmd(struct rl_exectree *s, const struct ctx *ctx);
+int rl_exec_shell_cmd(const struct ctx *ctx, struct rl_exectree *s);
 
 /* if_clause: If compound_list Then compound_list [else_clause] Fi */
 int rl_if_clause(struct rl_state *s);
-int rl_exec_if_clause(struct rl_exectree *s, const struct ctx *ctx);
+int rl_exec_if_clause(const struct ctx *ctx, struct rl_exectree *s);
 
 /* else_clause:   Else compound_list
                 | Elif compound_list Then compound_list [else_clause] */
 int rl_else_clause(struct rl_state *s);
-int rl_exec_else_clause(struct rl_exectree *s, const struct ctx *ctx);
+int rl_exec_else_clause(const struct ctx *ctx, struct rl_exectree *s);
 
 /* rule_while: While compound_list do_group */
 int rl_while(struct rl_state *s);
-int rl_exec_while(struct rl_exectree *s, const struct ctx *ctx);
+int rl_exec_while(const struct ctx *ctx, struct rl_exectree *s);
 
 /* rule_until:  Until compound_list do_group */
 int rl_until(struct rl_state *s);
-int rl_exec_until(struct rl_exectree *s, const struct ctx *ctx);
+int rl_exec_until(const struct ctx *ctx, struct rl_exectree *s);
 
 /* do_group: Do compound_list Done */
 int rl_do_group(struct rl_state *s);
-int rl_exec_do_group(struct rl_exectree *s, const struct ctx *ctx);
+int rl_exec_do_group(const struct ctx *ctx, struct rl_exectree *s);
 
 /* compound_list: list */
 int rl_compound_list(struct rl_state *s);
-int rl_exec_compound_list(struct rl_exectree *s, const struct ctx *ctx);
+int rl_exec_compound_list(const struct ctx *ctx, struct rl_exectree *s);
 
 /* and_or: pipeline (('&&'|'||') ('\n')* pipeline)* */
 int rl_and_or(struct rl_state *s);
-int rl_exec_and_or(struct rl_exectree *node, const struct ctx *ctx);
+int rl_exec_and_or(const struct ctx *ctx, struct rl_exectree *node);
 
 /* pipeline: ['!'] command ('|' ('\n')* command)* */
 int rl_pipeline(struct rl_state *s);
-int rl_exec_pipeline(struct rl_exectree *node, const struct ctx *ctx);
+int rl_exec_pipeline(const struct ctx *ctx, struct rl_exectree *node);
 
 /*   [IONUMBER] '>' WORD
  * | [IONUMBER] '<' WORD

@@ -44,7 +44,7 @@ int rl_pipeline(struct rl_state *s)
     return (s->err != NO_ERROR) ? -s->err : true;
 }
 
-static inline int __piperun(struct rl_exectree *rl_pipe, const struct ctx *ctx)
+static inline int __piperun(const struct ctx *ctx, struct rl_exectree *rl_pipe)
 {
     int fdin = STDIN_FILENO;
 
@@ -64,7 +64,7 @@ static inline int __piperun(struct rl_exectree *rl_pipe, const struct ctx *ctx)
         node->attr.cmd.fd[0] = fdin;
         node->attr.cmd.fd[1] = (node->sibling) ? p->fd[1] : STDOUT_FILENO;
 
-        rl_exec_cmd(node, ctx);
+        rl_exec_cmd(ctx, node);
 
         close(p->fd[1]);
         fdin = p->fd[0];
@@ -97,12 +97,12 @@ static inline int __pipewait(struct rl_exectree *rl_pipe)
     return status;
 }
 
-int rl_exec_pipeline(struct rl_exectree *node, const struct ctx *ctx)
+int rl_exec_pipeline(const struct ctx *ctx, struct rl_exectree *node)
 {
     assert(node && node->child && node->type == RL_PIPELINE);
 
     int status = 0;
-    __piperun(node, ctx);
+    __piperun(ctx, node);
     status = __pipewait(node);
     return node->attr.pipe.negate ? !status : status;
 }

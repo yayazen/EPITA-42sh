@@ -143,7 +143,7 @@ static int __chdir(char *dir, struct symtab *s)
  *
  * \ref https://pubs.opengroup.org/onlinepubs/9699919799/utilities/cd.html
  */
-int bi_cd(char **args, const struct ctx *ctx)
+int bi_cd(const struct ctx *ctx, char **args)
 {
     assert(args && ctx);
 

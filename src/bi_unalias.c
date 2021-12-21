@@ -24,7 +24,7 @@ void __delete_all_aliases(struct symtab *st)
  *
  * \ref https://pubs.opengroup.org/onlinepubs/9699919799/utilities/unalias.html
  */
-int bi_unalias(char **args, const struct ctx *ctx)
+int bi_unalias(const struct ctx *ctx, char **args)
 {
     int ret = 0;
     assert(args && ctx);

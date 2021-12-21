@@ -29,7 +29,7 @@ static void __print_all_aliases(struct symtab *st)
  *
  * \ref https://pubs.opengroup.org/onlinepubs/9699919799/utilities/alias.html
  */
-int bi_alias(char **args, const struct ctx *ctx)
+int bi_alias(const struct ctx *ctx, char **args)
 {
     assert(args && ctx);
 
