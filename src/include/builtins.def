@@ -1,6 +1,8 @@
 BUILTIN("echo", bi_echo)
 BUILTIN("exit", bi_exit)
 BUILTIN("cd", bi_cd)
+BUILTIN("continue", bi_continue)
+BUILTIN("break", bi_break)
 BUILTIN("unset", bi_unset)
 BUILTIN("alias", bi_alias)
 BUILTIN("unalias", bi_unalias)

@@ -257,6 +257,26 @@ test_simple_cmd("cd /tmp;cd;pwd", test_dir.encode('ascii')+b"\n",
 test_simple_cmd("cd /tmp;cd;pwd", b"/tmp\n", b"", 0, env={"HOME": ""})
 
 
+print_info("continue & break builtins...")
+test_simple_cmd("while true; do echo a; break; echo b; done", b"a\n", b"", 0)
+test_simple_cmd(
+    "while true; do while true; do while true; do break 3; echo a; done; echo b; done; echo c; done", b"", b"", 0)
+test_simple_cmd(
+    "while true; do while true; do while true; do break 2; echo a; done; echo b; done; echo c; break; done", b"c\n", b"", 0)
+test_simple_cmd("touch "+test_dir +
+                "/l1; while true; echo u; do if rm "+test_dir+"/l1 2> /dev/null; then echo a; else break; fi; echo b; done", b"u\na\nb\nu\n", b"", 0)
+test_simple_cmd("touch "+test_dir +
+                "/l1; while true; do echo u; if rm "+test_dir+"/l1 2> /dev/null; then continue 100; else break; fi; echo b; done", b"u\nu\n", b"", 0)
+test_simple_cmd("touch "+test_dir +
+                "/l1; until false; do echo u; if rm "+test_dir+"/l1 2> /dev/null; then echo a; else break; fi; echo b; done", b"u\na\nb\nu\n", b"", 0)
+test_simple_cmd("touch "+test_dir +
+                "/l1; until false; do echo u;if rm "+test_dir+"/l1 2> /dev/null; then continue 100; else break; fi; echo b; done", b"u\nu\n", b"", 0)
+test_simple_cmd("break;", b"", b"", 0)
+test_simple_cmd("break 0;", empty_stdout=True,
+                empty_stderr=False, validate_status=lambda s: s != 0)
+test_simple_cmd("break abc;", empty_stdout=True,
+                empty_stderr=False, validate_status=lambda s: s != 0)
+
 print_info("unset builtin...")
 test_simple_cmd("unset nonexsiting", b"", b"", 0)
 test_simple_cmd("unset -badopt nonexitsing", b"",

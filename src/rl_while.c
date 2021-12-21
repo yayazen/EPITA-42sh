@@ -1,6 +1,8 @@
 #include <assert.h>
+#include <setjmp.h>
 
 #include "constants.h"
+#include "ctx.h"
 #include "rule.h"
 #include "token.h"
 
@@ -43,7 +45,25 @@ int rl_exec_while(const struct ctx *ctx, struct rl_exectree *node)
     assert(node && node->type == RL_WHILE);
 
     while (rl_exec_compound_list(ctx, node->child) == 0)
-        rl_exec_compound_list(ctx, node->child->sibling);
+    {
+        jmp_buf jump_buffer;
+        struct ctx_jmp jmp_node;
+
+        int val = setjmp(jump_buffer);
+
+        if (val == JMP_CONTINUE)
+        {
+            continue;
+        }
+        else if (val == JMP_BREAK)
+        {
+            break;
+        }
+
+        struct ctx child_ctx = ctx_add_jump(ctx, &jmp_node, &jump_buffer);
+
+        rl_exec_compound_list(&child_ctx, node->child->sibling);
+    }
 
     return 0;
 }

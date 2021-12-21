@@ -75,11 +75,11 @@
 ###############################################################################
 
 * BUILTINS                              [ ++ ]
-    | * exit                            [ -- ]
+    | * exit                            [ OK ]
     | * cd                              [ OK ]
     | * export                          [ -- ]
-    | * continue                        [ -- ]
-    | * break                           [ -- ]
+    | * continue                        [ OK ]
+    | * break                           [ OK ]
     | * dot                             [ -- ]
     | * unset                           [ OK ]
 

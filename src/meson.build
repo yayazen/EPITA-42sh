@@ -40,6 +40,7 @@ all_sources += files(
     'bi_echo.c',
     'bi_exit.c',
     'bi_cd.c',
+    'bi_continue.c',
     'bi_unset.c',
     'bi_alias.c',
     'bi_unalias.c',
