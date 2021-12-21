@@ -6,6 +6,7 @@
 #include <unistd.h>
 
 #include "builtins.h"
+#include "ctx.h"
 
 #define JOIN_BUFF_LEN PATH_MAX + PATH_MAX + 4
 
@@ -142,9 +143,9 @@ static int __chdir(char *dir, struct symtab *s)
  *
  * \ref https://pubs.opengroup.org/onlinepubs/9699919799/utilities/cd.html
  */
-int bi_cd(char **args, struct symtab *s)
+int bi_cd(char **args, const struct ctx *ctx)
 {
-    assert(args && s);
+    assert(args && ctx);
 
     // No argument
     if (!args[1])
@@ -153,7 +154,7 @@ int bi_cd(char **args, struct symtab *s)
         char *home = getenv("HOME");
         if (home && *home)
         {
-            return __chdir(home, s);
+            return __chdir(home, ctx->st);
         }
 
         return 0;
@@ -165,8 +166,8 @@ int bi_cd(char **args, struct symtab *s)
         char *oldpwd = getenv("OLDPWD");
         printf("%s\n", oldpwd);
         fflush(stdout);
-        return __chdir(oldpwd, s);
+        return __chdir(oldpwd, ctx->st);
     }
 
-    return __chdir(args[1], s);
+    return __chdir(args[1], ctx->st);
 }

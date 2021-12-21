@@ -3,6 +3,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include "ctx.h"
 #include "rule.h"
 #include "token.h"
 
@@ -43,7 +44,7 @@ int rl_pipeline(struct rl_state *s)
     return (s->err != NO_ERROR) ? -s->err : true;
 }
 
-static inline int __piperun(struct rl_exectree *rl_pipe)
+static inline int __piperun(struct rl_exectree *rl_pipe, const struct ctx *ctx)
 {
     int fdin = STDIN_FILENO;
 
@@ -63,7 +64,7 @@ static inline int __piperun(struct rl_exectree *rl_pipe)
         node->attr.cmd.fd[0] = fdin;
         node->attr.cmd.fd[1] = (node->sibling) ? p->fd[1] : STDOUT_FILENO;
 
-        rl_exec_cmd(node);
+        rl_exec_cmd(node, ctx);
 
         close(p->fd[1]);
         fdin = p->fd[0];
@@ -96,12 +97,12 @@ static inline int __pipewait(struct rl_exectree *rl_pipe)
     return status;
 }
 
-int rl_exec_pipeline(struct rl_exectree *node)
+int rl_exec_pipeline(struct rl_exectree *node, const struct ctx *ctx)
 {
     assert(node && node->child && node->type == RL_PIPELINE);
 
     int status = 0;
-    __piperun(node);
+    __piperun(node, ctx);
     status = __pipewait(node);
     return node->attr.pipe.negate ? !status : status;
 }

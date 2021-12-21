@@ -5,7 +5,7 @@
 /**
  * \brief Builtin prototype
  */
-typedef int (*builtin_def)(char **args, struct symtab *symtab);
+typedef int (*builtin_def)(char **args, const struct ctx *ctx);
 
 /**
  * Attempt to find a builtin with a given name
@@ -19,6 +19,6 @@ builtin_def builtin_find(const char *name);
 /**
  * Declare builtins
  */
-#define BUILTIN(name, func) int func(char **args, struct symtab *symtab);
+#define BUILTIN(name, func) int func(char **args, const struct ctx *ctx);
 #include "builtins.def"
 #undef BUILTIN

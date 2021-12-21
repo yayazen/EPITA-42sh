@@ -45,20 +45,20 @@ int rl_if_clause(struct rl_state *s)
     return true;
 }
 
-int rl_exec_if_clause(struct rl_exectree *node)
+int rl_exec_if_clause(struct rl_exectree *node, const struct ctx *ctx)
 {
     assert(node && node->type == RL_IF);
 
     node = node->child;
     // If the `if` condition is met
-    if (rl_exec_compound_list(node) == 0)
+    if (rl_exec_compound_list(node, ctx) == 0)
     {
-        return rl_exec_compound_list(node->sibling);
+        return rl_exec_compound_list(node->sibling, ctx);
     }
     // Otherwise, run `else clause` (if available)
     else if ((node = node->sibling)->sibling)
     {
-        return rl_exec_else_clause(node->sibling);
+        return rl_exec_else_clause(node->sibling, ctx);
     }
 
     return 0;

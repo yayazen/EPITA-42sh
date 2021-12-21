@@ -10,14 +10,13 @@
 
 #include "builtins.h"
 #include "constants.h"
+#include "ctx.h"
 #include "rule.h"
 #include "symexp.h"
 #include "symtab.h"
 #include "token.h"
 
 #define ARG_MAX 256
-
-struct symtab *symtab = NULL;
 
 int rl_simple_cmd(struct rl_state *s)
 {
@@ -72,7 +71,8 @@ static inline int __redirect(int oldfd, int newfd, int closefd)
     return 0;
 }
 
-static inline int __push_args(struct rl_exectree *arg, char **argv)
+static inline int __push_args(struct rl_exectree *arg, char **argv,
+                              struct symtab *symtab)
 {
     int i;
     for (i = 0; arg != NULL; arg = arg->sibling)
@@ -96,7 +96,7 @@ static inline int __push_args(struct rl_exectree *arg, char **argv)
     return i > 0;
 }
 
-static inline void __add_symbol(struct rl_exectree *arg)
+static inline void __add_symbol(struct rl_exectree *arg, struct symtab *symtab)
 {
     while (arg != NULL)
     {
@@ -140,7 +140,7 @@ static void __apply_env(struct symtab *st, struct rl_exectree *arg)
             char *str = strdup(arg->attr.word);
             char *eq = strchr(str, '=');
             *eq = '\0';
-            char *val = symexp_word(symtab, eq + 1);
+            char *val = symexp_word(st, eq + 1);
 
             setenv(str, val, 1);
 
@@ -151,7 +151,7 @@ static void __apply_env(struct symtab *st, struct rl_exectree *arg)
     }
 }
 
-int rl_exec_simple_cmd(struct rl_exectree *node)
+int rl_exec_simple_cmd(struct rl_exectree *node, const struct ctx *ctx)
 {
     assert(node && node->child && node->type == RL_SIMPLE_CMD);
 
@@ -167,18 +167,18 @@ int rl_exec_simple_cmd(struct rl_exectree *node)
 
     builtin_def blt;
     char *argv[ARG_MAX] = { 0 };
-    if (__push_args(node->child, argv))
+    if (__push_args(node->child, argv, ctx->st))
     {
         if ((blt = builtin_find(argv[0])))
         {
-            node->attr.cmd.status = blt(argv, symtab);
+            node->attr.cmd.status = blt(argv, ctx);
         }
         else
         {
             node->attr.cmd.pid = fork();
             if (node->attr.cmd.pid == 0)
             {
-                __apply_env(symtab, node->child);
+                __apply_env(ctx->st, node->child);
 
                 execvp(argv[0], argv);
                 fprintf(stderr, PACKAGE ": %s: command not found...\n",
@@ -190,7 +190,7 @@ int rl_exec_simple_cmd(struct rl_exectree *node)
 
     else
     {
-        __add_symbol(node->child);
+        __add_symbol(node->child, ctx->st);
     }
 
     for (int i = 0; i < 3; i++)

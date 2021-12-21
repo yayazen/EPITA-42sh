@@ -37,7 +37,7 @@ int rl_compound_list(struct rl_state *s)
     return (s->err != NO_ERROR) ? -s->err : true;
 }
 
-int rl_exec_compound_list(struct rl_exectree *node)
+int rl_exec_compound_list(struct rl_exectree *node, const struct ctx *ctx)
 {
     assert(node && node->child && node->type == RL_COMPOUND_LIST);
 
@@ -45,7 +45,7 @@ int rl_exec_compound_list(struct rl_exectree *node)
     node = node->child;
     do
     {
-        status = rl_exec_and_or(node);
+        status = rl_exec_and_or(node, ctx);
 
     } while ((node = node->sibling));
 

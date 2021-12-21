@@ -1,6 +1,7 @@
 #include <assert.h>
 
 #include "builtins.h"
+#include "ctx.h"
 
 /** \brief Print a single alias entry */
 static void __print_alias(struct kvpair *pair)
@@ -28,9 +29,9 @@ static void __print_all_aliases(struct symtab *st)
  *
  * \ref https://pubs.opengroup.org/onlinepubs/9699919799/utilities/alias.html
  */
-int bi_alias(char **args, struct symtab *s)
+int bi_alias(char **args, const struct ctx *ctx)
 {
-    assert(args && s);
+    assert(args && ctx);
 
     /* skip builtin name */
     args++;
@@ -38,7 +39,7 @@ int bi_alias(char **args, struct symtab *s)
     /* Print aliases list */
     if (*args == NULL)
     {
-        __print_all_aliases(s);
+        __print_all_aliases(ctx->st);
         return 0;
     }
 
@@ -51,7 +52,7 @@ int bi_alias(char **args, struct symtab *s)
         /* Request to display alias */
         if (eqpos == NULL)
         {
-            struct kvpair *pair = symtab_lookup(s, *args, KV_ALIAS);
+            struct kvpair *pair = symtab_lookup(ctx->st, *args, KV_ALIAS);
             if (!pair || pair->type != KV_ALIAS)
             {
                 fprintf(stderr, "alias: %s not found\n", *args);
@@ -66,7 +67,7 @@ int bi_alias(char **args, struct symtab *s)
         {
             char *key = strdup(*args);
             key[eqpos - *args] = '\0';
-            symtab_add(s, key, KV_ALIAS, strdup(eqpos + 1));
+            symtab_add(ctx->st, key, KV_ALIAS, strdup(eqpos + 1));
             free(key);
         }
 

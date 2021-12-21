@@ -1,6 +1,7 @@
 #include <assert.h>
 
 #include "builtins.h"
+#include "ctx.h"
 
 /** \brief Delete all aliases */
 void __delete_all_aliases(struct symtab *st)
@@ -23,23 +24,23 @@ void __delete_all_aliases(struct symtab *st)
  *
  * \ref https://pubs.opengroup.org/onlinepubs/9699919799/utilities/unalias.html
  */
-int bi_unalias(char **args, struct symtab *s)
+int bi_unalias(char **args, const struct ctx *ctx)
 {
     int ret = 0;
-    assert(args && s);
+    assert(args && ctx);
 
     args++;
 
     /* delete all aliases */
     if (*args && !strcmp(*args, "-a"))
     {
-        __delete_all_aliases(s);
+        __delete_all_aliases(ctx->st);
         return 0;
     }
 
     while (*args)
     {
-        struct kvpair *pair = symtab_lookup(s, *args, KV_ALIAS);
+        struct kvpair *pair = symtab_lookup(ctx->st, *args, KV_ALIAS);
 
         /* the symbol is invalid / not found */
         if (!pair || pair->type != KV_ALIAS)
@@ -50,7 +51,7 @@ int bi_unalias(char **args, struct symtab *s)
 
         else
         {
-            symtab_del(s, pair);
+            symtab_del(ctx->st, pair);
         }
 
         args++;

@@ -68,27 +68,27 @@ int rl_else_clause(struct rl_state *s)
     return __rl_else(s) == true ? true : __rl_elif(s);
 }
 
-int rl_exec_else_clause(struct rl_exectree *node)
+int rl_exec_else_clause(struct rl_exectree *node, const struct ctx *ctx)
 {
     assert(node && (node->type == RL_ELIF || node->type == RL_ELSE));
 
     /* else */
     if (node->type == RL_ELSE)
-        return rl_exec_compound_list(node->child);
+        return rl_exec_compound_list(node->child, ctx);
 
     /* elif */
-    int status = rl_exec_compound_list(node->child);
+    int status = rl_exec_compound_list(node->child, ctx);
 
     // If the `elif` condition is met
     if (status == 0)
     {
-        status = rl_exec_compound_list(node->child->sibling);
+        status = rl_exec_compound_list(node->child->sibling, ctx);
     }
 
     // Otherwise, run `else clause` (if available)
     else if (node->child->sibling->sibling != NULL)
     {
-        status = rl_exec_else_clause(node->child->sibling->sibling);
+        status = rl_exec_else_clause(node->child->sibling->sibling, ctx);
     }
 
     else

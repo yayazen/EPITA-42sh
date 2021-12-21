@@ -71,6 +71,7 @@ int main(int argc, char *argv[], char **envp)
     int flag = 0;
     struct cstream *cs = NULL;
     int exit_status = 0;
+    struct symtab *symtab = NULL;
     int err = __parse_opts(argc, argv, &cs, &flag);
 
     if (flag & OPT_HELP)
@@ -81,7 +82,7 @@ int main(int argc, char *argv[], char **envp)
     symtab = symtab_new();
     symtab_fill_with_env_vars(symtab, envp);
 
-    while ((err = parser(cs, flag, &exit_status)) == NO_ERROR
+    while ((err = parser(cs, flag, &exit_status, symtab)) == NO_ERROR
            && !(flag & OPT_HELP))
     {
         ;

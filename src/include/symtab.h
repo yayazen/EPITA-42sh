@@ -48,8 +48,6 @@ struct symtab
     struct kvpair **data;
 };
 
-extern struct symtab *symtab;
-
 /* alloc a new hash table */
 struct symtab *symtab_new(void);
 /* fill the symtable with environment variables */

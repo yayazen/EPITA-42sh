@@ -61,7 +61,7 @@ static inline int __redirect(int oldfd, int newfd, int closefd)
     return 0;
 }
 
-int rl_exec_shell_cmd(struct rl_exectree *node)
+int rl_exec_shell_cmd(struct rl_exectree *node, const struct ctx *ctx)
 {
     assert(node && node->child && node->type == RL_SHELL_CMD);
 
@@ -77,13 +77,13 @@ int rl_exec_shell_cmd(struct rl_exectree *node)
 
     int type = node->child->type;
     if (type == RL_COMPOUND_LIST)
-        node->attr.cmd.status = rl_exec_compound_list(node->child);
+        node->attr.cmd.status = rl_exec_compound_list(node->child, ctx);
     else if (type == RL_IF)
-        node->attr.cmd.status = rl_exec_if_clause(node->child);
+        node->attr.cmd.status = rl_exec_if_clause(node->child, ctx);
     else if (type == RL_WHILE)
-        node->attr.cmd.status = rl_exec_while(node->child);
+        node->attr.cmd.status = rl_exec_while(node->child, ctx);
     else if (type == RL_UNTIL)
-        node->attr.cmd.status = rl_exec_until(node->child);
+        node->attr.cmd.status = rl_exec_until(node->child, ctx);
 
     for (int i = 0; i < 3; i++)
     {

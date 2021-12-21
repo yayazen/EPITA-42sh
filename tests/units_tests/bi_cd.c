@@ -5,12 +5,13 @@
 #include <string.h>
 
 #include "builtins.h"
+#include "ctx.h"
 
 static int __cd(char **arg)
 {
-    struct symtab *s = symtab_new();
-    int res = bi_cd(arg, s);
-    symtab_free(s);
+    struct ctx ctx = ctx_new(symtab_new());
+    int res = bi_cd(arg, &ctx);
+    symtab_free(ctx.st);
     return res;
 }
 

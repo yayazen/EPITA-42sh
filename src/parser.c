@@ -5,6 +5,7 @@
 
 #include "ast_dot.h"
 #include "constants.h"
+#include "ctx.h"
 #include "rule.h"
 #include "stdio.h"
 #include "token.h"
@@ -108,7 +109,8 @@ __attribute__((unused)) static int rl_all(struct rl_state *s)
     return (s->err != NO_ERROR) ? -s->err : true;
 }
 
-int parser(struct cstream *cs, int flag, int *exit_status)
+int parser(struct cstream *cs, int flag, int *exit_status,
+           struct symtab *symtab)
 {
     struct rl_state s = RL_DEFAULT_STATE;
     vec_init(&s.word);
@@ -129,7 +131,10 @@ int parser(struct cstream *cs, int flag, int *exit_status)
         if (flag & OPT_PRINT_AST_DOT)
             ast_dot_print(s.node);
         else
-            *exit_status = rl_exec_input(s.node);
+        {
+            struct ctx ctx = ctx_new(symtab);
+            *exit_status = rl_exec_input(s.node, &ctx);
+        }
     }
     else
     {

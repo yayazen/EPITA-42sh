@@ -98,9 +98,9 @@ void __interpret_escapes(char *message)
     }
 }
 
-int bi_echo(char **args, struct symtab *s)
+int bi_echo(char **args, const struct ctx *ctx)
 {
-    assert(args && s);
+    assert(args && ctx);
 
     int mode = 0;
     char **seek = __parse_mode(args + 1, &mode);

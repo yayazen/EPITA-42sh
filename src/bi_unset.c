@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #include "builtins.h"
+#include "ctx.h"
 
 enum
 {
@@ -58,9 +59,9 @@ char **__parse_args(char **args, int *mode, int *ret)
  * \ref
  * https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#unset
  */
-int bi_unset(char **args, struct symtab *s)
+int bi_unset(char **args, const struct ctx *ctx)
 {
-    assert(args && s);
+    assert(args && ctx);
     args++;
     int ret = 0;
     int mode = DEFAULT_MODE;
@@ -71,17 +72,17 @@ int bi_unset(char **args, struct symtab *s)
         /* word */
         if (mode == DEFAULT_MODE || mode & WORD)
         {
-            struct kvpair *p = symtab_lookup(s, *args, KV_WORD);
+            struct kvpair *p = symtab_lookup(ctx->st, *args, KV_WORD);
             if (p && p->type == KV_WORD)
-                symtab_del(s, p);
+                symtab_del(ctx->st, p);
         }
 
         /* function */
         if (mode & FUNC)
         {
-            struct kvpair *p = symtab_lookup(s, *args, KV_FUNC);
+            struct kvpair *p = symtab_lookup(ctx->st, *args, KV_FUNC);
             if (p && p->type == KV_FUNC)
-                symtab_del(s, p);
+                symtab_del(ctx->st, p);
         }
 
         args++;
