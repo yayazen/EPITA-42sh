@@ -386,6 +386,17 @@ test_simple_cmd(
     status=0
 )
 
+print_info("For loop")
+test_simple_cmd("for i in a b c d; do echo $i; done", b"a\nb\nc\nd\n", b"", 0)
+test_simple_cmd("for i in a b c d; do echo $i; continue; echo ah ah; done",
+                b"a\nb\nc\nd\n", b"", 0)
+test_simple_cmd("for i in a b c d; do echo $i; break; done",
+                b"a\n", b"", 0)
+test_simple_cmd("for i in a b c d; do echo $i; exit; done",
+                b"a\n", b"", 0)
+test_simple_cmd("for i in a b c d; do echo $i; exit 10; done",
+                b"a\n", b"", 10)
+
 
 print_info("Environment variables")
 test_simple_cmd("AAAA=ccc; printenv AAAA", b"ccc\n",
