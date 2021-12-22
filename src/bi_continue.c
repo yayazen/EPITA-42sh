@@ -2,6 +2,7 @@
 
 #include "builtins.h"
 #include "ctx.h"
+#include "list.h"
 
 /** \brief jump to the appropriate loop */
 int __stop_loop(int val, const struct ctx *ctx, char **args)
@@ -23,6 +24,7 @@ int __stop_loop(int val, const struct ctx *ctx, char **args)
 
     if (jmp)
     {
+        ctx_free_allocated_memory(ctx, jmp->level);
         longjmp(*jmp->jump, val);
     }
 

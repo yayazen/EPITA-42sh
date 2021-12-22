@@ -17,6 +17,8 @@ all_sources += files(
     'symtab_utils.c',
     'symexp.c',
 
+    'list.c',
+
     'rl_accept.c',
     'rl_expect.c',
     'rl_prefix.c',

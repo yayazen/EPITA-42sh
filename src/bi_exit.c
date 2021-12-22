@@ -17,6 +17,7 @@ int bi_exit(const struct ctx *ctx, char **args)
 
     *ctx->exit_status = status;
 
+    ctx_free_allocated_memory(ctx, 0);
     longjmp(*ctx->exit_jump, 1);
 
     return -1;

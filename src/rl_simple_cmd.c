@@ -11,6 +11,7 @@
 #include "builtins.h"
 #include "constants.h"
 #include "ctx.h"
+#include "list.h"
 #include "rule.h"
 #include "symexp.h"
 #include "symtab.h"
@@ -71,30 +72,24 @@ static inline int __redirect(int oldfd, int newfd, int closefd)
     return 0;
 }
 
-static inline int __push_args(struct rl_exectree *arg, char **argv,
-                              struct symtab *symtab)
+static inline void __push_args(struct rl_exectree *arg, struct list *l,
+                               struct symtab *symtab)
 {
-    int i;
-    for (i = 0; arg != NULL; arg = arg->sibling)
+    for (; arg != NULL; arg = arg->sibling)
     {
         if (arg->type == RL_WORD)
         {
-            // FIXME : expansion should not alter execution tree
             char *expword = symexp_word(symtab, arg->attr.word);
             assert(expword != NULL);
-            free(arg->attr.word);
-            arg->attr.word = expword;
-            argv[i++] = arg->attr.word;
+            list_push(l, expword);
         }
         else if (arg->type == RL_REDIRECTION)
             assert(rl_exec_redirection(arg) == NO_ERROR);
         else if (arg->type == RL_ASSIGN_WORD)
         {
-            ;
+            ; /* used later */
         }
     }
-
-    return i > 0;
 }
 
 static inline void __add_symbol(struct rl_exectree *arg, struct symtab *symtab)
@@ -167,12 +162,21 @@ int rl_exec_simple_cmd(const struct ctx *ctx, struct rl_exectree *node)
     }
 
     builtin_def blt = NULL;
-    char *argv[ARG_MAX] = { 0 };
-    if (__push_args(node->child, argv, ctx->st))
+
+    // Parse command arguments
+    struct list *args = list_new(ARG_MAX);
+    __push_args(node->child, args, ctx->st);
+    list_push(args, NULL);
+
+    // Run command (if any)
+    if (args->size > 1)
     {
-        if ((blt = builtin_find(argv[0])))
+        if ((blt = builtin_find(args->data[0])))
         {
-            node->attr.cmd.status = blt(ctx, argv);
+            struct ctx_str_list list_el;
+            struct ctx child_ctx = ctx_add_list(ctx, &list_el, args);
+
+            node->attr.cmd.status = blt(&child_ctx, args->data);
         }
         else
         {
@@ -181,18 +185,22 @@ int rl_exec_simple_cmd(const struct ctx *ctx, struct rl_exectree *node)
             {
                 __apply_env(ctx->st, node->child);
 
-                execvp(argv[0], argv);
+                execvp(args->data[0], args->data);
                 fprintf(stderr, PACKAGE ": %s: command not found...\n",
-                        argv[0]);
+                        args->data[0]);
                 exit(127);
             }
         }
     }
 
+    // Or save assigned variables
     else
     {
         __add_symbol(node->child, ctx->st);
     }
+
+    // Free memory
+    list_free(args);
 
     for (int i = 0; i < 3; i++)
     {
