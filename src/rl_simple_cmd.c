@@ -165,7 +165,7 @@ int rl_exec_simple_cmd(const struct ctx *ctx, struct rl_exectree *node)
             return EXECUTION_ERROR;
     }
 
-    builtin_def blt;
+    builtin_def blt = NULL;
     char *argv[ARG_MAX] = { 0 };
     if (__push_args(node->child, argv, ctx->st))
     {

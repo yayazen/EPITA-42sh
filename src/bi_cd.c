@@ -37,7 +37,7 @@ static void __get_working_directory(char *dest)
     if (cur_pwd)
         strcpy(dest, cur_pwd);
     else
-        assert(getcwd(dest, PATH_MAX + 1));
+        assert(getcwd(dest, PATH_MAX));
 }
 
 /**
@@ -54,7 +54,7 @@ static void __join_dirs(char *dest, const char *a, const char *b)
 
     if (b[0] == '/')
     {
-        snprintf(dest, JOIN_BUFF_LEN - 3, "%s/", b);
+        snprintf(dest, PATH_MAX - 1, "%s/", b);
     }
     else
     {
@@ -111,7 +111,7 @@ static int __chdir(char *dir, struct symtab *s)
         return 1;
     }
 
-    char new_old_pwd[JOIN_BUFF_LEN];
+    char new_old_pwd[PATH_MAX];
     __get_working_directory(new_old_pwd);
 
     char new_pwd[JOIN_BUFF_LEN];
