@@ -40,6 +40,10 @@ int rl_shell_cmd(struct rl_state *s)
     else if (rl_until(s) == true)
         ;
 
+    /* rule_for */
+    else if (rl_for(s) == true)
+        ;
+
     else
         return false;
 
@@ -82,6 +86,8 @@ int rl_exec_shell_cmd(const struct ctx *ctx, struct rl_exectree *node)
         node->attr.cmd.status = rl_exec_if_clause(ctx, node->child);
     else if (type == RL_WHILE)
         node->attr.cmd.status = rl_exec_while(ctx, node->child);
+    else if (type == RL_FOR)
+        node->attr.cmd.status = rl_exec_for(ctx, node->child);
     else if (type == RL_UNTIL)
         node->attr.cmd.status = rl_exec_until(ctx, node->child);
 

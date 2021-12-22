@@ -79,6 +79,7 @@ static inline int __push_args(struct rl_exectree *arg, char **argv,
     {
         if (arg->type == RL_WORD)
         {
+            // FIXME : expansion should not alter execution tree
             char *expword = symexp_word(symtab, arg->attr.word);
             assert(expword != NULL);
             free(arg->attr.word);

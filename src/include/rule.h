@@ -99,6 +99,11 @@ int rl_exec_while(const struct ctx *ctx, struct rl_exectree *s);
 int rl_until(struct rl_state *s);
 int rl_exec_until(const struct ctx *ctx, struct rl_exectree *s);
 
+/*  rule_for: For WORD ([';']|[('\n')* 'in' (WORD)* (';'|'\n')]) ('\n')*
+ * do_group */
+int rl_for(struct rl_state *s);
+int rl_exec_for(const struct ctx *ctx, struct rl_exectree *s);
+
 /* do_group: Do compound_list Done */
 int rl_do_group(struct rl_state *s);
 int rl_exec_do_group(const struct ctx *ctx, struct rl_exectree *s);

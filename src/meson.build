@@ -34,6 +34,7 @@ all_sources += files(
     'rl_else_clause.c',
     'rl_while.c',
     'rl_until.c',
+    'rl_for.c',
     'rl_do_group.c',
 
     'builtins.c',
