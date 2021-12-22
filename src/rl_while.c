@@ -48,8 +48,9 @@ int rl_exec_while(const struct ctx *ctx, struct rl_exectree *node)
     {
         jmp_buf jump_buffer;
         struct ctx_jmp jmp_node;
+        volatile int val;
 
-        int val = setjmp(jump_buffer);
+        val = setjmp(jump_buffer);
 
         if (val == JMP_CONTINUE)
         {
@@ -59,10 +60,14 @@ int rl_exec_while(const struct ctx *ctx, struct rl_exectree *node)
         {
             break;
         }
+        else if (val == JMP_NOOP)
+        {
+            struct ctx child_ctx = ctx_add_jump(ctx, &jmp_node, &jump_buffer);
 
-        struct ctx child_ctx = ctx_add_jump(ctx, &jmp_node, &jump_buffer);
-
-        rl_exec_compound_list(&child_ctx, node->child->sibling);
+            rl_exec_compound_list(&child_ctx, node->child->sibling);
+        }
+        else
+            assert(0);
     }
 
     return 0;

@@ -34,6 +34,12 @@ meson compile -C build doxygen_doc
 xdg_open build/doxygen_doc/index.html
 ```
 
+
+### Enable debugging symbols
+```bash
+meson setup --debug build --reconfigure
+```
+
 ### Install/Uninstall
 ```bash
 meson install

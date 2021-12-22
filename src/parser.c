@@ -136,7 +136,8 @@ int parser(struct cstream *cs, int flag, int *exit_status,
         else
         {
             jmp_buf exit_buff;
-            int jmpval = setjmp(exit_buff);
+            volatile int jmpval;
+            jmpval = setjmp(exit_buff);
             if (jmpval != 0)
             {
                 /* mimic end of stream */
