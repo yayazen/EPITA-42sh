@@ -17,7 +17,7 @@ void list_push(struct list *l, char *s)
     if (l->size == l->capacity)
     {
         l->capacity *= 2;
-        l->data = xrealloc(l->data, l->capacity);
+        l->data = xrealloc(l->data, l->capacity * sizeof(char *));
         assert(l->data != NULL);
     }
 

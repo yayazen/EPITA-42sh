@@ -32,7 +32,11 @@ test_simple_cmd(
 )
 test_simple_cmd("/bin/sh -c \"echo 'toto'\"", b"toto\n", b"", 0)
 test_simple_cmd("nonexisting_command", b"", None, 127)
-
+# very_long_command
+test_simple_cmd("echo {}".format(LOREM), stdout="{}\n".format(
+    LOREM).encode("ascii"), empty_stderr=True, status=0)
+# exit_code
+test_simple_cmd("nonexisting_command;;", b"", None, 2)
 
 print_info("If else...")
 test_simple_cmd("if true; then uname; fi", b"Linux\n", b"", 0)
@@ -44,6 +48,16 @@ test_simple_cmd(
     "if false; then ls; elif true; then uname; else ls; fi", b"Linux\n", b"", 0)
 test_simple_cmd("if false; then ls; elif false; then uname; fi", b"", b"", 0)
 test_simple_cmd("if true; then nonexisting_command; fi", b"", None, 127)
+# bad_if_no_separator
+test_simple_cmd("if true then true; fi", b"", None, 2)
+# bad_if_no_condition
+test_simple_cmd("if ; then true; fi", b"", None, 2)
+# bad_if_no_body
+test_simple_cmd("if true; then ; fi", b"", None, 2)
+# bad_if_elif_without_then
+test_simple_cmd("if true; then true; elif ; fi", b"", None, 2)
+# bad_if_no_then
+test_simple_cmd("if true; fi", b"", None, 2)
 
 print_info("Single quote expansion...")
 test_simple_cmd("echo 'yes'72", b"yes72\n", b"", 0)
@@ -95,6 +109,9 @@ print_info("exit builtin...")
 test_simple_cmd("echo a;\nexit; echo yolo", b"a\n", b"", 0)
 test_simple_cmd("echo a;\nexit 15; echo yolo", b"a\n", b"", 15)
 test_simple_cmd("echo a;\nexit 15 a; echo yolo", b"a\n", b"", 15)
+# exit_bad_arg
+test_simple_cmd("exit bad_arg;", empty_stdout=True,
+                empty_stderr=False, status=2)
 
 print_info("cd builtin...")
 test_simple_cmd("cd /tmp", b"", b"", 0)
