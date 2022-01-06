@@ -1,7 +1,17 @@
 import subprocess
-import sys
 import time
 
+import argparse
+
+parser = argparse.ArgumentParser(
+    description='Our shell End2End testsuite.')
+parser.add_argument('shell', metavar='program', type=str, nargs=1,
+                    help='The shell to test')
+parser.add_argument('-v', '--verbose',
+                    action="store_true",
+                    help='Enable verbose mode (show successful tests)')
+
+args = parser.parse_args()
 
 err = 0
 successes = 0
@@ -16,7 +26,7 @@ def shell_to_use():
     """
     Return the name of the binary to use for tests
     """
-    return "dash" if len(sys.argv) == 1 else sys.argv[1]
+    return args.shell[0]
 
 
 def verbose_mode():
@@ -24,7 +34,7 @@ def verbose_mode():
     Returns True if verbose mode is enabled (if passing
     tests should be also printed)
     """
-    return len(sys.argv) > 2
+    return args.verbose
 
 
 def test_failed():
