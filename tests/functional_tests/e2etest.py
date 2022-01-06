@@ -210,6 +210,9 @@ test_simple_cmd("find /qsdfqsd 2>&1", empty_stdout=False,
                 stderr=b"", validate_status=lambda s: s != 0)
 test_simple_cmd(
     "uname > /dev/null | cat 2>&1 | ls /proc/self/fd | wc -l", b"4\n", b"", 0)
+# lessgreat
+test_simple_cmd("uname > {}/lolo;wc -l <> {}/lolo; rm {}/lolo".format(test_dir, test_dir, test_dir),
+                b"1\n", b"", 0)
 
 
 def postcheck():

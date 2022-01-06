@@ -57,7 +57,8 @@ int rl_redirection(struct rl_state *s)
         return false;
 
     /* overwrite stdin if required */
-    if (!got_io_number && (token == T_LESS || token == T_LESSAND))
+    if (!got_io_number
+        && (token == T_LESS || token == T_LESSAND || token == T_LESSGREAT))
         ionumber = STDIN_FILENO;
 
     /* IONUMBER | WORD */
@@ -104,6 +105,10 @@ int rl_exec_redirection(struct rl_exectree *node)
     /* < */
     else if (redir->token == T_LESS)
         flags = O_RDONLY;
+
+    /* <> */
+    else if (redir->token == T_LESSGREAT)
+        flags = O_RDWR;
 
     /* >> */
     else if (redir->token == T_DGREAT)

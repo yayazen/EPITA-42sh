@@ -64,6 +64,7 @@ def test_simple_cmd(cmd, stdout=None,
     """
     global test_dir
     t = time.time()
+    exec_time = 0
     errors = []
     try:
         res = subprocess.run(
