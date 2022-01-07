@@ -95,6 +95,7 @@ void __interpret_escapes(char *message)
         *message = c;
 
         __my_strcpy(message + 2, message + 1);
+        message++;
     }
 }
 

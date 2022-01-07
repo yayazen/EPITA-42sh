@@ -104,6 +104,7 @@ else:
     test_simple_cmd("echo -e h\\tello", b"h\tello\n", b"", 0)
     test_simple_cmd("echo -e h\\nello", b"h\nello\n", b"", 0)
     test_simple_cmd("echo -e h\\nel\\\\lo", b"h\nel\\lo\n", b"", 0)
+    test_simple_cmd("echo -e \\\\\\\\", b"\\\\\n", b"", 0)
 test_simple_cmd("echo p t", b"p t\n", b"", 0)
 
 new_section("exit", "exit builtin...")
