@@ -21,7 +21,7 @@ int rl_until(struct rl_state *s)
     /* do_group */
     if (rl_do_group(s) <= 0)
     {
-        s->node = node;
+        rl_exectree_free(node);
         return -s->err;
     }
     child->sibling = s->node;

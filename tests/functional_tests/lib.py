@@ -130,7 +130,8 @@ def test_simple_cmd(cmd, stdout=None,
                     env=None,
                     max_exec_time=None,
                     working_directory=None,
-                    additional_checks=None):
+                    additional_checks=None,
+                    check_for_leak=True):
     """
     Run a simple command, and check its output
     Some options can be used to customize test
@@ -233,6 +234,10 @@ def test_simple_cmd(cmd, stdout=None,
                     exec_time,
                     max_exec_time
                 ))
+
+        if check_for_leak and "LeakSanitizer: detected memory leaks" in res.stderr.decode("utf-8"):
+            errors.append(
+                "* Memory leak: {}".format(res.stderr.decode("utf-8")))
 
     except subprocess.TimeoutExpired:
         test_failed()

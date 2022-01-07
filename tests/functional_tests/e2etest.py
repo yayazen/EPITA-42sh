@@ -245,6 +245,13 @@ test_simple_cmd(
     stderr=b"",
     status=0
 )
+# bad_until_no_separator
+test_simple_cmd(
+    "touch /tmp/titi;until cat /tmp/titi do touch /tmp/titi; echo a; done; rm /tmp/titi",
+    empty_stdout=True,
+    empty_stderr=False,
+    status=2
+)
 
 new_section("while", "While loop")
 test_simple_cmd(
@@ -258,6 +265,13 @@ test_simple_cmd(
     stdout=b"hihi\n",
     stderr=None,
     status=0
+)
+# bad_while_no_second_separator
+test_simple_cmd(
+    "while true; do echo yes done",
+    empty_stdout=True,
+    empty_stderr=False,
+    status=2
 )
 
 new_section("for", "For loop")

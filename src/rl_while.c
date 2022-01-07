@@ -29,7 +29,7 @@ int rl_while(struct rl_state *s)
     if (rl_do_group(s) <= 0)
     {
         s->flag &= ~PARSER_LINE_START;
-        s->node = node;
+        rl_exectree_free(node);
         return -s->err;
     }
 
