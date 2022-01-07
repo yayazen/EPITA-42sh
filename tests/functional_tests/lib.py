@@ -38,6 +38,10 @@ err = 0
 successes = 0
 test_dir = "/tmp/test_42sh"
 
+showed_curr_section_label = False
+curr_section_id = None
+curr_section_label = None
+
 
 def print_info(str):
     print("[\033[94m*\033[0m] {}".format(str))
@@ -56,7 +60,25 @@ def new_section(id, label):
     Set id to null to explicitly specify that this is
     a global section that can not be skipped
     """
-    print_info("[{}] [{}] {}".format(test_mode(), id, label))
+    global showed_curr_section_label
+    global curr_section_id
+    global curr_section_label
+    showed_curr_section_label = False
+    curr_section_id = id
+    curr_section_label = label
+
+
+def print_section_if_required():
+    """
+    Print current section name, if required
+    """
+    global showed_curr_section_label
+    global curr_section_id
+    global curr_section_label
+    if not showed_curr_section_label:
+        showed_curr_section_label = True
+        print_info("[{}] [{}] {}".format(
+            test_mode(), curr_section_id, curr_section_label))
 
 
 def shell_to_use():
@@ -223,11 +245,13 @@ def test_simple_cmd(cmd, stdout=None,
     if len(errors) == 0:
         test_passed()
         if verbose_mode():
+            print_section_if_required()
             print("[\033[92m+\033[0m] {}s ".format(round(exec_time, 2)) +
                   cmd.replace("\n", "<NEWLINE>"))
 
     else:
         test_failed()
+        print_section_if_required()
         print("[\033[91m-\033[0m] {}s ".format(round(exec_time, 2)) +
               cmd.replace("\n", "<NEWLINE>"))
         print("\n".join(errors))
