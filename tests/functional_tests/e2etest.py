@@ -11,7 +11,8 @@ from lib import *
 # but fortunately, it is working as expected
 #
 #
-print_info("Using shell {}".format(shell_to_use()))
+print_info("Using {} passing commands in {}".format(
+    shell_to_use(), test_mode()))
 
 
 print()
