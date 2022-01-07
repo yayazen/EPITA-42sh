@@ -1,7 +1,23 @@
+from os import scandir
+import os.path
+import os
 import subprocess
 import time
+import random
+import string
 
 import argparse
+from enum import Enum
+
+
+class ExecutionMode(Enum):
+    input = 'input'
+    argument = 'argument'
+    script = 'script'
+
+    def __str__(self):
+        return self.value
+
 
 parser = argparse.ArgumentParser(
     description='Our shell End2End testsuite.')
@@ -10,6 +26,11 @@ parser.add_argument('shell', metavar='program', type=str, nargs=1,
 parser.add_argument('-v', '--verbose',
                     action="store_true",
                     help='Enable verbose mode (show successful tests)')
+parser.add_argument('--mode',
+                    type=ExecutionMode,
+                    choices=list(ExecutionMode),
+                    help="The way commands will be passed to shell",
+                    nargs=1)
 
 args = parser.parse_args()
 
@@ -20,6 +41,22 @@ test_dir = "/tmp/test_42sh"
 
 def print_info(str):
     print("[\033[94m*\033[0m] {}".format(str))
+
+
+def test_mode() -> BaseException:
+    """
+    Return way commands must be passed to shell
+    """
+    return args.mode[0] if args.mode is not None else ExecutionMode.argument
+
+
+def new_section(id, label):
+    """
+    Indicates that a new sections of test has started.
+    Set id to null to explicitly specify that this is
+    a global section that can not be skipped
+    """
+    print_info("[{}] [{}] {}".format(test_mode(), id, label))
 
 
 def shell_to_use():
@@ -58,6 +95,10 @@ def total_number_of_tests():
     return err + successes
 
 
+def gen_tmp_file_name() -> str:
+    return "/tmp/" + ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+
+
 def test_simple_cmd(cmd, stdout=None,
                     stderr=None,
                     status=None,
@@ -76,15 +117,37 @@ def test_simple_cmd(cmd, stdout=None,
     t = time.time()
     exec_time = 0
     errors = []
+    tmp_file_name = None
     try:
+        args = [shell_to_use()]
+        stdin = None
+
+        # Pass arguments to shell
+        if test_mode() == ExecutionMode.argument:
+            args.append("-c")
+            args.append(cmd)
+
+        else:
+            tmp_file_name = gen_tmp_file_name()
+            tmp_file = open(tmp_file_name, "w")
+            tmp_file.write(cmd)
+            tmp_file.flush()
+            tmp_file.close()
+
+        if test_mode() == ExecutionMode.input:
+            stdin = open(tmp_file_name, "r")
+
+        elif test_mode() == ExecutionMode.script:
+            args.append(tmp_file_name)
+
         res = subprocess.run(
-            [shell_to_use(), "-c", cmd],
+            args,
             capture_output=True,
             shell=False,
             check=False,
             timeout=1,
             env=env,
-
+            stdin=stdin,
             # cwd=test_dir if working_directory is None else working_directory
         )
 
@@ -153,12 +216,15 @@ def test_simple_cmd(cmd, stdout=None,
         test_failed()
         errors.append("Test did timeout")
 
+    # Delete script file (if any)
+    if tmp_file_name is not None and os.path.isfile(tmp_file_name):
+        os.remove(tmp_file_name)
+
     if len(errors) == 0:
         test_passed()
         if verbose_mode():
             print("[\033[92m+\033[0m] {}s ".format(round(exec_time, 2)) +
                   cmd.replace("\n", "<NEWLINE>"))
-        return
 
     else:
         test_failed()

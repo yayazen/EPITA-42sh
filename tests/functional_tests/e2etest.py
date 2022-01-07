@@ -16,13 +16,13 @@ print_info("Using shell {}".format(shell_to_use()))
 
 print()
 
-print_info("Setup environment...")
+new_section(None, "Setup environment...")
 test_simple_cmd("rm -rf "+test_dir+";", b"", b"", 0, working_directory="/tmp")
 test_simple_cmd("mkdir -p "+test_dir+"/repa "+test_dir+"/forbidden "+test_dir+"/repb " +
                 test_dir+"/toat; chmod a-r "+test_dir+"/forbidden", b"", b"", 0, working_directory="/tmp")
 
 # Test simple commands
-print_info("Simple commands...")
+new_section("simplecmd", "Simple commands...")
 test_simple_cmd("uname", b"Linux\n", b"", 0)
 test_simple_cmd(
     "ln -h",
@@ -38,7 +38,7 @@ test_simple_cmd("echo {}".format(LOREM), stdout="{}\n".format(
 # exit_code
 test_simple_cmd("nonexisting_command;;", b"", None, 2)
 
-print_info("If else...")
+new_section("if", "If else...")
 test_simple_cmd("if true; then uname; fi", b"Linux\n", b"", 0)
 test_simple_cmd("if false; then uname; fi", b"", b"", 0)
 test_simple_cmd("if false\n then uname; fi", b"", b"", 0)
@@ -59,7 +59,7 @@ test_simple_cmd("if true; then true; elif ; fi", b"", None, 2)
 # bad_if_no_then
 test_simple_cmd("if true; fi", b"", None, 2)
 
-print_info("Single quote expansion...")
+new_section("singlequotes", "Single quote expansion...")
 test_simple_cmd("echo 'yes'72", b"yes72\n", b"", 0)
 test_simple_cmd("echo 'yes'72'non'", b"yes72non\n", b"", 0)
 test_simple_cmd("echo '$PATH'72", b"$PATH72\n", b"", 0)
@@ -68,7 +68,7 @@ test_simple_cmd("echo 'a\nb\nc'", b"a\nb\nc\n", b"", 0)
 test_simple_cmd("echo '$HAPPY_42SH'", b"$HAPPY_42SH\n", b"",
                 0, env={"HAPPY_42SH": "I love 42sh"})
 
-print_info("Double quotes expansion...")
+new_section("dlquotes", "Double quotes expansion...")
 test_simple_cmd("echo $HAPPY_42SH", b"\n", b"", 0)
 test_simple_cmd("echo $HAPPY_42SH", b"I love 42sh\n", b"",
                 0, env={"HAPPY_42SH": "I love 42sh"})
@@ -80,14 +80,14 @@ test_simple_cmd("echo \"hop hop hop\"", b"hop hop hop\n", b"", 0)
 test_simple_cmd("XXXX=ABCD; echo \"$XXXX\"", b"ABCD\n", b"", 0)
 
 
-print_info("Variables assignments...")
+new_section("varassign", "Variables assignments...")
 test_simple_cmd("X=ABC; echo $X", b"ABC\n", b"", 0)
 test_simple_cmd("X=TOTO;X=ABC;Y=TOT; echo $X", b"ABC\n", b"", 0)
 test_simple_cmd("HAPPY_42SH=\"I love 42sh\";echo $HAPPY_42SH", b"I love 42sh\n", b"",
                 0, env={"HAPPY_42SH": "I hate 42sh"})
 
 
-print_info("echo builtin...")
+new_section("echo", "echo builtin...")
 if shell_to_use() == "dash":
     print_info("Skipping non POSIX tests for dash")
 else:
@@ -105,7 +105,7 @@ else:
     test_simple_cmd("echo -e h\\nel\\\\lo", b"h\nel\\lo\n", b"", 0)
 test_simple_cmd("echo p t", b"p t\n", b"", 0)
 
-print_info("exit builtin...")
+new_section("exit", "exit builtin...")
 test_simple_cmd("echo a;\nexit; echo yolo", b"a\n", b"", 0)
 test_simple_cmd("echo a;\nexit 15; echo yolo", b"a\n", b"", 15)
 test_simple_cmd("echo a;\nexit 15 a; echo yolo", b"a\n", b"", 15)
@@ -113,7 +113,7 @@ test_simple_cmd("echo a;\nexit 15 a; echo yolo", b"a\n", b"", 15)
 test_simple_cmd("exit bad_arg;", empty_stdout=True,
                 empty_stderr=False, status=2)
 
-print_info("cd builtin...")
+new_section("cd", "cd builtin...")
 test_simple_cmd("cd /tmp", b"", b"", 0)
 test_simple_cmd("cd /tmp; pwd", b"/tmp\n", b"", 0)
 test_simple_cmd("cd /nonexisting", b"", validate_status=lambda s: s > 0)
@@ -126,7 +126,7 @@ test_simple_cmd("cd /tmp;cd;pwd", test_dir.encode('ascii')+b"\n",
 test_simple_cmd("cd /tmp;cd;pwd", b"/tmp\n", b"", 0, env={"HOME": ""})
 
 
-print_info("continue & break builtins...")
+new_section("continuebreak", "continue & break builtins...")
 test_simple_cmd("while true; do echo a; break; echo b; done", b"a\n", b"", 0)
 test_simple_cmd(
     "while true; do while true; do while true; do break 3; echo a; done; echo b; done; echo c; done", b"", b"", 0)
@@ -146,7 +146,7 @@ test_simple_cmd("break 0;", empty_stdout=True,
 test_simple_cmd("break abc;", empty_stdout=True,
                 empty_stderr=False, validate_status=lambda s: s != 0)
 
-print_info("unset builtin...")
+new_section("unset", "unset builtin...")
 test_simple_cmd("unset nonexsiting", b"", b"", 0)
 test_simple_cmd("unset -badopt nonexitsing", b"",
                 empty_stderr=False, validate_status=lambda x: x != 0)
@@ -159,7 +159,7 @@ test_simple_cmd("unset AAAA; printenv AAAA", b"", b"", 1, env={"AAAA": "bbb"})
 test_simple_cmd("cd /bin; unset PWD; cd ..; pwd", b"/\n", b"", 0)
 
 
-print_info("And or")
+new_section("andor", "And or")
 test_simple_cmd("false && echo yes", b"", b"", 1)
 test_simple_cmd("false || echo yes", b"yes\n", b"", 0)
 test_simple_cmd("! false && echo yes", b"yes\n", b"", 0)
@@ -171,7 +171,7 @@ test_simple_cmd("echo yes && false && echo ya", b"yes\n", b"", 1)
 test_simple_cmd("echo yes && true || echo ya", b"yes\n", b"", 0)
 test_simple_cmd("echo yes && ! true || echo ya", b"yes\nya\n", b"", 0)
 
-print_info("Pipelines")
+new_section("pipelines", "Pipelines")
 test_simple_cmd("uname -a | cut -f 1 -d x", b"Linu\n", b"", 0)
 test_simple_cmd(
     " | ".join(["sleep 0.001"] * 100),
@@ -189,14 +189,14 @@ test_simple_cmd("ls /proc/self/fd | cat | cat | wc -l", b"4\n", b"", 0)
 test_simple_cmd(
     "uname | cat | ls /proc/self/fd | cat | cat | wc -l", b"4\n", b"", 0)
 
-print_info("Compound lists")
+new_section("compound", "Compound lists")
 test_simple_cmd("{ uname; uname; }", b"Linux\nLinux\n", b"", 0)
 test_simple_cmd("{ echo yes; }\n{ uname; }", b"yes\nLinux\n", b"", 0)
 test_simple_cmd("{ echo a; echo b; } | cat -e", b"a$\nb$\n", b"", 0)
 test_simple_cmd("{ uname; uname; } | cat -e", b"Linux$\nLinux$\n", b"", 0)
 
 
-print_info("Redirections...")
+new_section("redir", "Redirections...")
 test_simple_cmd("uname > /tmp/lolo;cat /tmp/lolo; rm /tmp/lolo",
                 b"Linux\n", b"", 0)
 test_simple_cmd("ls "+test_dir+" | grep to > /tmp/lolo; cat /tmp/lolo; rm /tmp/lolo",
@@ -230,7 +230,7 @@ test_simple_cmd("echo yes > "+test_dir+"/afile; cat "+test_dir + "/afile /nonexi
                 additional_checks=postcheck)
 
 
-print_info("Until loops")
+new_section("until", "Until loops")
 test_simple_cmd(
     "until cat /tmp/titi; do touch /tmp/titi; echo a; done; rm /tmp/titi",
     b"a\n",
@@ -244,7 +244,7 @@ test_simple_cmd(
     status=0
 )
 
-print_info("While loop")
+new_section("while", "While loop")
 test_simple_cmd(
     "touch /tmp/titi;while ! cat /tmp/titi; do touch /tmp/titi; echo a; done; rm /tmp/titi",
     stdout=b"",
@@ -258,7 +258,7 @@ test_simple_cmd(
     status=0
 )
 
-print_info("For loop")
+new_section("for", "For loop")
 test_simple_cmd("for i in a b c d; do echo $i; done", b"a\nb\nc\nd\n", b"", 0)
 test_simple_cmd("for i in a b c d; do echo $i; continue; echo ah ah; done",
                 b"a\nb\nc\nd\n", b"", 0)
@@ -270,7 +270,7 @@ test_simple_cmd("for i in a b c d; do echo $i; exit 10; done",
                 b"a\n", b"", 10)
 
 
-print_info("Environment variables")
+new_section("env", "Environment variables")
 test_simple_cmd("AAAA=ccc; printenv AAAA", b"ccc\n",
                 b"", 0, env={"AAAA": "bbb"})
 test_simple_cmd("AAAA=ccc; printenv AAAA", b"", b"", 1)
@@ -280,7 +280,7 @@ test_simple_cmd("AAAA=b HOME=t printenv AAAA", b"b\n", b"", 0)
 test_simple_cmd("AAAA=b HOME=t printenv AAAA", b"b\n",
                 b"", 0, env={"AAAA": "other value"})
 
-print_info("Aliases definition / unalias")
+new_section("alias", "Aliases definition / unalias")
 test_simple_cmd("alias;", b"", b"", 0)
 test_simple_cmd("alias invalid", b"", empty_stderr=False, status=1)
 test_simple_cmd("alias; alias p=pierre", b"", b"", 0)
@@ -300,7 +300,7 @@ test_simple_cmd(
 test_simple_cmd("XXX=abcdef;alias XXX=abcdef; unalias XXX; echo XXX",
                 b"XXX\n", empty_stderr=True, status=0)
 
-print_info("Invalid commands")
+new_section("invalid_cmd", "Invalid commands")
 test_simple_cmd("if", b"", empty_stderr=False,
                 validate_status=lambda x: x != 0)
 test_simple_cmd("if true; then ", b"", empty_stderr=False,
@@ -309,7 +309,7 @@ test_simple_cmd("{ { { { { ls; } } } }", b"", empty_stderr=False,
                 validate_status=lambda x: x != 0)
 
 # Clean environment
-print_info("Clean test environment")
+new_section(None, "Clean test environment")
 test_simple_cmd("rm -rf "+test_dir+"", b"", b"", 0, working_directory="/tmp")
 
 # . end of tests

@@ -8,4 +8,6 @@
 echo Using shell $1
 
 # Functional tests
-"$(dirname "$0")/functional_tests/e2etest.py" "$1"
+"$(dirname "$0")/functional_tests/e2etest.py" --mode argument "$1" && \
+"$(dirname "$0")/functional_tests/e2etest.py" --mode input "$1" && \
+"$(dirname "$0")/functional_tests/e2etest.py" --mode script "$1"
