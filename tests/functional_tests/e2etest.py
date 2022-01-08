@@ -520,6 +520,21 @@ test_dot_cmd(
     empty_stderr=False,
     status=2
 )
+test_simple_cmd(
+    cmd="PATH={}:/tmp;echo MYBEST=42sh > {}/dummy_cmd; . dummy_cmd; echo $MYBEST".format(
+        test_dir, test_dir),
+    stdout=b"42sh\n",
+    empty_stderr=True,
+    status=0,
+)
+
+test_simple_cmd(
+    cmd="unset PATH;echo MYBEST=42sh > {}/dummy_cmd; . dummy_cmd; echo $MYBEST".format(
+        test_dir, test_dir),
+    empty_stdout=True,
+    empty_stderr=False,
+    status=2,
+)
 
 
 new_section("invalid_cmd", "Invalid commands")

@@ -80,7 +80,7 @@
     | * export                          [ -- ]
     | * continue                        [ OK ]
     | * break                           [ OK ]
-    | * dot                             [ ++ ]
+    | * dot                             [ OK ]
     | * unset                           [ OK ]
 
 * COMMAND BLOCKS                        [ OK ]
