@@ -71,7 +71,7 @@ test_simple_cmd("echo '$HAPPY_42SH'", b"$HAPPY_42SH\n", b"",
                 0, env={"HAPPY_42SH": "I love 42sh"})
 # weak_quoting3
 test_simple_cmd(
-    cmd="'toto''",
+    cmd="echo 'toto''",
     empty_stdout=True,
     empty_stderr=False,
     status=2
