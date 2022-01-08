@@ -34,7 +34,10 @@ int rl_pipeline(struct rl_state *s)
             ;
 
         if (rl_cmd(s) <= 0)
+        {
+            s->err = s->err != NO_ERROR ? s->err : PARSER_ERROR;
             break;
+        }
 
         child->sibling = s->node;
         child = child->sibling;
