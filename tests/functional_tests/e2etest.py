@@ -637,6 +637,17 @@ esac""",
     empty_stderr=True,
     status=0
 )
+test_simple_cmd(
+    cmd="case a in a) echo yes ;; b) echo no ;; esac",
+    stdout=b"yes\n",
+    empty_stderr=True,
+    status=0
+)
+# bad_case_no_in
+test_simple_cmd("case a  a) echo yes ;; b) echo no ;; esac",
+                empty_stdout=True, empty_stderr=False, status=2)
+# bad_case_no_esac
+test_simple_cmd("case a in", empty_stdout=True, empty_stderr=False, status=2)
 
 
 new_section("invalid_cmd", "Invalid commands")
