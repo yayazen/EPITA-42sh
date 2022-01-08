@@ -537,6 +537,108 @@ test_simple_cmd(
 )
 
 
+new_section("case", "Case")
+test_simple_cmd("case a in esac", empty_stdout=True,
+                empty_stderr=True, status=0)
+test_simple_cmd(
+    cmd="""
+case a in
+b)
+	echo really ???
+	;;
+a)
+	echo well done !!!
+	;;
+e | f)
+	echo again, really ???
+	;;
+
+g)
+	;;
+
+*)
+	echo the ultimate case;
+	echo you are a boss;
+	;;
+
+esac""",
+    stdout=b"well done !!!\n",
+    empty_stderr=True,
+    status=0
+)
+test_simple_cmd(
+    cmd="""
+case 42sh in
+b)
+	echo really ???
+	;;
+a)
+	echo well done !!!
+	;;
+e | f)
+	echo again, really ???
+	;;
+
+g)
+	;;
+
+*)
+	echo not found
+	;;
+
+esac""",
+    stdout=b"not found\n",
+    empty_stderr=True,
+    status=0
+)
+test_simple_cmd(
+    cmd="""
+case 42sh in
+b)
+	echo really ???
+	;;
+a)
+	echo well done !!!
+	;;
+e | f)
+	echo again, really ???
+	;;
+
+g)
+	;;
+
+esac""",
+    empty_stdout=True,
+    empty_stderr=True,
+    status=0
+)
+test_simple_cmd(
+    cmd="""
+case f in
+b)
+	echo really ???
+	;;
+a)
+	echo well done !!!
+	;;
+e | f)
+	echo nice job!!!
+	;;
+
+g)
+	;;
+
+*)
+	echo the ultimate case;
+	;;
+
+esac""",
+    stdout=b"nice job!!!\n",
+    empty_stderr=True,
+    status=0
+)
+
+
 new_section("invalid_cmd", "Invalid commands")
 test_simple_cmd("if", b"", empty_stderr=False,
                 validate_status=lambda x: x != 0)

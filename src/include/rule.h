@@ -147,8 +147,8 @@ int rl_exec_case(const struct ctx *ctx, struct rl_exectree *node);
 
 /* case_clause: case_item (';;' ('\n')* case_item)* [;;] ('\n')* */
 int rl_case_clause(struct rl_state *s);
-int rl_exec_case_clause(const struct ctx *ctx, struct rl_exectree *node);
+int rl_exec_case_clause(const struct ctx *ctx, struct rl_exectree *node,
+                        const char *word);
 
 /* case_item: ['('] WORD ('|' WORD)* ')' ('\n')* [ compound_list ] */
 int rl_case_item(struct rl_state *s);
-int rl_exec_case_item(const struct ctx *ctx, struct rl_exectree *node);

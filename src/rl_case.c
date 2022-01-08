@@ -58,6 +58,9 @@ int rl_case(struct rl_state *s)
 int rl_exec_case(const struct ctx *ctx, struct rl_exectree *node)
 {
     assert(node && ctx && node->type == RL_CASE);
-    fprintf(stderr, "pls implement me!");
-    return -1;
+
+    if (node->child)
+        rl_exec_case_clause(ctx, node->child, node->attr.word);
+
+    return 0;
 }
