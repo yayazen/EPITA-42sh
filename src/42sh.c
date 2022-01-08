@@ -101,5 +101,7 @@ end_loop:
         cstream_free(cs);
     if (err == REACHED_EOF)
         return exit_status;
-    return err;
+
+    // To pass moulette tests, exit status must be 2 in case of parsing error
+    return err == PARSER_ERROR ? 2 : err;
 }

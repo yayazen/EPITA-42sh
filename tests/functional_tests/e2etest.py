@@ -1,4 +1,5 @@
 #!/bin/python3
+from os import write
 import sys
 from lib import *
 
@@ -426,6 +427,7 @@ test_simple_cmd("AAAA=b HOME=t printenv AAAA", b"b\n", b"", 0)
 test_simple_cmd("AAAA=b HOME=t printenv AAAA", b"b\n",
                 b"", 0, env={"AAAA": "other value"})
 
+
 new_section("alias", "Aliases definition / unalias")
 test_simple_cmd("alias;", b"", b"", 0)
 test_simple_cmd("alias invalid", b"", empty_stderr=False, status=1)
@@ -445,6 +447,80 @@ test_simple_cmd(
     "XX=abcd;alias;echo;alias XX=fromalias; alias; echo; echo $XX", b"\nXX='fromalias'\n\nabcd\n", b"", 0)
 test_simple_cmd("XXX=abcdef;alias XXX=abcdef; unalias XXX; echo XXX",
                 b"XXX\n", empty_stderr=True, status=0)
+
+
+new_section("source", "source and dot builtins")
+test_simple_cmd(
+    ".",
+    empty_stdout=True,
+    empty_stderr=True,
+    status=0
+)
+test_simple_cmd(
+    ".;uname",
+    stdout=b"Linux\n",
+    empty_stderr=True,
+    status=0
+)
+test_simple_cmd(
+    ". /tmp/nononofile;uname",
+    stdout=b"",
+    empty_stderr=False,
+    status=127,
+)
+
+
+def test_dot_cmd(dotfile: str, cmd: str, stdout, status, stderr=None, empty_stderr=None):
+    dfile = gen_tmp_file_name()
+    write_to_file(dfile, dotfile)
+    test_simple_cmd(cmd.replace("[DFILE]", dfile),
+                    stdout=stdout, stderr=stderr, status=status, empty_stderr=empty_stderr)
+    os.remove(dfile)
+
+
+test_dot_cmd(
+    dotfile="MYBEST=42sh",
+    cmd=". [DFILE];echo $MYBEST",
+    stdout=b"42sh\n",
+    stderr=b"",
+    status=0
+)
+test_dot_cmd(
+    dotfile="MYBEST=42sh\necho toto",
+    cmd=". [DFILE];echo $MYBEST",
+    stdout=b"toto\n42sh\n",
+    stderr=b"",
+    status=0
+)
+test_dot_cmd(
+    dotfile="MYBEST=42sh\nexit 42",
+    cmd=". [DFILE]",
+    stdout=b"",
+    stderr=b"",
+    status=42
+)
+test_dot_cmd(
+    dotfile="unset MYBEST",
+    cmd="MYBEST=42sh;. [DFILE];echo $MYBEST",
+    stdout=b"\n",
+    empty_stderr=True,
+    status=0
+)
+test_dot_cmd(
+    dotfile="",
+    cmd=". [DFILE]",
+    stdout=b"",
+    stderr=b"",
+    status=0
+)
+test_dot_cmd(
+    dotfile="if",
+    cmd=". [DFILE];echo yes",
+    stdout=b"",
+    empty_stderr=False,
+    status=2
+)
+
 
 new_section("invalid_cmd", "Invalid commands")
 test_simple_cmd("if", b"", empty_stderr=False,

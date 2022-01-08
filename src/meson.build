@@ -44,6 +44,7 @@ all_sources += files(
     'bi_exit.c',
     'bi_cd.c',
     'bi_continue.c',
+    'bi_source.c',
     'bi_unset.c',
     'bi_alias.c',
     'bi_unalias.c',

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <setjmp.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
 
@@ -53,6 +54,9 @@ struct ctx
     /* last exit status */
     int *exit_status;
 
+    /* specify whether we are in an interactive shell or not */
+    int is_interactive;
+
     /* exit jump */
     jmp_buf *exit_jump;
 
@@ -72,6 +76,7 @@ static inline struct ctx ctx_new(struct symtab *table, int *exit_status,
         .level = 1,
         .st = table,
         .exit_status = exit_status,
+        .is_interactive = false,
         .exit_jump = exit_jump,
         .loop_jump = NULL,
         .str_list = NULL,

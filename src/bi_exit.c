@@ -1,6 +1,7 @@
 #include <setjmp.h>
 
 #include "builtins.h"
+#include "constants.h"
 #include "ctx.h"
 
 /** \brief Validate number passed as argument */
@@ -43,7 +44,7 @@ int bi_exit(const struct ctx *ctx, char **args)
     *ctx->exit_status = status;
 
     ctx_free_allocated_memory(ctx, 0);
-    longjmp(*ctx->exit_jump, 1);
+    longjmp(*ctx->exit_jump, EXIT_WITH_LOOP_EXIT);
 
     return -1;
 }

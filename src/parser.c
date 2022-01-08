@@ -138,14 +138,17 @@ int parser(struct cstream *cs, int flag, int *exit_status,
             jmp_buf exit_buff;
             volatile int jmpval;
             jmpval = setjmp(exit_buff);
-            if (jmpval != 0)
+            if (jmpval == EXIT_WITH_LOOP_EXIT)
             {
                 /* mimic end of stream */
                 s.token = T_EOF;
             }
+            else if (jmpval == EXIT_WITHOUT_LOOP_EXIT)
+                ;
             else
             {
                 struct ctx ctx = ctx_new(symtab, exit_status, &exit_buff);
+                ctx.is_interactive = cs->type->interactive;
                 rl_exec_input(&ctx, s.node);
             }
         }
@@ -154,12 +157,14 @@ int parser(struct cstream *cs, int flag, int *exit_status,
     {
         fprintf(stderr, PACKAGE ": rule mismatch or unimplemented\n");
         *exit_status = 2;
+        if (!cs->type->interactive)
+            s.err = PARSER_ERROR;
     }
 
     rl_exectree_free(s.node);
     vec_destroy(&s.word);
 
-    if (s.token == T_EOF)
+    if (s.err != PARSER_ERROR && s.token == T_EOF)
         return REACHED_EOF;
 
     return (s.err != NO_ERROR) ? PARSER_ERROR : NO_ERROR;

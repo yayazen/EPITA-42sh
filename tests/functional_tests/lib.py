@@ -121,6 +121,13 @@ def gen_tmp_file_name() -> str:
     return "/tmp/" + ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
 
 
+def write_to_file(filename: str, content: str):
+    f = open(filename, "w")
+    f.write(content)
+    f.flush()
+    f.close()
+
+
 def test_simple_cmd(cmd, stdout=None,
                     stderr=None,
                     status=None,
@@ -152,10 +159,7 @@ def test_simple_cmd(cmd, stdout=None,
 
         else:
             tmp_file_name = gen_tmp_file_name()
-            tmp_file = open(tmp_file_name, "w")
-            tmp_file.write(cmd)
-            tmp_file.flush()
-            tmp_file.close()
+            write_to_file(tmp_file_name, cmd)
 
         if test_mode() == ExecutionMode.input:
             stdin = open(tmp_file_name, "r")

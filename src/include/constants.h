@@ -40,3 +40,17 @@ enum
      */
     PARSER_LINE_START = 1 << 6
 };
+
+enum
+{
+    /**
+     * \brief exit with main loop exit (should stop execution)
+     */
+    EXIT_WITH_LOOP_EXIT = 1 << 1,
+
+    /**
+     * \brief exit without main loop exit (should resume execution with next
+     * line)
+     */
+    EXIT_WITHOUT_LOOP_EXIT = 1 << 2
+};
