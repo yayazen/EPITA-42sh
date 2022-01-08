@@ -446,11 +446,12 @@ test_simple_cmd(
 test_simple_cmd("XXX=abcdef;alias XXX=abcdef; unalias XXX; echo XXX",
                 b"XXX\n", empty_stderr=True, status=0)
 
-'''new_section("invalid_cmd", "Invalid commands")
+new_section("invalid_cmd", "Invalid commands")
 test_simple_cmd("if", b"", empty_stderr=False,
                 validate_status=lambda x: x != 0)
 test_simple_cmd("if true; then ", b"", empty_stderr=False,
                 validate_status=lambda x: x != 0)
+'''
 test_simple_cmd("{ { { { { ls; } } } }", b"", empty_stderr=False,
                 validate_status=lambda x: x != 0)
 '''
