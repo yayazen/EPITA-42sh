@@ -44,6 +44,10 @@ int rl_shell_cmd(struct rl_state *s)
     else if (rl_for(s) == true)
         ;
 
+    /* rule_case */
+    else if (rl_case(s) == true)
+        ;
+
     else
         return false;
 
@@ -90,6 +94,8 @@ int rl_exec_shell_cmd(const struct ctx *ctx, struct rl_exectree *node)
         node->attr.cmd.status = rl_exec_for(ctx, node->child);
     else if (type == RL_UNTIL)
         node->attr.cmd.status = rl_exec_until(ctx, node->child);
+    else if (type == RL_CASE)
+        node->attr.cmd.status = rl_exec_case(ctx, node->child);
 
     for (int i = 0; i < 3; i++)
     {

@@ -105,7 +105,7 @@ static inline void rl_exectree_free(struct rl_exectree *node)
     rl_exectree_free(node->sibling);
 
     if ((node->type == RL_WORD || node->type == RL_ASSIGN_WORD
-         || node->type == RL_FOR)
+         || node->type == RL_FOR || node->type == RL_CASE)
         && node->attr.word)
         free(node->attr.word);
     else if (node->type == RL_REDIRECTION && node->attr.redir.file)
