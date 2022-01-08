@@ -68,6 +68,13 @@ test_simple_cmd("echo ''", b"\n", b"", 0)
 test_simple_cmd("echo 'a\nb\nc'", b"a\nb\nc\n", b"", 0)
 test_simple_cmd("echo '$HAPPY_42SH'", b"$HAPPY_42SH\n", b"",
                 0, env={"HAPPY_42SH": "I love 42sh"})
+# weak_quoting3
+test_simple_cmd(
+    cmd="'toto''",
+    empty_stdout=True,
+    empty_stderr=False,
+    status=2
+)
 
 new_section("dlquotes", "Double quotes expansion...")
 test_simple_cmd("echo $HAPPY_42SH", b"\n", b"", 0)
@@ -79,7 +86,9 @@ test_simple_cmd("echo \"$HAPPY_42SH$NONEXISTING_VAR\"", b"I love 42sh\n", b"",
                 0, env={"HAPPY_42SH": "I love 42sh"})
 test_simple_cmd("echo \"hop hop hop\"", b"hop hop hop\n", b"", 0)
 test_simple_cmd("XXXX=ABCD; echo \"$XXXX\"", b"ABCD\n", b"", 0)
-
+# strong_quoting3
+test_simple_cmd("echo \"toto\"\"", empty_stdout=True,
+                empty_stderr=False, status=2)
 
 new_section("varassign", "Variables assignments...")
 test_simple_cmd("X=ABC; echo $X", b"ABC\n", b"", 0)
@@ -172,8 +181,26 @@ test_simple_cmd("false && false || echo yes", b"yes\n", b"", 0)
 test_simple_cmd("echo yes && false && echo ya", b"yes\n", b"", 1)
 test_simple_cmd("echo yes && true || echo ya", b"yes\n", b"", 0)
 test_simple_cmd("echo yes && ! true || echo ya", b"yes\nya\n", b"", 0)
+# bad_beginning_and
+test_simple_cmd("; && echo yes", b"", empty_stderr=False, status=2)
+# bad_beginning_or
+test_simple_cmd("; || echo yes", b"", empty_stderr=False, status=2)
+# bad_end_or
+test_simple_cmd("echo yes || ;", empty_stdout=True,
+                empty_stderr=False, status=2)
+# bad_ending_and
+test_simple_cmd("echo yes && ;", empty_stdout=True,
+                empty_stderr=False, status=2)
+test_simple_cmd("echo yes &&", empty_stdout=True,
+                empty_stderr=False, status=2)
+# bad_or_or
+test_simple_cmd("echo yes || || echo yes", empty_stdout=True,
+                empty_stderr=False, status=2)
+# bad_and_and
+test_simple_cmd("echo yes && && echo yes", empty_stdout=True,
+                empty_stderr=False, status=2)
 
-new_section("pipelines", "Pipelines")
+new_section("pipe", "Pipelines")
 test_simple_cmd("uname -a | cut -f 1 -d x", b"Linu\n", b"", 0)
 test_simple_cmd(
     " | ".join(["sleep 0.001"] * 100),
@@ -190,6 +217,20 @@ test_simple_cmd("ls /proc/self/fd | wc -l", b"4\n", b"", 0)
 test_simple_cmd("ls /proc/self/fd | cat | cat | wc -l", b"4\n", b"", 0)
 test_simple_cmd(
     "uname | cat | ls /proc/self/fd | cat | cat | wc -l", b"4\n", b"", 0)
+# bad_pipe
+test_simple_cmd("; | cat -", empty_stdout=True,
+                empty_stderr=False, status=2)
+test_simple_cmd("; | cat -", empty_stdout=True,
+                empty_stderr=False, status=2)
+# bad_ending_pipe
+test_simple_cmd("uname | cat - |", empty_stdout=True,
+                empty_stderr=False, status=2)
+test_simple_cmd("uname | cat - |;", empty_stdout=True,
+                empty_stderr=False, status=2)
+# bad_beginning_pipe
+test_simple_cmd("| uname", empty_stdout=True,
+                empty_stderr=False, status=2)
+
 
 new_section("compound", "Compound lists")
 test_simple_cmd("{ uname; uname; }", b"Linux\nLinux\n", b"", 0)
@@ -247,7 +288,42 @@ test_simple_cmd(
 )
 # bad_until_no_separator
 test_simple_cmd(
-    "touch /tmp/titi;until cat /tmp/titi do touch /tmp/titi; echo a; done; exit 42",
+    "until cat /tmp/titi do touch /tmp/titi; echo a; done; exit 42",
+    empty_stdout=True,
+    empty_stderr=False,
+    status=2
+)
+# bad_until_no_second_separator
+test_simple_cmd(
+    "until cat /tmp/titi; do touch /tmp/titi; echo a done; exit 42",
+    empty_stdout=True,
+    empty_stderr=False,
+    status=2
+)
+# bad_until_no_body
+test_simple_cmd(
+    "until cat /tmp/titi; do ; done; exit 42",
+    empty_stdout=True,
+    empty_stderr=False,
+    status=2
+)
+# bad_until_no_do
+test_simple_cmd(
+    "until cat /tmp/titi; echo yes; done; exit 42",
+    empty_stdout=True,
+    empty_stderr=False,
+    status=2
+)
+# bad_until_no_condition
+test_simple_cmd(
+    "until ; echo yes; done; exit 42",
+    empty_stdout=True,
+    empty_stderr=False,
+    status=2
+)
+# bad_until_no_done
+test_simple_cmd(
+    "until cat /tmp/titi; do echo yes;",
     empty_stdout=True,
     empty_stderr=False,
     status=2
@@ -266,6 +342,13 @@ test_simple_cmd(
     stderr=None,
     status=0
 )
+# bad_while_no_separator
+test_simple_cmd(
+    cmd="while true do echo yes; done",
+    empty_stdout=True,
+    empty_stderr=False,
+    status=2
+)
 # bad_while_no_second_separator
 test_simple_cmd(
     "while true; do echo yes done",
@@ -273,6 +356,41 @@ test_simple_cmd(
     empty_stderr=False,
     status=2
 )
+# bad_while_no_condition
+test_simple_cmd(
+    "while ; do echo yes; done",
+    empty_stdout=True,
+    empty_stderr=False,
+    status=2
+)
+# bad_while_no_do
+test_simple_cmd(
+    "while true; echo yes; done",
+    empty_stdout=True,
+    empty_stderr=False,
+    status=2
+)
+test_simple_cmd(
+    "while true; echo yes; done;\n\n",
+    empty_stdout=True,
+    empty_stderr=False,
+    status=2
+)
+# bad_while_no_body
+test_simple_cmd(
+    "while true; do ; done",
+    empty_stdout=True,
+    empty_stderr=False,
+    status=2
+)
+# bad_while_no_done
+test_simple_cmd(
+    "while true; do echo yes;",
+    empty_stdout=True,
+    empty_stderr=False,
+    status=2
+)
+
 
 new_section("for", "For loop")
 test_simple_cmd("for i in a b c d; do echo $i; done", b"a\nb\nc\nd\n", b"", 0)
@@ -284,7 +402,19 @@ test_simple_cmd("for i in a b c d; do echo $i; exit; done",
                 b"a\n", b"", 0)
 test_simple_cmd("for i in a b c d; do echo $i; exit 10; done",
                 b"a\n", b"", 10)
-
+# bad_for_no_body
+test_simple_cmd("for i in a b c d; do; done",
+                empty_stdout=True, empty_stderr=False, status=2)
+# bad_for_no_separator
+test_simple_cmd("for i in a b c d do echo $i; done",
+                empty_stdout=True, empty_stderr=False, status=2)
+# bad_for_no_do
+test_simple_cmd(
+    cmd="for i in a b c d; echo $i; done",
+    empty_stdout=True,
+    empty_stderr=False,
+    status=2
+)
 
 new_section("env", "Environment variables")
 test_simple_cmd("AAAA=ccc; printenv AAAA", b"ccc\n",

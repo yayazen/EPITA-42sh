@@ -241,7 +241,7 @@ def test_simple_cmd(cmd, stdout=None,
 
     except subprocess.TimeoutExpired:
         test_failed()
-        errors.append("Test did timeout")
+        errors.append("* Test did timeout")
 
     # Delete script file (if any)
     if tmp_file_name is not None and os.path.isfile(tmp_file_name):
