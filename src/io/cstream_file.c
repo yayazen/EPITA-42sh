@@ -1,6 +1,10 @@
+#define _POSIX_C_SOURCE 200809L
+
 #include <errno.h>
+#include <fcntl.h>
 #include <io/cstream.h>
 #include <stdio.h>
+#include <unistd.h>
 #include <utils/alloc.h>
 
 struct cstream_file
@@ -53,5 +57,11 @@ struct cstream *cstream_file_create(FILE *file, bool fclose_on_free)
     cstream->base.type = &cstream_file_type;
     cstream->file = file;
     cstream->fclose_on_free = fclose_on_free;
+
+    if (fclose_on_free)
+    {
+        fcntl(fileno(file), F_SETFD, FD_CLOEXEC);
+    }
+
     return &cstream->base;
 }
