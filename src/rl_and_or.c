@@ -24,7 +24,10 @@ int rl_and_or(struct rl_state *s)
             ;
 
         if (rl_pipeline(s) <= 0)
+        {
+            s->err = PARSER_ERROR;
             break;
+        }
 
         child->sibling = s->node;
         child = child->sibling;
