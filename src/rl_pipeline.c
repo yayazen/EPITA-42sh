@@ -88,6 +88,7 @@ static inline int __pipewait(struct rl_exectree *rl_pipe)
         }
 
         status = node->attr.cmd.status;
+
         node->attr.cmd.pid = -1;
         node->attr.cmd.fd[0] = STDIN_FILENO;
         node->attr.cmd.fd[1] = STDOUT_FILENO;
@@ -104,5 +105,12 @@ int rl_exec_pipeline(const struct ctx *ctx, struct rl_exectree *node)
     int status = 0;
     __piperun(ctx, node);
     status = __pipewait(node);
-    return node->attr.pipe.negate ? !status : status;
+
+    if (node->attr.pipe.negate)
+    {
+        status = !status;
+    }
+
+    *ctx->exit_status = status;
+    return status;
 }

@@ -146,7 +146,7 @@ int parser(struct cstream *cs, int flag, int *exit_status,
             else
             {
                 struct ctx ctx = ctx_new(symtab, exit_status, &exit_buff);
-                *exit_status = rl_exec_input(&ctx, s.node);
+                rl_exec_input(&ctx, s.node);
             }
         }
     }
