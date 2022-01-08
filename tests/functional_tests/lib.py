@@ -239,6 +239,10 @@ def test_simple_cmd(cmd, stdout=None,
             errors.append(
                 "* Memory leak: {}".format(res.stderr.decode("utf-8")))
 
+        if check_for_leak and "AddressSanitizer: heap-use-after-free " in res.stderr.decode("utf-8"):
+            errors.append(
+                "* Use after free: {}".format(res.stderr.decode("utf-8")))
+
     except subprocess.TimeoutExpired:
         test_failed()
         errors.append("* Test did timeout")

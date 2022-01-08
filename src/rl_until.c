@@ -19,6 +19,7 @@ int rl_until(struct rl_state *s)
     node->child = child;
 
     /* do_group */
+    s->node = NULL;
     if (rl_do_group(s) <= 0)
     {
         rl_exectree_free(node);

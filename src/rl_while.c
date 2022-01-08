@@ -26,6 +26,7 @@ int rl_while(struct rl_state *s)
     node->child = child;
 
     /* do_group */
+    s->node = NULL;
     if (rl_do_group(s) <= 0)
     {
         s->flag &= ~PARSER_LINE_START;
