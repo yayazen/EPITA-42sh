@@ -17,6 +17,8 @@ int rl_case_clause(struct rl_state *s)
 
     struct rl_exectree *child = node->child;
 
+    s->flag |= LEX_CMDSTART;
+
     /* [;;] */
     while (rl_accept(s, T_DSEMICOL) == true)
     {
@@ -30,6 +32,8 @@ int rl_case_clause(struct rl_state *s)
 
         child->sibling = s->node;
         child = child->sibling;
+
+        s->flag |= LEX_CMDSTART;
     }
 
     s->node = node;
