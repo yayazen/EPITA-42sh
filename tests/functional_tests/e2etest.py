@@ -655,10 +655,9 @@ test_simple_cmd("if", b"", empty_stderr=False,
                 validate_status=lambda x: x != 0)
 test_simple_cmd("if true; then ", b"", empty_stderr=False,
                 validate_status=lambda x: x != 0)
-'''
 test_simple_cmd("{ { { { { ls; } } } }", b"", empty_stderr=False,
                 validate_status=lambda x: x != 0)
-'''
+
 
 # Clean environment
 new_section(None, "Clean test environment")

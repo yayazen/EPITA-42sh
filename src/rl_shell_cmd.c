@@ -16,7 +16,11 @@ int rl_shell_cmd(struct rl_state *s)
     {
         s->flag |= PARSER_LINE_START;
         if (rl_compound_list(s) <= 0 || rl_expect(s, T_RBRACE) <= 0)
+        {
+            rl_exectree_free(s->node);
+            s->node = NULL;
             return -s->err;
+        }
         s->flag &= ~PARSER_LINE_START;
     }
     /* '(' compound_list ')' */
@@ -24,7 +28,11 @@ int rl_shell_cmd(struct rl_state *s)
     {
         s->flag |= PARSER_LINE_START;
         if (rl_compound_list(s) <= 0 || rl_expect(s, T_RPAR) <= 0)
+        {
+            rl_exectree_free(s->node);
+            s->node = NULL;
             return -s->err;
+        }
         s->flag &= ~PARSER_LINE_START;
     }
 
