@@ -8,7 +8,7 @@
 #define RL_DEFAULT_STATE                                                       \
     {                                                                          \
         .err = NO_ERROR, .flag = LEX_COLLECT | LEX_CMDSTART, .token = T_EOF,   \
-        .cs = cs, .node = NULL,                                                \
+        .cs = NULL, .node = NULL,                                              \
     }
 /**
  * \brief anonymous enum of rule types.

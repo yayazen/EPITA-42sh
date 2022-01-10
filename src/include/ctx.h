@@ -19,51 +19,57 @@ enum
 /** \brief loop jump */
 struct ctx_jmp
 {
-    /* next jump */
+    /** \brief next jump */
     struct ctx_jmp *next;
 
-    /* context level the jump leads to */
+    /** \brief context level the jump leads to */
     int level;
 
-    /* jump buffer */
+    /** \brief jump buffer */
     jmp_buf *jump;
 };
 
 /** \brief holds a pointer to a list to free in case of jump */
 struct ctx_str_list
 {
-    /* next allocated memory element */
+    /** \brief next allocated memory element */
     struct ctx_str_list *next;
 
-    /* context level this list is in */
+    /** \brief context level this list is in */
     int level;
 
-    /* the allocated list */
+    /** \brief the allocated list */
     struct list *list;
 };
 
 /** \brief execution context for the tree */
 struct ctx
 {
-    /* recursion level of context */
+    /** \brief recursion level of context */
     int level;
 
-    /* symbols table */
+    /** \brief symbols table */
     struct symtab *st;
 
-    /* last exit status */
+    /** \brief last exit status */
     int *exit_status;
 
-    /* specify whether we are in an interactive shell or not */
+    /** \brief specify whether we are in an interactive shell or not */
     int is_interactive;
 
-    /* exit jump */
+    /** \brief Number of program arguments */
+    int program_args_count;
+
+    /** \brief Pointer on the first program argument */
+    char **program_args;
+
+    /** \brief exit jump */
     jmp_buf *exit_jump;
 
-    /* break & continue on loops */
+    /** \brief break & continue on loops */
     struct ctx_jmp *loop_jump;
 
-    /* list to free in case of jump */
+    /** \brief list to free in case of jump */
     struct ctx_str_list *str_list;
 };
 
@@ -77,6 +83,8 @@ static inline struct ctx ctx_new(struct symtab *table, int *exit_status,
         .st = table,
         .exit_status = exit_status,
         .is_interactive = false,
+        .program_args_count = 0,
+        .program_args = NULL,
         .exit_jump = exit_jump,
         .loop_jump = NULL,
         .str_list = NULL,

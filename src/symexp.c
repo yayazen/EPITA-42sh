@@ -10,14 +10,35 @@
 #define DOUBLE_QUOTE (1 << 3)
 #define HAD_A_QUOTE (1 << 4)
 
+/** \brief Check if a given string is an integer or not */
+static bool __is_int(const char *val)
+{
+    if (!val || !*val)
+        return false;
+    while (*val && *val >= '0' && *val <= '9')
+        val++;
+    return *val == '\0';
+}
+
 /**
  * \brief Search for a symbol in symbol table & environment variables
- * \param symtab A pointer on the symbol table to use
+ * \param ctx Execution context
  * \param key The key to search
  */
-static char *__search_sym(struct symtab *symtab, const char *key)
+static char *__search_sym(const struct ctx *ctx, const char *key)
 {
-    struct kvpair *kv = symtab_lookup(symtab, key, KV_WORD);
+    // Check in program arguments
+    if (__is_int(key))
+    {
+        int index = atoi(key);
+        if (index < ctx->program_args_count)
+        {
+            return ctx->program_args[index];
+        }
+    }
+
+    // Search in symbols table
+    struct kvpair *kv = symtab_lookup(ctx->st, key, KV_WORD);
     if (kv && kv->type == KV_WORD)
     {
         return kv->value.word.word;
@@ -73,7 +94,7 @@ void symexp_word(const struct ctx *ctx, const char *word, struct list *dest)
             key[i++] = c;
             key[i] = '\0';
 
-            char *sym = __search_sym(ctx->st, key);
+            char *sym = __search_sym(ctx, key);
             if (sym != NULL)
             {
                 for (char *s = sym; *s != '\0'; s++)

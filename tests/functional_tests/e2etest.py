@@ -104,6 +104,14 @@ test_simple_cmd(
         "utf-8").split("\n")) == 2 else "Expected only 2 lines in stderr!",
     status=1
 )
+if not test_mode() == ExecutionMode.input:
+    test_simple_cmd(
+        cmd="echo $1 $2",
+        additional_args=["ta", "ti", "to"],
+        stdout=b"ti to\n" if test_mode() == ExecutionMode.argument else b"ta ti\n",
+        empty_stderr=True,
+        status=0
+    )
 
 new_section("varassign", "Variables assignments...")
 test_simple_cmd("X=ABC; echo $X", b"ABC\n", b"", 0)

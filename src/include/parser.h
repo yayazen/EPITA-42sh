@@ -4,13 +4,25 @@
 
 #include "symtab.h"
 
+struct parser_args
+{
+    /** \brief stream structure used for parser invocation */
+    struct cstream *cs;
+    /** \brief Flags customizing parser behavior */
+    int flag;
+    /** \brief Where last exit status should be stored */
+    int *exit_status;
+    /** \brief Global symbols table to use */
+    struct symtab *symtab;
+    /** \brief Number of program arguments */
+    int program_args_count;
+    /** \brief Pointer on the first program argument */
+    char **program_args;
+};
+
 /*!
  * \brief parser entry function
- * \param cs character stream
- * \param flag flags passed to parser & AST
- * \param exit_status Last command execution exit status
- * \param symtab The global symbols table
+ * \param args Arguments passed to parser
  * \return zero or a negative value in case of error
  */
-int parser(struct cstream *cs, int flag, int *exit_status,
-           struct symtab *symtab);
+int parser(const struct parser_args *args);

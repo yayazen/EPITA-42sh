@@ -82,8 +82,13 @@ int main(int argc, char *argv[], char **envp)
     symtab = symtab_new();
     symtab_fill_with_env_vars(symtab, envp);
 
-    while ((err = parser(cs, flag, &exit_status, symtab)) == NO_ERROR
-           && !(flag & OPT_HELP))
+    struct parser_args parser_args = { .cs = cs,
+                                       .exit_status = &exit_status,
+                                       .flag = flag,
+                                       .symtab = symtab,
+                                       .program_args_count = argc - optind,
+                                       .program_args = &argv[optind] };
+    while ((err = parser(&parser_args)) == NO_ERROR && !(flag & OPT_HELP))
     {
         ;
     }

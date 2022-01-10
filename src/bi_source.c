@@ -86,7 +86,15 @@ int bi_source(const struct ctx *ctx, char **args)
     // Execute commands
     struct cstream *cs = cstream_file_create(file, true);
     int err;
-    while ((err = parser(cs, 0, ctx->exit_status, ctx->st)) == NO_ERROR)
+    struct parser_args parser_args = {
+        .cs = cs,
+        .flag = 0,
+        .exit_status = ctx->exit_status,
+        .symtab = ctx->st,
+        .program_args = ctx->program_args,
+        .program_args_count = ctx->program_args_count,
+    };
+    while ((err = parser(&parser_args)) == NO_ERROR)
     {
         ;
     }

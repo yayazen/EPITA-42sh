@@ -110,26 +110,26 @@ __attribute__((unused)) static int rl_all(struct rl_state *s)
     return (s->err != NO_ERROR) ? -s->err : true;
 }
 
-int parser(struct cstream *cs, int flag, int *exit_status,
-           struct symtab *symtab)
+int parser(const struct parser_args *args)
 {
     struct rl_state s = RL_DEFAULT_STATE;
+    s.cs = args->cs;
     vec_init(&s.word);
 
     // Run in lexer-only mode
-    if (flag & OPT_DEBUG)
+    if (args->flag & OPT_DEBUG)
     {
-        s.flag |= flag;
+        s.flag |= args->flag;
         rl_all(&s);
     }
 
     else if (rl_input(&s) == true)
     {
-        if (flag & OPT_PRINT_AST)
+        if (args->flag & OPT_PRINT_AST)
             __dbg_ast(s.node);
 
         /* Do not both print & execute tree at the same time */
-        if (flag & OPT_PRINT_AST_DOT)
+        if (args->flag & OPT_PRINT_AST_DOT)
             ast_dot_print(s.node);
 
         /* Execute the command & check for exit */
@@ -147,8 +147,11 @@ int parser(struct cstream *cs, int flag, int *exit_status,
                 ;
             else
             {
-                struct ctx ctx = ctx_new(symtab, exit_status, &exit_buff);
-                ctx.is_interactive = cs->type->interactive;
+                struct ctx ctx =
+                    ctx_new(args->symtab, args->exit_status, &exit_buff);
+                ctx.is_interactive = args->cs->type->interactive;
+                ctx.program_args = args->program_args;
+                ctx.program_args_count = args->program_args_count;
                 rl_exec_input(&ctx, s.node);
             }
         }
@@ -156,8 +159,11 @@ int parser(struct cstream *cs, int flag, int *exit_status,
     else
     {
         fprintf(stderr, PACKAGE ": rule mismatch or unimplemented\n");
-        *exit_status = 2;
-        if (!cs->type->interactive)
+        *args->exit_status = 2;
+
+        // If we are not in interactive mode, a grammar error should provoke
+        // interruption of the whole parsing
+        if (!args->cs->type->interactive)
             s.err = PARSER_ERROR;
     }
 

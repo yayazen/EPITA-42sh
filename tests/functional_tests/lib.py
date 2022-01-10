@@ -139,6 +139,7 @@ def test_simple_cmd(cmd, stdout=None,
                     max_exec_time=None,
                     working_directory=None,
                     additional_checks=None,
+                    additional_args=None,
                     check_for_leak=True):
     """
     Run a simple command, and check its output
@@ -167,6 +168,10 @@ def test_simple_cmd(cmd, stdout=None,
 
         elif test_mode() == ExecutionMode.script:
             args.append(tmp_file_name)
+
+        if additional_args is not None:
+            for a in additional_args:
+                args.append(a)
 
         res = subprocess.run(
             args,
