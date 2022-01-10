@@ -47,6 +47,13 @@ static char *__search_sym(const struct ctx *ctx, const char *key)
     return NULL;
 }
 
+#define QUIT_DOLLARD_MODE                                                      \
+    if (mode & EXP_DOLLAR)                                                     \
+    {                                                                          \
+        mode &= ~EXP_DOLLAR;                                                   \
+        vec_pushstr(&expvec, __search_sym(ctx, key));                          \
+    }
+
 void symexp_word(const struct ctx *ctx, const char *word, struct list *dest)
 {
     struct vec expvec;
@@ -54,7 +61,7 @@ void symexp_word(const struct ctx *ctx, const char *word, struct list *dest)
 
     int mode = 0;
     int i = 0;
-    char key[32];
+    char key[100];
     char c;
     while ((c = *word++) != '\0')
     {
@@ -63,6 +70,7 @@ void symexp_word(const struct ctx *ctx, const char *word, struct list *dest)
         {
             mode ^= SINGLE_QUOTE;
             mode |= HAD_A_QUOTE;
+            QUIT_DOLLARD_MODE;
         }
 
         /* enter / leave double quote mode */
@@ -70,37 +78,30 @@ void symexp_word(const struct ctx *ctx, const char *word, struct list *dest)
         {
             mode ^= DOUBLE_QUOTE;
             mode |= HAD_A_QUOTE;
+            QUIT_DOLLARD_MODE;
         }
 
         /* Switch to dolar */
         else if (!(mode & SINGLE_QUOTE) && c == '$')
         {
+            QUIT_DOLLARD_MODE;
             i = 0;
             mode |= EXP_DOLLAR;
         }
 
-        /* Quit dolar mode */
+        /* Quit dolar mode & Search for symbol */
         else if (mode & EXP_DOLLAR && (c == ' ' || c == '}' || c == ')'))
         {
-            mode &= ~EXP_DOLLAR;
-            // vec_push(&expvec, c);
+            QUIT_DOLLARD_MODE;
         }
 
-        /* Search for symbol */
+        /* In symbol acqusition */
         else if (!(mode & SINGLE_QUOTE) && (mode & EXP_DOLLAR))
         {
             if (c == '(' || c == '{')
                 continue;
             key[i++] = c;
             key[i] = '\0';
-
-            char *sym = __search_sym(ctx, key);
-            if (sym != NULL)
-            {
-                for (char *s = sym; *s != '\0'; s++)
-                    vec_push(&expvec, *s);
-                mode &= ~EXP_DOLLAR;
-            }
         }
 
         else
@@ -108,6 +109,8 @@ void symexp_word(const struct ctx *ctx, const char *word, struct list *dest)
             vec_push(&expvec, c);
         }
     }
+
+    QUIT_DOLLARD_MODE;
 
     if (expvec.size > 0 || mode & HAD_A_QUOTE)
         list_push(dest, strdup(vec_cstring(&expvec)));

@@ -96,6 +96,10 @@ test_simple_cmd("echo \"toto\"\"", empty_stdout=True,
 '''
 
 new_section("symexp", "Symbols expansion")
+test_simple_cmd("A=b;AA=c; echo $AA", stdout=b"c\n",
+                empty_stderr=True, status=0)
+test_simple_cmd("A=b; echo $AA", stdout=b"\n",
+                empty_stderr=True, status=0)
 test_simple_cmd(
     cmd="cat $NONEXISTING $BADAGAIN /nonexisting",
     empty_stdout=True,
