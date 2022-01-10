@@ -1,7 +1,9 @@
 #include <assert.h>
 
 #include "constants.h"
+#include "list.h"
 #include "rule.h"
+#include "symexp.h"
 #include "token.h"
 
 int rl_case(struct rl_state *s)
@@ -59,8 +61,18 @@ int rl_exec_case(const struct ctx *ctx, struct rl_exectree *node)
 {
     assert(node && ctx && node->type == RL_CASE);
 
+    // Perform symbol expansion
+    struct list *l = list_new(1);
+    symexp_word(ctx, node->attr.word, l);
+
+    struct ctx_str_list ctx_list_node;
+    struct ctx child_ctx = ctx_add_list(ctx, &ctx_list_node, l);
+
     if (node->child)
-        rl_exec_case_clause(ctx, node->child, node->attr.word);
+        rl_exec_case_clause(&child_ctx, node->child,
+                            l->size > 0 ? l->data[0] : "");
+
+    list_free(l);
 
     return 0;
 }

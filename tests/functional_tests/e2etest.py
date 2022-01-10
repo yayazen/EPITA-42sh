@@ -663,6 +663,24 @@ test_simple_cmd(
     empty_stderr=True,
     status=0
 )
+test_simple_cmd(
+    cmd="case d in a) echo yes ;; b) echo no ;; esac",
+    empty_stdout=True,
+    empty_stderr=True,
+    status=0
+)
+test_simple_cmd(
+    cmd="case $A in a) echo yes ;; b) echo no ;; esac",
+    empty_stdout=True,
+    empty_stderr=True,
+    status=0
+)
+test_simple_cmd(
+    cmd="A=b;case $A in a) echo yes ;; b) echo no ;; esac",
+    stdout=b"no\n",
+    empty_stderr=True,
+    status=0
+)
 # bad_case_no_in
 test_simple_cmd("case a  a) echo yes ;; b) echo no ;; esac",
                 empty_stdout=True, empty_stderr=False, status=2)
