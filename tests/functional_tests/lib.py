@@ -132,6 +132,7 @@ def test_simple_cmd(cmd, stdout=None,
                     stderr=None,
                     status=None,
                     validate_status=None,
+                    validate_stderr=None,
                     empty_stdout=None,
                     empty_stderr=None,
                     env=None,
@@ -226,6 +227,10 @@ def test_simple_cmd(cmd, stdout=None,
         if validate_status is not None and not validate_status(res.returncode):
             errors.append(
                 "* Exit code failed to validate (got {})!".format(res.returncode))
+
+        if validate_stderr is not None and validate_stderr(res.stderr) is not None:
+            errors.append(
+                "* stderr failed to validate ({}) !".format(validate_stderr(res.stderr)))
 
         if additional_checks is not None:
             for err in additional_checks():

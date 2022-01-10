@@ -4,6 +4,7 @@
 #include "constants.h"
 #include "ctx.h"
 #include "rule.h"
+#include "symexp.h"
 #include "token.h"
 
 int rl_for(struct rl_state *s)
@@ -109,17 +110,29 @@ int rl_exec_for(const struct ctx *ctx, struct rl_exectree *node)
     struct rl_exectree *child = node->child;
     struct rl_exectree *curr_word = child;
 
+    // Perform expansion
+    struct list *words = list_new(10);
+    while ((curr_word = curr_word->sibling))
+    {
+        symexp_word(ctx, curr_word->attr.word, words);
+    }
+
+    // Register the generated list to automatically cleanup memory
+    // in case of memory jump above this execution point
+    struct ctx_str_list list_ctx_node;
+    struct ctx list_ctx = ctx_add_list(ctx, &list_ctx_node, words);
+
     volatile int status = 0;
     volatile int val;
 
     jmp_buf jump_buffer;
     struct ctx_jmp jmp_node;
 
-    while ((curr_word = curr_word->sibling))
+    for (volatile unsigned int i = 0; i < words->size; i++)
     {
         /* Update the word in the list */
         assert(symtab_add(ctx->st, node->attr.word, KV_WORD,
-                          strdup(curr_word->attr.word)));
+                          strdup(words->data[i])));
 
         val = setjmp(jump_buffer);
 
@@ -133,12 +146,15 @@ int rl_exec_for(const struct ctx *ctx, struct rl_exectree *node)
         }
         else if (val == JMP_NOOP)
         {
-            struct ctx child_ctx = ctx_add_jump(ctx, &jmp_node, &jump_buffer);
+            struct ctx child_ctx =
+                ctx_add_jump(&list_ctx, &jmp_node, &jump_buffer);
             status = rl_exec_compound_list(&child_ctx, child);
         }
         else
             assert(0);
     }
+
+    list_free(words);
 
     return status;
 }
