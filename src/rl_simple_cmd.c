@@ -72,16 +72,14 @@ static inline int __redirect(int oldfd, int newfd, int closefd)
     return 0;
 }
 
-static inline void __push_args(struct rl_exectree *arg, struct list *l,
-                               struct symtab *symtab)
+static inline void __push_args(const struct ctx *ctx, struct rl_exectree *arg,
+                               struct list *l)
 {
     for (; arg != NULL; arg = arg->sibling)
     {
         if (arg->type == RL_WORD)
         {
-            char *expword = symexp_word(symtab, arg->attr.word);
-            assert(expword != NULL);
-            list_push(l, expword);
+            symexp_word(ctx, arg->attr.word, l);
         }
         else if (arg->type == RL_REDIRECTION)
             assert(rl_exec_redirection(arg) == NO_ERROR);
@@ -92,7 +90,7 @@ static inline void __push_args(struct rl_exectree *arg, struct list *l,
     }
 }
 
-static inline void __add_symbol(struct rl_exectree *arg, struct symtab *symtab)
+static inline void __add_symbol(const struct ctx *ctx, struct rl_exectree *arg)
 {
     while (arg != NULL)
     {
@@ -101,7 +99,8 @@ static inline void __add_symbol(struct rl_exectree *arg, struct symtab *symtab)
             char *str = strdup(arg->attr.word);
             char *eq = strchr(str, '=');
             *eq = '\0';
-            symtab_add(symtab, str, KV_WORD, symexp_word(symtab, eq + 1));
+            symtab_add(ctx->st, str, KV_WORD,
+                       symexp_word_single_result(ctx, eq + 1));
 
             free(str);
         }
@@ -109,17 +108,17 @@ static inline void __add_symbol(struct rl_exectree *arg, struct symtab *symtab)
     }
 }
 
-static void __apply_env(struct symtab *st, struct rl_exectree *arg)
+static void __apply_env(const struct ctx *ctx, struct rl_exectree *arg)
 {
-    assert(st);
+    assert(ctx);
 
     /* First, remove any inherited environment variable */
     clearenv();
 
     /* Second, apply all exported variables */
-    for (size_t i = 0; i < st->capacity; i++)
+    for (size_t i = 0; i < ctx->st->capacity; i++)
     {
-        struct kvpair *kv = st->data[i];
+        struct kvpair *kv = ctx->st->data[i];
         while (kv)
         {
             if (kv->type == KV_WORD && kv->value.word.exported)
@@ -136,7 +135,7 @@ static void __apply_env(struct symtab *st, struct rl_exectree *arg)
             char *str = strdup(arg->attr.word);
             char *eq = strchr(str, '=');
             *eq = '\0';
-            char *val = symexp_word(st, eq + 1);
+            char *val = symexp_word_single_result(ctx, eq + 1);
 
             setenv(str, val, 1);
 
@@ -165,7 +164,7 @@ int rl_exec_simple_cmd(const struct ctx *ctx, struct rl_exectree *node)
 
     // Parse command arguments
     struct list *args = list_new(ARG_MAX);
-    __push_args(node->child, args, ctx->st);
+    __push_args(ctx, node->child, args);
     list_push(args, NULL);
 
     // Run command (if any)
@@ -183,7 +182,7 @@ int rl_exec_simple_cmd(const struct ctx *ctx, struct rl_exectree *node)
             node->attr.cmd.pid = fork();
             if (node->attr.cmd.pid == 0)
             {
-                __apply_env(ctx->st, node->child);
+                __apply_env(ctx, node->child);
 
                 execvp(args->data[0], args->data);
                 fprintf(stderr, PACKAGE ": %s: command not found...\n",
@@ -196,7 +195,7 @@ int rl_exec_simple_cmd(const struct ctx *ctx, struct rl_exectree *node)
     // Or save assigned variables
     else
     {
-        __add_symbol(node->child, ctx->st);
+        __add_symbol(ctx, node->child);
     }
 
     // Free memory

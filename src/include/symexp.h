@@ -1,10 +1,18 @@
 #pragma once
 
-#include "symtab.h"
+#include "ctx.h"
+#include "list.h"
+
+/**
+ * \brief Expand a word, expecting a single result
+ * \param ctx The context to use
+ * \param word The word to expand
+ */
+char *symexp_word_single_result(const struct ctx *ctx, const char *word);
 
 /**
  * \brief Expand a word
- * \param symtab Symbols table to use
+ * \param ctx The context to use
  * \param word The word to expand
  */
-char *symexp_word(struct symtab *symtab, const char *word);
+void symexp_word(const struct ctx *ctx, const char *word, struct list *dest);

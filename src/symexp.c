@@ -3,9 +3,12 @@
 #include <stdlib.h>
 #include <utils/vec.h>
 
+#include "symtab.h"
+
 #define EXP_DOLLAR (1 << 0)
 #define SINGLE_QUOTE (1 << 2)
 #define DOUBLE_QUOTE (1 << 3)
+#define HAD_A_QUOTE (1 << 4)
 
 /**
  * \brief Search for a symbol in symbol table & environment variables
@@ -23,7 +26,7 @@ static char *__search_sym(struct symtab *symtab, const char *key)
     return NULL;
 }
 
-char *symexp_word(struct symtab *symtab, const char *word)
+void symexp_word(const struct ctx *ctx, const char *word, struct list *dest)
 {
     struct vec expvec;
     vec_init(&expvec);
@@ -38,12 +41,14 @@ char *symexp_word(struct symtab *symtab, const char *word)
         if (!(mode & DOUBLE_QUOTE) && c == '\'')
         {
             mode ^= SINGLE_QUOTE;
+            mode |= HAD_A_QUOTE;
         }
 
         /* enter / leave double quote mode */
         else if (!(mode & SINGLE_QUOTE) && c == '"')
         {
             mode ^= DOUBLE_QUOTE;
+            mode |= HAD_A_QUOTE;
         }
 
         /* Switch to dolar */
@@ -68,7 +73,7 @@ char *symexp_word(struct symtab *symtab, const char *word)
             key[i++] = c;
             key[i] = '\0';
 
-            char *sym = __search_sym(symtab, key);
+            char *sym = __search_sym(ctx->st, key);
             if (sym != NULL)
             {
                 for (char *s = sym; *s != '\0'; s++)
@@ -83,8 +88,21 @@ char *symexp_word(struct symtab *symtab, const char *word)
         }
     }
 
-    char *expword = strdup(vec_cstring(&expvec));
-    vec_destroy(&expvec);
+    if (expvec.size > 0 || mode & HAD_A_QUOTE)
+        list_push(dest, strdup(vec_cstring(&expvec)));
 
-    return expword;
+    vec_destroy(&expvec);
+}
+
+char *symexp_word_single_result(const struct ctx *ctx, const char *word)
+{
+    struct list *l = list_new(1);
+
+    // Perform expansion
+    symexp_word(ctx, word, l);
+    char *res = strdup(l->size == 0 ? "" : l->data[0]);
+
+    list_free(l);
+
+    return res;
 }
