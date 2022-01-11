@@ -7,6 +7,7 @@
 
 struct symtab;
 
+#include "constants.h"
 #include "list.h"
 
 enum
@@ -54,11 +55,8 @@ struct ctx
     /** \brief last exit status */
     int *exit_status;
 
-    /** \brief specify whether we are in an interactive shell or not */
-    int is_interactive;
-
-    /** \brief specify whether a script is being run or not */
-    bool running_script;
+    /** \brief context flags */
+    int flags;
 
     /** \brief Number of program arguments */
     int program_args_count;
@@ -85,8 +83,7 @@ static inline struct ctx ctx_new(struct symtab *table, int *exit_status,
         .level = 1,
         .st = table,
         .exit_status = exit_status,
-        .is_interactive = false,
-        .running_script = false,
+        .flags = 0,
         .program_args_count = 0,
         .program_args = NULL,
         .exit_jump = exit_jump,
@@ -95,6 +92,14 @@ static inline struct ctx ctx_new(struct symtab *table, int *exit_status,
     };
 
     return st;
+}
+
+/** \brief Filter accepted flags in contex */
+static inline int ctx_filter_flags(int flags)
+{
+    return flags
+        & (OPT_INPUT_MODE | OPT_COMMAND_MODE | OPT_SCRIPT_MODE
+           | IS_INTERACTIVE);
 }
 
 /** \brief create a child context for a loop execution */

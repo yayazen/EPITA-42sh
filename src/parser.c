@@ -117,19 +117,19 @@ int parser(const struct parser_args *args)
     vec_init(&s.word);
 
     // Run in lexer-only mode
-    if (args->flag & OPT_DEBUG)
+    if (args->flags & OPT_DEBUG)
     {
-        s.flag |= args->flag;
+        s.flag |= args->flags;
         rl_all(&s);
     }
 
     else if (rl_input(&s) == true)
     {
-        if (args->flag & OPT_PRINT_AST)
+        if (args->flags & OPT_PRINT_AST)
             __dbg_ast(s.node);
 
         /* Do not both print & execute tree at the same time */
-        if (args->flag & OPT_PRINT_AST_DOT)
+        if (args->flags & OPT_PRINT_AST_DOT)
             ast_dot_print(s.node);
 
         /* Execute the command & check for exit */
@@ -149,10 +149,11 @@ int parser(const struct parser_args *args)
             {
                 struct ctx ctx =
                     ctx_new(args->symtab, args->exit_status, &exit_buff);
-                ctx.is_interactive = args->cs->type->interactive;
+                ctx.flags = ctx_filter_flags(args->flags);
+                if (args->cs->type->interactive)
+                    ctx.flags |= IS_INTERACTIVE;
                 ctx.program_args = args->program_args;
                 ctx.program_args_count = args->program_args_count;
-                ctx.running_script = args->running_script;
                 rl_exec_input(&ctx, s.node);
             }
         }

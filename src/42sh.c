@@ -45,6 +45,7 @@ static int __parse_opts(int optc, char **optv, struct cstream **cs, int *flag)
         case 'c':
             if (optarg && !(*cs))
             {
+                *flag |= OPT_COMMAND_MODE;
                 *cs = cstream_string_create(optarg);
                 break;
             }
@@ -62,9 +63,15 @@ static int __parse_opts(int optc, char **optv, struct cstream **cs, int *flag)
         *cs = cstream_file_create(fopen(optv[optind], "r"), true);
     }
     else if (isatty(STDIN_FILENO))
+    {
+        *flag |= OPT_INPUT_MODE;
         *cs = cstream_readline_create();
+    }
     else
+    {
+        *flag |= OPT_INPUT_MODE;
         *cs = cstream_file_create(stdin, false);
+    }
 
     return *cs == NULL;
 }
@@ -88,11 +95,10 @@ int main(int argc, char *argv[], char **envp)
     struct parser_args parser_args = {
         .cs = cs,
         .exit_status = &exit_status,
-        .flag = flag,
+        .flags = flag,
         .symtab = symtab,
         .program_args_count = argc - optind,
         .program_args = &argv[optind],
-        .running_script = flag & OPT_SCRIPT_MODE,
     };
     while ((err = parser(&parser_args)) == NO_ERROR && !(flag & OPT_HELP))
     {

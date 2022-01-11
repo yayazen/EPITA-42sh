@@ -31,19 +31,34 @@ enum
     OPT_SCRIPT_MODE = 1 << 4,
 
     /**
+     * \brief executing commands specified as argument
+     */
+    OPT_COMMAND_MODE = 1 << 5,
+
+    /**
+     * \brief executing commands specified as argument
+     */
+    OPT_INPUT_MODE = 1 << 6,
+
+    /**
+     * \brief executing commands specified as argument
+     */
+    IS_INTERACTIVE = 1 << 7,
+
+    /**
      * \brief specify if a token shall be collected from the lexer
      */
-    LEX_COLLECT = 1 << 5,
+    LEX_COLLECT = 1 << 8,
 
     /**
      * \brief specify if the next token is the first of a command
      */
-    LEX_CMDSTART = 1 << 6,
+    LEX_CMDSTART = 1 << 9,
 
     /**
      * \brief specify if the next token is the first of a command
      */
-    PARSER_LINE_START = 1 << 7
+    PARSER_LINE_START = 1 << 10
 };
 
 enum

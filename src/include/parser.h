@@ -9,7 +9,7 @@ struct parser_args
     /** \brief stream structure used for parser invocation */
     struct cstream *cs;
     /** \brief Flags customizing parser behavior */
-    int flag;
+    int flags;
     /** \brief Where last exit status should be stored */
     int *exit_status;
     /** \brief Global symbols table to use */
@@ -18,8 +18,6 @@ struct parser_args
     int program_args_count;
     /** \brief Pointer on the first program argument */
     char **program_args;
-    /** \brief true if we are currently executing a script */
-    bool running_script;
 };
 
 /*!

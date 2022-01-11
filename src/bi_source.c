@@ -15,7 +15,8 @@ static void __exit(const struct ctx *ctx, int status)
     *ctx->exit_status = status;
     ctx_free_allocated_memory(ctx, 0);
     longjmp(*ctx->exit_jump,
-            ctx->is_interactive ? EXIT_WITHOUT_LOOP_EXIT : EXIT_WITH_LOOP_EXIT);
+            ctx->flags & IS_INTERACTIVE ? EXIT_WITHOUT_LOOP_EXIT
+                                        : EXIT_WITH_LOOP_EXIT);
 }
 
 /** \brief search for a file in PATH */
@@ -88,12 +89,11 @@ int bi_source(const struct ctx *ctx, char **args)
     int err;
     struct parser_args parser_args = {
         .cs = cs,
-        .flag = 0,
+        .flags = ctx->flags & ~IS_INTERACTIVE,
         .exit_status = ctx->exit_status,
         .symtab = ctx->st,
         .program_args = ctx->program_args,
         .program_args_count = ctx->program_args_count,
-        .running_script = ctx->running_script,
     };
     while ((err = parser(&parser_args)) == NO_ERROR)
     {
