@@ -193,11 +193,12 @@ void symexp_word(const struct ctx *ctx, const char *word, struct list *dest)
         }
 
         /* Escape characters */
-        else if (c == '\\')
+        else if (c == '\\' && *word)
         {
             QUIT_DOLLARD_MODE
             if (*word == '\\'
-                || (!(mode & SINGLE_QUOTE)
+                || (!(mode & DOUBLE_QUOTE) && !(mode & SINGLE_QUOTE))
+                || (mode & DOUBLE_QUOTE
                     && (*word == '"' || *word == '`' || *word == '\n')))
             {
                 if (*word != '\n')
