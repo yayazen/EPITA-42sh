@@ -65,8 +65,7 @@ int rl_exec_case(const struct ctx *ctx, struct rl_exectree *node)
     struct list *l = list_new(1);
     symexp_word(ctx, node->attr.word, l);
 
-    struct ctx_str_list ctx_list_node;
-    struct ctx child_ctx = ctx_add_list(ctx, &ctx_list_node, l);
+    CTX_CHILD_FOR_LIST(ctx, child_ctx, l);
 
     if (node->child)
         rl_exec_case_clause(&child_ctx, node->child,

@@ -119,8 +119,7 @@ int rl_exec_for(const struct ctx *ctx, struct rl_exectree *node)
 
     // Register the generated list to automatically cleanup memory
     // in case of memory jump above this execution point
-    struct ctx_str_list list_ctx_node;
-    struct ctx list_ctx = ctx_add_list(ctx, &list_ctx_node, words);
+    CTX_CHILD_FOR_LIST(ctx, list_ctx, words);
 
     volatile int status = 0;
     volatile int val;

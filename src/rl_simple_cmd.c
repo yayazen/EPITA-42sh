@@ -172,8 +172,8 @@ int rl_exec_simple_cmd(const struct ctx *ctx, struct rl_exectree *node)
     {
         if ((blt = builtin_find(args->data[0])))
         {
-            struct ctx_str_list list_el;
-            struct ctx child_ctx = ctx_add_list(ctx, &list_el, args);
+            // Create a child context to store arguments list
+            CTX_CHILD_FOR_LIST(ctx, child_ctx, args)
 
             node->attr.cmd.status = blt(&child_ctx, args->data);
         }

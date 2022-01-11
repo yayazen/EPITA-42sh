@@ -136,3 +136,7 @@ static inline void ctx_free_allocated_memory(const struct ctx *ctx, int level)
         l = l->next;
     }
 }
+
+#define CTX_CHILD_FOR_LIST(parent_ctx, child_ctx, list)                        \
+    struct ctx_str_list list_ctx_node;                                         \
+    struct ctx child_ctx = ctx_add_list(parent_ctx, &list_ctx_node, list);
