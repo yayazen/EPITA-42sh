@@ -57,7 +57,7 @@
 
 * UNTIL                                [ OK ]
 
-* FOR                                  [ -- ]
+* FOR                                  [ OK ]
 
 * OPERATORS                            [ OK ]
 
@@ -99,7 +99,7 @@
 #                                                                             #
 ###############################################################################
 
-* CASE COMMANDS                          [ ++ ]
+* CASE COMMANDS                          [ OK ]
 
 * ALIASES                                [ ++ ]
     | * alias builtin                    [ OK ]
