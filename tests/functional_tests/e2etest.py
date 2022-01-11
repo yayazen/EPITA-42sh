@@ -148,6 +148,54 @@ if not test_mode() == ExecutionMode.input:
         empty_stderr=True,
         status=0
     )
+if not test_mode() == ExecutionMode.input:
+    test_simple_cmd(
+        cmd="for i in $@; do echo $i; done",
+        additional_args=["a", "b", "c", "d"],
+        stdout=b"b\nc\nd\n" if test_mode() == ExecutionMode.argument else b"a\nb\nc\nd\n",
+        empty_stderr=True,
+        status=0
+    )
+if not test_mode() == ExecutionMode.input:
+    test_simple_cmd(
+        cmd="for i in \"$@\"; do echo $i; done",
+        additional_args=["a", "b", "c", "d"],
+        stdout=b"b\nc\nd\n" if test_mode() == ExecutionMode.argument else b"a\nb\nc\nd\n",
+        empty_stderr=True,
+        status=0
+    )
+if not test_mode() == ExecutionMode.input:
+    test_simple_cmd(
+        cmd="echo $*",
+        additional_args=["ta", "ti", "to"],
+        stdout=b"ti to\n" if test_mode() == ExecutionMode.argument else b"ta ti to\n",
+        empty_stderr=True,
+        status=0
+    )
+if not test_mode() == ExecutionMode.input:
+    test_simple_cmd(
+        cmd="echo \"a$*b\"",
+        additional_args=["ta", "ti", "tu", "to"],
+        stdout=b"ati tu tob\n" if test_mode() == ExecutionMode.argument else b"ata ti tu tob\n",
+        empty_stderr=True,
+        status=0
+    )
+if not test_mode() == ExecutionMode.input:
+    test_simple_cmd(
+        cmd="echo \"a$*b\"",
+        additional_args=["ta", "da", "li"],
+        stdout=b"ada lib\n" if test_mode() == ExecutionMode.argument else b"ata da lib\n",
+        empty_stderr=True,
+        status=0
+    )
+if not test_mode() == ExecutionMode.input:
+    test_simple_cmd(
+        cmd="echo \"a$*b\"",
+        additional_args=["ta", "da"],
+        stdout=b"adab\n" if test_mode() == ExecutionMode.argument else b"ata dab\n",
+        empty_stderr=True,
+        status=0
+    )
 test_simple_cmd(
     cmd="echo a$@b",
     additional_args=[],
@@ -168,6 +216,22 @@ if not test_mode() == ExecutionMode.input:
         cmd="echo a$18b",
         additional_args=["ta", "da", "li"],
         stdout=b"ab\n",
+        empty_stderr=True,
+        status=0
+    )
+if not test_mode() == ExecutionMode.input:
+    test_simple_cmd(
+        cmd="for i in $*; do echo $i; done",
+        additional_args=["a", "b", "c", "d"],
+        stdout=b"b\nc\nd\n" if test_mode() == ExecutionMode.argument else b"a\nb\nc\nd\n",
+        empty_stderr=True,
+        status=0
+    )
+if not test_mode() == ExecutionMode.input:
+    test_simple_cmd(
+        cmd="for i in \"$*\"; do echo $i; done",
+        additional_args=["a", "b", "c", "d"],
+        stdout=b"b c d\n" if test_mode() == ExecutionMode.argument else b"a b c d\n",
         empty_stderr=True,
         status=0
     )

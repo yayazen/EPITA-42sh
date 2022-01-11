@@ -12,6 +12,12 @@
 
 #define __is_digit(c) (c >= '0' && c <= '9')
 
+struct __single_char_args
+{
+    char c;
+    int mode;
+};
+
 /** \brief Check if a given string is an integer or not */
 static bool __is_int(const char *val)
 {
@@ -73,14 +79,40 @@ static void __exp_args_array(const struct ctx *ctx, struct list *dest,
     vec_pushstr(vec, ctx->program_args[ctx->program_args_count - 1]);
 }
 
+/** \brief expand special variable with a single character */
+static int __exp_single_char(const struct ctx *ctx, struct list *dest,
+                             struct vec *vec, struct __single_char_args *a)
+{
+    switch (a->c)
+    {
+    // $@ => program arguments as an array
+    case '@':
+        __exp_args_array(ctx, dest, vec);
+        return true;
+
+    // $* => program arguments as a simple list
+    case '*':
+        if (a->mode & DOUBLE_QUOTE)
+            for (int i = 1; i < ctx->program_args_count; i++)
+            {
+                if (i > 1)
+                    vec_push(vec, ' ');
+                vec_pushstr(vec, ctx->program_args[i]);
+            }
+        else
+            __exp_args_array(ctx, dest, vec);
+        return true;
+
+    default:
+        return false;
+    }
+}
+
 #define QUIT_DOLLARD_MODE                                                      \
     if (mode & EXP_DOLLAR)                                                     \
     {                                                                          \
         mode &= ~EXP_DOLLAR;                                                   \
-        if (key[0] == '@' && key[1] == '\0')                                   \
-            __exp_args_array(ctx, dest, &expvec);                              \
-        else                                                                   \
-            vec_pushstr(&expvec, __search_sym(ctx, key));                      \
+        vec_pushstr(&expvec, __search_sym(ctx, key));                          \
     }
 
 void symexp_word(const struct ctx *ctx, const char *word, struct list *dest)
@@ -110,7 +142,7 @@ void symexp_word(const struct ctx *ctx, const char *word, struct list *dest)
             QUIT_DOLLARD_MODE;
         }
 
-        /* Switch to dolar */
+        /* Switch to dollar */
         else if (!(mode & SINGLE_QUOTE) && c == '$'
                  && (!(mode & EXP_DOLLAR) || i != 0))
         {
@@ -119,7 +151,7 @@ void symexp_word(const struct ctx *ctx, const char *word, struct list *dest)
             mode |= EXP_DOLLAR;
         }
 
-        /* Quit dolar mode & Search for symbol */
+        /* Quit dollar mode & Search for symbol */
         else if (mode & EXP_DOLLAR && (c == ' ' || c == '}' || c == ')'))
         {
             QUIT_DOLLARD_MODE;
@@ -146,9 +178,10 @@ void symexp_word(const struct ctx *ctx, const char *word, struct list *dest)
             }
 
             // Special variable with a single character
-            if (i == 1 && key[0] == '@')
+            struct __single_char_args a = { .c = c, .mode = mode };
+            if (i == 1 && __exp_single_char(ctx, dest, &expvec, &a))
             {
-                QUIT_DOLLARD_MODE
+                mode &= ~EXP_DOLLAR;
             }
         }
 
