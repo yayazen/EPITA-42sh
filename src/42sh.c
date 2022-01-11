@@ -2,6 +2,7 @@
 #include <getopt.h>
 #include <io/cstream.h>
 #include <stdio.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "constants.h"
@@ -82,6 +83,7 @@ int main(int argc, char *argv[], char **envp)
     struct cstream *cs = NULL;
     int exit_status = 0;
     struct symtab *symtab = NULL;
+    srand(time(NULL));
     int err = __parse_opts(argc, argv, &cs, &flag);
 
     if (flag & OPT_HELP)

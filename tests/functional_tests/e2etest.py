@@ -249,7 +249,9 @@ if not test_mode() == ExecutionMode.input:
         empty_stderr=True,
         status=0
     )
-
+if shell_to_use() != "dash":
+    test_simple_cmd("{ echo $RANDOM; echo $RANDOM; } | uniq | wc -l",
+                    stdout=b"2\n", empty_stderr=True, status=0)
 
 new_section("varassign", "Variables assignments...")
 test_simple_cmd("X=ABC; echo $X", b"ABC\n", b"", 0)

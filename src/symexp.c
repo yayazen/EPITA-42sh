@@ -33,7 +33,7 @@ static bool __is_int(const char *val)
  * \param ctx Execution context
  * \param key The key to search
  */
-static char *__search_sym(const struct ctx *ctx, const char *key)
+static char *__search_sym(const struct ctx *ctx, const char *key, char *buff)
 {
     // Check in program arguments
     if (__is_int(key))
@@ -43,6 +43,15 @@ static char *__search_sym(const struct ctx *ctx, const char *key)
         {
             return ctx->program_args[index];
         }
+    }
+
+    // $RANDOM
+    if (!strcmp(key, "RANDOM"))
+    {
+        // 2^15 please read for an explanation of upperbound limit
+        // news://news.epita.fr:119/spf5s2$nus$1@inn-7884769fdd-pjdl8.cri.epita.fr
+        sprintf(buff, "%d", rand() % 32768);
+        return buff;
     }
 
     // Search in symbols table
@@ -135,7 +144,7 @@ static int __exp_single_char(const struct ctx *ctx, struct list *dest,
     if (mode & EXP_DOLLAR)                                                     \
     {                                                                          \
         mode &= ~EXP_DOLLAR;                                                   \
-        vec_pushstr(&expvec, __search_sym(ctx, key));                          \
+        vec_pushstr(&expvec, __search_sym(ctx, key, exp_buff));                \
     }
 
 void symexp_word(const struct ctx *ctx, const char *word, struct list *dest)
@@ -146,6 +155,7 @@ void symexp_word(const struct ctx *ctx, const char *word, struct list *dest)
     int mode = 0;
     int i = 0;
     char key[100] = { '\0' };
+    char exp_buff[10]; // some special variables needs to write somewhere
     char c;
     while ((c = *word++) != '\0')
     {
