@@ -1,6 +1,8 @@
 #include "symexp.h"
 
 #include <stdlib.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include <utils/vec.h>
 
 #include "symtab.h"
@@ -45,12 +47,19 @@ static char *__search_sym(const struct ctx *ctx, const char *key, char *buff)
         }
     }
 
-    // $RANDOM
+    // $RANDOM => random number
     if (!strcmp(key, "RANDOM"))
     {
         // 2^15 please read for an explanation of upperbound limit
         // news://news.epita.fr:119/spf5s2$nus$1@inn-7884769fdd-pjdl8.cri.epita.fr
         sprintf(buff, "%d", rand() % 32768);
+        return buff;
+    }
+
+    // $UID
+    if (!strcmp(key, "UID"))
+    {
+        sprintf(buff, "%d", getuid());
         return buff;
     }
 
