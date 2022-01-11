@@ -83,6 +83,8 @@ static void __exp_args_array(const struct ctx *ctx, struct list *dest,
 static int __exp_single_char(const struct ctx *ctx, struct list *dest,
                              struct vec *vec, struct __single_char_args *a)
 {
+    char buff[10];
+
     switch (a->c)
     {
     // $@ => program arguments as an array
@@ -101,6 +103,12 @@ static int __exp_single_char(const struct ctx *ctx, struct list *dest,
             }
         else
             __exp_args_array(ctx, dest, vec);
+        return true;
+
+    // $? => last exit status
+    case '?':
+        sprintf(buff, "%d", *ctx->exit_status);
+        vec_pushstr(vec, buff);
         return true;
 
     default:
