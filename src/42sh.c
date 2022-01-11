@@ -57,7 +57,10 @@ static int __parse_opts(int optc, char **optv, struct cstream **cs, int *flag)
     if (*cs)
         ;
     else if (optind < optc)
+    {
+        *flag |= OPT_SCRIPT_MODE;
         *cs = cstream_file_create(fopen(optv[optind], "r"), true);
+    }
     else if (isatty(STDIN_FILENO))
         *cs = cstream_readline_create();
     else
@@ -82,12 +85,15 @@ int main(int argc, char *argv[], char **envp)
     symtab = symtab_new();
     symtab_fill_with_env_vars(symtab, envp);
 
-    struct parser_args parser_args = { .cs = cs,
-                                       .exit_status = &exit_status,
-                                       .flag = flag,
-                                       .symtab = symtab,
-                                       .program_args_count = argc - optind,
-                                       .program_args = &argv[optind] };
+    struct parser_args parser_args = {
+        .cs = cs,
+        .exit_status = &exit_status,
+        .flag = flag,
+        .symtab = symtab,
+        .program_args_count = argc - optind,
+        .program_args = &argv[optind],
+        .running_script = flag & OPT_SCRIPT_MODE,
+    };
     while ((err = parser(&parser_args)) == NO_ERROR && !(flag & OPT_HELP))
     {
         ;

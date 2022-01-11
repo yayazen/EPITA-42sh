@@ -111,6 +111,20 @@ static int __exp_single_char(const struct ctx *ctx, struct list *dest,
         vec_pushstr(vec, buff);
         return true;
 
+    // $$ => current process id
+    case '$':
+        sprintf(buff, "%d", getpid());
+        vec_pushstr(vec, buff);
+        return true;
+
+    // $# => number of arguments
+    case '#':
+        sprintf(buff, "%d",
+                ctx->running_script ? ctx->program_args_count - 1
+                                    : ctx->program_args_count);
+        vec_pushstr(vec, buff);
+        return true;
+
     default:
         return false;
     }

@@ -240,6 +240,16 @@ test_simple_cmd("uname;echo $?", stdout=b"Linux\n0\n",
                 empty_stderr=True, status=0)
 test_simple_cmd("/nonexisting_cmd;echo $?", stdout=b"127\n",
                 empty_stderr=False, status=0)
+test_simple_cmd("echo $#", stdout=b"0\n", empty_stderr=True, status=0)
+if not test_mode() == ExecutionMode.input:
+    test_simple_cmd(
+        cmd="echo $#",
+        additional_args=["a", "b", "c", "d"],
+        stdout=b"3\n" if test_mode() == ExecutionMode.argument else b"4\n",
+        empty_stderr=True,
+        status=0
+    )
+
 
 new_section("varassign", "Variables assignments...")
 test_simple_cmd("X=ABC; echo $X", b"ABC\n", b"", 0)
@@ -358,7 +368,7 @@ test_simple_cmd(
     stdout=b"",
     stderr=b"",
     status=0,
-    max_exec_time=0.2
+    max_exec_time=0.3
 )
 test_simple_cmd("! uname", b"Linux\n", empty_stderr=True,
                 validate_status=lambda s: s != 0)

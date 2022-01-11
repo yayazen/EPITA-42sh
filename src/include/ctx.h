@@ -57,6 +57,9 @@ struct ctx
     /** \brief specify whether we are in an interactive shell or not */
     int is_interactive;
 
+    /** \brief specify whether a script is being run or not */
+    bool running_script;
+
     /** \brief Number of program arguments */
     int program_args_count;
 
@@ -83,6 +86,7 @@ static inline struct ctx ctx_new(struct symtab *table, int *exit_status,
         .st = table,
         .exit_status = exit_status,
         .is_interactive = false,
+        .running_script = false,
         .program_args_count = 0,
         .program_args = NULL,
         .exit_jump = exit_jump,

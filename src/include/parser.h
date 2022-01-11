@@ -18,6 +18,8 @@ struct parser_args
     int program_args_count;
     /** \brief Pointer on the first program argument */
     char **program_args;
+    /** \brief true if we are currently executing a script */
+    bool running_script;
 };
 
 /*!

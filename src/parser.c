@@ -152,6 +152,7 @@ int parser(const struct parser_args *args)
                 ctx.is_interactive = args->cs->type->interactive;
                 ctx.program_args = args->program_args;
                 ctx.program_args_count = args->program_args_count;
+                ctx.running_script = args->running_script;
                 rl_exec_input(&ctx, s.node);
             }
         }

@@ -93,6 +93,7 @@ int bi_source(const struct ctx *ctx, char **args)
         .symtab = ctx->st,
         .program_args = ctx->program_args,
         .program_args_count = ctx->program_args_count,
+        .running_script = ctx->running_script,
     };
     while ((err = parser(&parser_args)) == NO_ERROR)
     {
