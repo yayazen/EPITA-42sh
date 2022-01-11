@@ -168,18 +168,11 @@ void symexp_word(const struct ctx *ctx, const char *word, struct list *dest)
     char c;
     while ((c = *word++) != '\0')
     {
-        /* enter / leave simple quote mode */
-        if (!(mode & DOUBLE_QUOTE) && c == '\'')
+        /* enter / leave simple-double quote mode */
+        if ((!(mode & DOUBLE_QUOTE) && c == '\'')
+            || (!(mode & SINGLE_QUOTE) && c == '"'))
         {
-            mode ^= SINGLE_QUOTE;
-            mode |= HAD_A_QUOTE;
-            QUIT_DOLLARD_MODE;
-        }
-
-        /* enter / leave double quote mode */
-        else if (!(mode & SINGLE_QUOTE) && c == '"')
-        {
-            mode ^= DOUBLE_QUOTE;
+            mode ^= c == '\'' ? SINGLE_QUOTE : DOUBLE_QUOTE;
             mode |= HAD_A_QUOTE;
             QUIT_DOLLARD_MODE;
         }
@@ -197,6 +190,26 @@ void symexp_word(const struct ctx *ctx, const char *word, struct list *dest)
         else if (mode & EXP_DOLLAR && (c == ' ' || c == '}' || c == ')'))
         {
             QUIT_DOLLARD_MODE;
+        }
+
+        /* Escape characters */
+        else if (c == '\\')
+        {
+            QUIT_DOLLARD_MODE
+            if (*word == '\\'
+                || (!(mode & SINGLE_QUOTE)
+                    && (*word == '"' || *word == '`' || *word == '\n')))
+            {
+                if (*word != '\n')
+                {
+                    vec_push(&expvec, *word);
+                }
+                word++;
+            }
+            else
+            {
+                vec_push(&expvec, '\\');
+            }
         }
 
         /* In symbol acquisition */

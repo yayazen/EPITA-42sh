@@ -16,8 +16,6 @@ print_info("Using {} passing commands in {}".format(
     shell_to_use(), test_mode()))
 
 
-print()
-
 new_section(None, "Setup environment...")
 test_simple_cmd("rm -rf "+test_dir+";", b"", b"", 0, working_directory="/tmp")
 test_simple_cmd("mkdir -p "+test_dir+"/repa "+test_dir+"/forbidden "+test_dir+"/repb " +
@@ -77,7 +75,13 @@ test_simple_cmd(
     empty_stderr=False,
     status=2
 )
+
+test_simple_cmd("echo '\\''", empty_stdout=True, empty_stderr=False, status=2)
 '''
+test_simple_cmd("echo '\\'", stdout=b"\\\n", empty_stderr=True, status=0)
+test_simple_cmd("echo '\\`'", stdout=b"\\`\n", empty_stderr=True, status=0)
+test_simple_cmd("echo '\\\\'", stdout=b"\\\n", empty_stderr=True, status=0)
+test_simple_cmd("echo '\\\n'", stdout=b"\\\n\n", empty_stderr=True, status=0)
 
 new_section("dlquotes", "Double quotes expansion...")
 test_simple_cmd("echo $HAPPY_42SH", b"\n", b"", 0)
@@ -94,6 +98,12 @@ test_simple_cmd("XXXX=ABCD; echo \"$XXXX\"", b"ABCD\n", b"", 0)
 test_simple_cmd("echo \"toto\"\"", empty_stdout=True,
                 empty_stderr=False, status=2)
 '''
+test_simple_cmd("echo \"\\'\"", stdout=b"\\'\n", empty_stderr=True, status=0)
+test_simple_cmd("echo \"\\\"\"", stdout=b"\"\n", empty_stderr=True, status=0)
+test_simple_cmd("echo \"\\`\"", stdout=b"`\n", empty_stderr=True, status=0)
+test_simple_cmd("echo \"\\\\\"", stdout=b"\\\n", empty_stderr=True, status=0)
+test_simple_cmd("echo \"\\\n\"", stdout=b"\n", empty_stderr=True, status=0)
+
 
 new_section("symexp", "Symbols expansion")
 test_simple_cmd("A=b;AA=c; echo $AA", stdout=b"c\n",
@@ -279,7 +289,7 @@ else:
     test_simple_cmd("echo -e h\\tello", b"h\tello\n", b"", 0)
     test_simple_cmd("echo -e h\\nello", b"h\nello\n", b"", 0)
     test_simple_cmd("echo -e h\\nel\\\\lo", b"h\nel\\lo\n", b"", 0)
-    test_simple_cmd("echo -e \\\\\\\\", b"\\\\\n", b"", 0)
+    test_simple_cmd("echo -e \\\\\\\\", b"\\\n", b"", 0)
 test_simple_cmd("echo p t", b"p t\n", b"", 0)
 
 new_section("exit", "exit builtin...")
@@ -859,7 +869,7 @@ new_section(None, "Clean test environment")
 test_simple_cmd("rm -rf "+test_dir+"", b"", b"", 0, working_directory="/tmp")
 
 # . end of tests
-print("{} / {} tests failed".format(number_failed_tests(), total_number_of_tests()))
+print("{} / {} tests failed\n".format(number_failed_tests(), total_number_of_tests()))
 if number_failed_tests() > 0:
     sys.exit(-1)
 
