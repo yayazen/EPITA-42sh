@@ -120,7 +120,7 @@ static int __exp_single_char(const struct ctx *ctx, struct list *dest,
     // $# => number of arguments
     case '#':
         sprintf(buff, "%d",
-                ctx->flags & OPT_INPUT_MODE || ctx->program_args_count == 0
+                ctx->flags & MODE_INPUT || ctx->program_args_count == 0
                     ? ctx->program_args_count
                     : ctx->program_args_count - 1);
         vec_pushstr(vec, buff);

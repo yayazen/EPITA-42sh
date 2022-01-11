@@ -45,7 +45,7 @@ static int __parse_opts(int optc, char **optv, struct cstream **cs, int *flag)
         case 'c':
             if (optarg && !(*cs))
             {
-                *flag |= OPT_COMMAND_MODE;
+                *flag |= MODE_COMMAND;
                 *cs = cstream_string_create(optarg);
                 break;
             }
@@ -59,17 +59,17 @@ static int __parse_opts(int optc, char **optv, struct cstream **cs, int *flag)
         ;
     else if (optind < optc)
     {
-        *flag |= OPT_SCRIPT_MODE;
+        *flag |= MODE_SCRIPT;
         *cs = cstream_file_create(fopen(optv[optind], "r"), true);
     }
     else if (isatty(STDIN_FILENO))
     {
-        *flag |= OPT_INPUT_MODE;
+        *flag |= MODE_INPUT;
         *cs = cstream_readline_create();
     }
     else
     {
-        *flag |= OPT_INPUT_MODE;
+        *flag |= MODE_INPUT;
         *cs = cstream_file_create(stdin, false);
     }
 

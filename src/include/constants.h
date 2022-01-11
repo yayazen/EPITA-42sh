@@ -28,17 +28,17 @@ enum
     /**
      * \brief executing a script
      */
-    OPT_SCRIPT_MODE = 1 << 4,
+    MODE_SCRIPT = 1 << 4,
 
     /**
      * \brief executing commands specified as argument
      */
-    OPT_COMMAND_MODE = 1 << 5,
+    MODE_COMMAND = 1 << 5,
 
     /**
      * \brief executing commands specified as argument
      */
-    OPT_INPUT_MODE = 1 << 6,
+    MODE_INPUT = 1 << 6,
 
     /**
      * \brief executing commands specified as argument

@@ -97,9 +97,7 @@ static inline struct ctx ctx_new(struct symtab *table, int *exit_status,
 /** \brief Filter accepted flags in contex */
 static inline int ctx_filter_flags(int flags)
 {
-    return flags
-        & (OPT_INPUT_MODE | OPT_COMMAND_MODE | OPT_SCRIPT_MODE
-           | IS_INTERACTIVE);
+    return flags & (MODE_INPUT | MODE_COMMAND | MODE_SCRIPT | IS_INTERACTIVE);
 }
 
 /** \brief create a child context for a loop execution */
