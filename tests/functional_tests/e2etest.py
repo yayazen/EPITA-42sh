@@ -116,6 +116,61 @@ if not test_mode() == ExecutionMode.input:
         empty_stderr=True,
         status=0
     )
+if not test_mode() == ExecutionMode.input:
+    test_simple_cmd(
+        cmd="echo $@",
+        additional_args=["ta", "ti", "to"],
+        stdout=b"ti to\n" if test_mode() == ExecutionMode.argument else b"ta ti to\n",
+        empty_stderr=True,
+        status=0
+    )
+if not test_mode() == ExecutionMode.input:
+    test_simple_cmd(
+        cmd="echo a$@b",
+        additional_args=["ta", "ti", "tu", "to"],
+        stdout=b"ati tu tob\n" if test_mode() == ExecutionMode.argument else b"ata ti tu tob\n",
+        empty_stderr=True,
+        status=0
+    )
+if not test_mode() == ExecutionMode.input:
+    test_simple_cmd(
+        cmd="echo a$@b",
+        additional_args=["ta", "da", "li"],
+        stdout=b"ada lib\n" if test_mode() == ExecutionMode.argument else b"ata da lib\n",
+        empty_stderr=True,
+        status=0
+    )
+if not test_mode() == ExecutionMode.input:
+    test_simple_cmd(
+        cmd="echo a$@b",
+        additional_args=["ta", "da"],
+        stdout=b"adab\n" if test_mode() == ExecutionMode.argument else b"ata dab\n",
+        empty_stderr=True,
+        status=0
+    )
+test_simple_cmd(
+    cmd="echo a$@b",
+    additional_args=[],
+    stdout=b"ab\n",
+    empty_stderr=True,
+    status=0
+)
+if not test_mode() == ExecutionMode.input:
+    test_simple_cmd(
+        cmd="echo a$1b",
+        additional_args=["ta", "da", "li"],
+        stdout=b"adab\n" if test_mode() == ExecutionMode.argument else b"atab\n",
+        empty_stderr=True,
+        status=0
+    )
+if not test_mode() == ExecutionMode.input:
+    test_simple_cmd(
+        cmd="echo a$18b",
+        additional_args=["ta", "da", "li"],
+        stdout=b"ab\n",
+        empty_stderr=True,
+        status=0
+    )
 
 new_section("varassign", "Variables assignments...")
 test_simple_cmd("X=ABC; echo $X", b"ABC\n", b"", 0)
