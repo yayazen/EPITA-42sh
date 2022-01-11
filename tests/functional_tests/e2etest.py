@@ -213,7 +213,7 @@ if not test_mode() == ExecutionMode.input:
     )
 if not test_mode() == ExecutionMode.input:
     test_simple_cmd(
-        cmd="echo a$18b",
+        cmd="echo a$9b",
         additional_args=["ta", "da", "li"],
         stdout=b"ab\n",
         empty_stderr=True,
