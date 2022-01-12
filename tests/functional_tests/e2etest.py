@@ -889,7 +889,9 @@ test_simple_cmd("case a  a) echo yes ;; b) echo no ;; esac",
                 empty_stdout=True, empty_stderr=False, status=2)
 # bad_case_no_esac
 test_simple_cmd("case a in", empty_stdout=True, empty_stderr=False, status=2)
-
+# bad_case_no_parenthesis
+test_simple_cmd("case i in a echo yes ;; esac",
+                empty_stdout=True, empty_stderr=False, status=2)
 
 new_section("invalid_cmd", "Invalid commands")
 test_simple_cmd("if", b"", empty_stderr=False,

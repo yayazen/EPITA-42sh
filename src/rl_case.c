@@ -48,7 +48,7 @@ int rl_case(struct rl_state *s)
 
     if (rl_expect(s, T_ESAC) <= 0)
     {
-        s->node = node;
+        rl_exectree_free(node);
         return -s->err;
     }
 
