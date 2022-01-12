@@ -38,6 +38,7 @@ all_sources += files(
     'rl_until.c',
     'rl_for.c',
     'rl_do_group.c',
+    'rl_fundec.c',
     'rl_case.c',
     'rl_case_clause.c',
     'rl_case_item.c',

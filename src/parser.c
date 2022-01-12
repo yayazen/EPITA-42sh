@@ -115,6 +115,7 @@ int parser(const struct parser_args *args)
     struct rl_state s = RL_DEFAULT_STATE;
     s.cs = args->cs;
     vec_init(&s.word);
+    vec_init(&s.buffered_word);
 
     // Run in lexer-only mode
     if (args->flags & OPT_DEBUG)
@@ -171,6 +172,7 @@ int parser(const struct parser_args *args)
 
     rl_exectree_free(s.node);
     vec_destroy(&s.word);
+    vec_destroy(&s.buffered_word);
 
     if (s.err != PARSER_ERROR && s.token == T_EOF)
         return REACHED_EOF;

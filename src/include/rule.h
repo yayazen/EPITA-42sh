@@ -8,7 +8,7 @@
 #define RL_DEFAULT_STATE                                                       \
     {                                                                          \
         .err = NO_ERROR, .flag = LEX_COLLECT | LEX_CMDSTART, .token = T_EOF,   \
-        .cs = NULL, .node = NULL,                                              \
+        .cs = NULL, .node = NULL, .buffered_token = -1                         \
     }
 /**
  * \brief anonymous enum of rule types.
@@ -30,18 +30,23 @@ struct ctx;
  */
 struct rl_state
 {
-    /* store error code for rule functions */
+    /** \brief store error code for rule functions */
     int err;
-    /* flags for the parser */
+    /** \brief flags for the parser */
     int flag;
-    /* the current token being processed */
+    /** \brief the current token being processed */
     int token;
-    /* hold the token's string representation */
+    /** \brief hold the token's string representation */
     struct vec word;
-    /* the stream to collect from */
+    /** \brief the stream to collect from */
     struct cstream *cs;
-    /* the resulting execution at this parsing state */
+    /** \brief the resulting execution at this parsing state */
     struct rl_exectree *node;
+
+    /** \brief Buffered token's word to return in priority */
+    struct vec buffered_word;
+    /** \brief Buffered token to return in priority */
+    int buffered_token;
 };
 
 /**
@@ -51,6 +56,9 @@ struct rl_state
  *  \param an accepted token
  */
 int rl_accept(struct rl_state *s, int token);
+
+/** \brief put current token in buffer */
+void rl_buffer_token(struct rl_state *s);
 
 /**
  * \brief same as rl_accept but errored out when token mismatch
@@ -62,7 +70,7 @@ int rl_simple_cmd(struct rl_state *s);
 /* return is similar to execvp (must be forked) */
 int rl_exec_simple_cmd(const struct ctx *ctx, struct rl_exectree *node);
 
-/* command: simple_command | shell_cmd */
+/* command: fundec | simple_command | shell_cmd */
 int rl_cmd(struct rl_state *s);
 int rl_exec_cmd(const struct ctx *ctx, struct rl_exectree *node);
 
@@ -140,6 +148,10 @@ int rl_prefix(struct rl_state *s);
  * | redirection
  */
 int rl_element(struct rl_state *s);
+
+/* fundec: WORD '(' ')' ('\n')* shell_command */
+int rl_fundec(struct rl_state *s);
+int rl_exec_fundec(const struct ctx *ctx, struct rl_exectree *node);
 
 /* rule_case: Case WORD ('\n')* 'in' ('\n')* [case_clause] Esac */
 int rl_case(struct rl_state *s);
