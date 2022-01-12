@@ -461,6 +461,13 @@ test_simple_cmd("echo toto 2>&", empty_stdout=True,
                 empty_stderr=False, status=2)
 # bad_ending_greatand
 test_simple_cmd("echo toto <&")
+test_simple_cmd(
+    cmd="if true; then echo yesif; else echo nofi; fi > " +
+        test_dir + "/yolo; cat " + test_dir+"/yolo",
+    stdout=b"yesif\n",
+    empty_stderr=True,
+    status=0
+)
 
 
 def postcheck():

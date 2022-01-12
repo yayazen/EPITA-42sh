@@ -62,6 +62,15 @@ int rl_shell_cmd(struct rl_state *s)
     if (!(node = rl_exectree_new(RL_SHELL_CMD)))
         return -(s->err = UNKNOWN_ERROR);
     node->child = s->node;
+
+    /* (redirection)* */
+    struct rl_exectree *child = node->child;
+    while (rl_redirection(s) == true)
+    {
+        child->sibling = s->node;
+        child = child->sibling;
+    }
+
     s->node = node;
     return true;
 }
@@ -89,6 +98,13 @@ int rl_exec_shell_cmd(const struct ctx *ctx, struct rl_exectree *node)
         fcntl(savedfd[i], F_SETFD, FD_CLOEXEC);
         if (__redirect(node->attr.cmd.fd[i], i, i == 0) != 0)
             return EXECUTION_ERROR;
+    }
+
+    struct rl_exectree *redirs_node = node->child->sibling;
+    while (redirs_node)
+    {
+        assert(rl_exec_redirection(redirs_node) == NO_ERROR);
+        redirs_node = redirs_node->sibling;
     }
 
     int type = node->child->type;
