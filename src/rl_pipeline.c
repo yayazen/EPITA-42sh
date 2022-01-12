@@ -55,7 +55,8 @@ static inline int __piperun(const struct ctx *ctx, struct rl_exectree *rl_pipe)
     struct rl_exectree *node = rl_pipe->child;
     do
     {
-        assert(node->type == RL_SIMPLE_CMD || node->type == RL_SHELL_CMD);
+        assert(node->type == RL_SIMPLE_CMD || node->type == RL_SHELL_CMD
+               || node->type == RL_FUNDEC);
 
         if (pipe(p->fd) < 0)
             return EXECUTION_ERROR;
@@ -82,7 +83,8 @@ static inline int __pipewait(struct rl_exectree *rl_pipe)
     struct rl_exectree *node = rl_pipe->child;
     do
     {
-        assert(node->type == RL_SIMPLE_CMD || node->type == RL_SHELL_CMD);
+        assert(node->type == RL_SIMPLE_CMD || node->type == RL_SHELL_CMD
+               || node->type == RL_FUNDEC);
 
         if (node->attr.cmd.pid != -1)
         {

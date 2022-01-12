@@ -768,6 +768,14 @@ test_simple_cmd(
     status=2,
 )
 
+new_section("funcdec", "Function declaration")
+test_simple_cmd("foo() { echo yes; }", empty_stdout=True,
+                empty_stderr=True, status=0)
+test_simple_cmd("foo() { bar() { echo foobar; } echo yes; }", empty_stdout=True,
+                empty_stderr=False, status=2)
+test_simple_cmd("foo() { bar() { echo foobar; }; echo yes; }", empty_stdout=True,
+                empty_stderr=True, status=0)
+
 
 new_section("case", "Case")
 test_simple_cmd("case a in esac", empty_stdout=True,

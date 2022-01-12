@@ -17,6 +17,8 @@ int rl_exec_cmd(const struct ctx *ctx, struct rl_exectree *node)
         return rl_exec_simple_cmd(ctx, node);
     else if (node->type == RL_SHELL_CMD)
         return rl_exec_shell_cmd(ctx, node);
+    else if (node->type == RL_FUNDEC)
+        return rl_exec_fundec(ctx, node);
 
     assert(0);
 }
