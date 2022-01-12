@@ -46,6 +46,7 @@ all_sources += files(
     'bi_echo.c',
     'bi_exit.c',
     'bi_cd.c',
+    'bi_export.c',
     'bi_continue.c',
     'bi_source.c',
     'bi_unset.c',

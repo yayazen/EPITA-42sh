@@ -74,10 +74,10 @@
 #                                                                             #
 ###############################################################################
 
-* BUILTINS                              [ ++ ]
+* BUILTINS                              [ OK ]
     | * exit                            [ OK ]
     | * cd                              [ OK ]
-    | * export                          [ -- ]
+    | * export                          [ OK ]
     | * continue                        [ OK ]
     | * break                           [ OK ]
     | * dot                             [ OK ]

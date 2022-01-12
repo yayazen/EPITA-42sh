@@ -325,6 +325,17 @@ test_simple_cmd("cd /tmp;cd;pwd", test_dir.encode('ascii')+b"\n",
                 b"", 0, env={"HOME": test_dir})
 test_simple_cmd("cd /tmp;cd;pwd", b"/tmp\n", b"", 0, env={"HOME": ""})
 
+new_section("export", "export builtin...")
+test_simple_cmd(cmd="export A; A=10; printenv A",
+                stdout=b"10\n", empty_stderr=True, status=0)
+test_simple_cmd(cmd="A=10;export A; printenv A",
+                stdout=b"10\n", empty_stderr=True, status=0)
+test_simple_cmd(cmd="export A=10; printenv A",
+                stdout=b"10\n", empty_stderr=True, status=0)
+test_simple_cmd(cmd="B=10;export A=$B; printenv A",
+                stdout=b"10\n", empty_stderr=True, status=0)
+test_simple_cmd(cmd="B=10;export A=10 B=120 C; C=42; printenv A; printenv B; printenv C;",
+                stdout=b"10\n120\n42\n", empty_stderr=True, status=0)
 
 new_section("continuebreak", "continue & break builtins...")
 test_simple_cmd("while true; do echo a; break; echo b; done", b"a\n", b"", 0)

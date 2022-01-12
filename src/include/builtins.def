@@ -1,6 +1,7 @@
 BUILTIN("echo", bi_echo)
 BUILTIN("exit", bi_exit)
 BUILTIN("cd", bi_cd)
+BUILTIN("export", bi_export)
 BUILTIN("continue", bi_continue)
 BUILTIN("break", bi_break)
 BUILTIN(".", bi_source)
