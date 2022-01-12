@@ -30,8 +30,13 @@ int rl_if_clause(struct rl_state *s)
     child = child->sibling;
 
     /* [else_clause] */
-    if (rl_else_clause(s) == true)
-        child->sibling = s->node;
+    s->node = NULL;
+    if (rl_else_clause(s) < 0)
+    {
+        s->node = node;
+        return -s->err;
+    }
+    child->sibling = s->node;
 
     /* fi */
     if (rl_expect(s, T_FI) <= 0)

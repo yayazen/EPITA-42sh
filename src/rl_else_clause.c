@@ -46,7 +46,7 @@ int __rl_elif(struct rl_state *s)
     if (rl_expect(s, T_THEN) <= 0 || rl_compound_list(s) <= 0)
     {
         rl_exectree_free(node);
-        return -s->err;
+        return -PARSER_ERROR;
     }
 
     node->child->sibling = s->node;

@@ -56,6 +56,7 @@ test_simple_cmd("if ; then true; fi", b"", None, 2)
 test_simple_cmd("if true; then ; fi", b"", None, 2)
 # bad_if_elif_without_then
 test_simple_cmd("if true; then true; elif ; fi", b"", None, 2)
+test_simple_cmd("if true; then true; elif true; echo yes; fi", b"", None, 2)
 # bad_if_no_then
 test_simple_cmd("if true; fi", b"", None, 2)
 
