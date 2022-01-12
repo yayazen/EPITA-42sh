@@ -65,7 +65,8 @@ int rl_redirection(struct rl_state *s)
     if (!((token == T_LESSAND || token == T_GREATAND)
           && rl_accept(s, T_IONUMBER) == true)
         && (rl_expect(s, T_WORD) <= 0))
-        return -s->err;
+        return -(s->err = PARSER_ERROR);
+
     node = rl_exectree_new(RL_REDIRECTION);
     if (!node || !(node->attr.redir.file = strdup(vec_cstring(&s->word))))
         return -(s->err = PARSER_ERROR);

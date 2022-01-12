@@ -445,6 +445,22 @@ test_simple_cmd(
 # lessgreat
 test_simple_cmd("uname > {}/lolo;wc -l <> {}/lolo; rm {}/lolo".format(test_dir, test_dir, test_dir),
                 b"1\n", b"", 0)
+# bad_ending_append_redirection
+test_simple_cmd("echo toto >>", empty_stdout=True,
+                empty_stderr=False, status=2)
+# bad_ending_input_redirection
+test_simple_cmd("echo toto >", empty_stdout=True, empty_stderr=False, status=2)
+# bad_redirections_pipes
+test_simple_cmd("echo test > | cat - >", empty_stdout=True,
+                empty_stderr=False, status=2)
+# bad_ending_lessgreat
+test_simple_cmd("echo toto <>", empty_stdout=True,
+                empty_stderr=False, status=2)
+# bad_ending_lessand
+test_simple_cmd("echo toto 2>&", empty_stdout=True,
+                empty_stderr=False, status=2)
+# bad_ending_greatand
+test_simple_cmd("echo toto <&")
 
 
 def postcheck():
