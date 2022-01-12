@@ -287,6 +287,11 @@ else:
     test_simple_cmd("echo hello", b"hello\n", b"", 0)
     test_simple_cmd("echo hello yes", b"hello yes\n", b"", 0)
     test_simple_cmd("echo -n hello", b"hello", b"", 0)
+    test_simple_cmd("echo '\\n'", b"\\n\n", b"", 0)
+    test_simple_cmd("echo -n '\\n'", b"\\n", b"", 0)
+    test_simple_cmd("echo -e '\\n'", b"\n\n", b"", 0)
+
+    # These tests are problematic
     test_simple_cmd("echo -n h\\\\tello", b"h\\tello", b"", 0)
     test_simple_cmd("echo -ne h\\\\tello", b"h\tello", b"", 0)
     test_simple_cmd("echo -en h\\\\tello", b"h\tello", b"", 0)
