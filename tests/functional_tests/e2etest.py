@@ -644,6 +644,10 @@ test_simple_cmd("A=Me;for i in a $A; do echo $i; A=42sh; done",
                 stdout=b"a\nMe\n", empty_stderr=True, status=0)
 test_simple_cmd("A=John;for i in $A; do echo $A; done",
                 stdout=b"John\n", empty_stderr=True, status=0)
+# simple_for_no_list_no_semicolon
+test_simple_cmd(cmd="for i do echo yes; done",
+                empty_stdout=True, empty_stderr=True, status=0)
+
 
 new_section("env", "Environment variables")
 test_simple_cmd("AAAA=ccc; printenv AAAA", b"ccc\n",

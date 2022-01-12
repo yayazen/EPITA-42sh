@@ -7,6 +7,15 @@
 #include "symexp.h"
 #include "token.h"
 
+/** \brief eat next new lines in lexer stream */
+static bool __eat_new_lines(struct rl_state *s)
+{
+    /* ('\n')* */
+    while (rl_accept(s, T_LF) > 0)
+        ;
+    return true;
+}
+
 int rl_for(struct rl_state *s)
 {
     struct rl_exectree *node;
@@ -26,18 +35,10 @@ int rl_for(struct rl_state *s)
     /* [';'] */
     if (rl_accept(s, T_SEMICOL) == true)
         ;
-    else
+
+    /* ('\n')* 'in' */
+    else if (__eat_new_lines(s) && rl_accept(s, T_IN) == true)
     {
-        /* ('\n')* */
-        while (rl_accept(s, T_LF) > 0)
-            ;
-
-        /* 'in' */
-        if (rl_expect(s, T_IN) <= 0)
-        {
-            goto err_parsing;
-        }
-
         /* (WORD)* */
         while (rl_accept(s, T_WORD) == true)
         {
@@ -69,8 +70,7 @@ int rl_for(struct rl_state *s)
     }
 
     /* ('\n')* */
-    while (rl_accept(s, T_LF) > 0)
-        ;
+    __eat_new_lines(s);
 
     /* do_group */
     s->flag |= PARSER_LINE_START;
