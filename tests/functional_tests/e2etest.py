@@ -769,11 +769,15 @@ test_simple_cmd(
 )
 
 new_section("funcdec", "Function declaration")
+test_simple_cmd("foo()\n\n\n{\n\n\n\necho yes;\n\n\n\n\n}\n\n\n\n", empty_stdout=True,
+                empty_stderr=True, status=0)
 test_simple_cmd("foo() { echo yes; }", empty_stdout=True,
                 empty_stderr=True, status=0)
 test_simple_cmd("foo() { bar() { echo foobar; } echo yes; }", empty_stdout=True,
                 empty_stderr=False, status=2)
 test_simple_cmd("foo() { bar() { echo foobar; }; echo yes; }", empty_stdout=True,
+                empty_stderr=True, status=0)
+test_simple_cmd("foo() {\n\n\n\n\n\n\n\nbar() { echo foobar; }\n\n\n\necho yes; }", empty_stdout=True,
                 empty_stderr=True, status=0)
 
 
