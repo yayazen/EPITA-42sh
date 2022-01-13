@@ -16,9 +16,9 @@ struct symword
 {
     char *word;
 
-    /* Only for word tokens. Specify whether these tokens
+    /** \brief Only for word tokens. Specify whether these tokens
         should be applied as child environment variable */
-    int exported;
+    bool exported;
 };
 
 union symval
@@ -27,7 +27,7 @@ union symval
     struct rl_exectree *func;
 };
 
-/* hold a key-value pair */
+/** \brief hold a key-value pair */
 struct kvpair
 {
     int type;
@@ -40,7 +40,7 @@ struct kvpair
     struct kvpair *next;
 };
 
-/* hash table structure */
+/** \brief hash table structure */
 struct symtab
 {
     size_t capacity;
@@ -48,25 +48,28 @@ struct symtab
     struct kvpair **data;
 };
 
-/* alloc a new hash table */
+/** \brief alloc a new hash table */
 struct symtab *symtab_new(void);
-/* fill the symtable with environment variables */
+/** \brief fill the symtable with environment variables */
 int symtab_fill_with_env_vars(struct symtab *st, char **envp);
-/* resize allocated memory for symtab */
+/** \brief resize allocated memory for symtab */
 struct symtab *symtab_realloc(struct symtab *st, size_t capacity);
-/* clear hash table and free kvpairs */
+/** \brief clear hash table and free kvpairs */
 void symtab_clear(struct symtab *st);
-/* free memory used by a key-value pair */
+/** \brief free memory used by a key-value pair */
 void kv_free(struct kvpair *pair);
-/* free the memory used by st */
+/** \brief free the memory used by st */
 void symtab_free(struct symtab *st);
-/* add a new kv of the form K=V to a hash table */
+/** \brief add a new kv of the form K=V to a hash table */
 struct kvpair *symtab_add(struct symtab *st, const char *key, int type,
                           void *value);
-/* remove a k from the hashtable */
+/** \brief remove a k from the hashtable */
 int symtab_del(struct symtab *st, struct kvpair *pair);
-/* search for a key in the symbol table */
+/** \brief search for a key in the symbol table */
 struct kvpair *symtab_lookup(struct symtab *st, const char *key, int type);
 
-/* print current symbols table */
+/** \brief clone a symtab */
+struct symtab *symtab_clone(const struct symtab *st);
+
+/** \brief print current symbols table */
 void symtab_print(struct symtab *st);

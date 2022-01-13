@@ -940,6 +940,22 @@ test_simple_cmd("case a in", empty_stdout=True, empty_stderr=False, status=2)
 test_simple_cmd("case i in a echo yes ;; esac",
                 empty_stdout=True, empty_stderr=False, status=2)
 
+
+new_section("subshell", "Subshell")
+test_simple_cmd("(exit 42;); echo $?", stdout=b"42\n",
+                empty_stderr=True, status=0)
+test_simple_cmd("A=b;(A=c; echo $A);echo $A;",
+                stdout=b"c\nb\n", empty_stderr=True, status=0)
+test_simple_cmd("( { foo() { echo yes; }; foo; })",
+                stdout=b"yes\n", empty_stderr=True, status=0)
+test_simple_cmd("( { foo() { echo yes; }; }); foo",
+                empty_stdout=True, empty_stderr=False, status=127)
+test_simple_cmd("for i in a b; do (break;); echo $i; done",
+                stdout=b"a\nb\n", empty_stderr=True, status=0)
+test_simple_cmd("a=b; (unset a); echo $a", stdout=b"b\n",
+                empty_stderr=True, status=0)
+
+
 new_section("invalid_cmd", "Invalid commands")
 test_simple_cmd("if", b"", empty_stderr=False,
                 validate_status=lambda x: x != 0)

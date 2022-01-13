@@ -85,11 +85,11 @@
 
 * COMMAND BLOCKS                        [ OK ]
 
-* FUNCTIONS                             [ -- ]
+* FUNCTIONS                             [ OK ]
 
 * COMMAND SUBSTITUTION                  [ -- ]
 
-* SUBSHELLS                             [ -- ]
+* SUBSHELLS                             [ OK ]
 
 
 

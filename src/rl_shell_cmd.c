@@ -1,9 +1,11 @@
 #include <assert.h>
 #include <fcntl.h>
+#include <setjmp.h>
 #include <unistd.h>
 #include <utils/error.h>
 
 #include "constants.h"
+#include "ctx.h"
 #include "rule.h"
 #include "token.h"
 
@@ -34,6 +36,11 @@ int rl_shell_cmd(struct rl_state *s)
             return -s->err;
         }
         s->flag &= ~PARSER_LINE_START;
+
+        // Encapsulate the command
+        struct rl_exectree *child = rl_exectree_new(RL_SUBSHELL);
+        child->child = s->node;
+        s->node = child;
     }
 
     /* rule_if */
@@ -86,6 +93,31 @@ static inline int __redirect(int oldfd, int newfd, int closefd)
     return 0;
 }
 
+static int __exec_subshell(const struct ctx *ctx, struct rl_exectree *node)
+{
+    assert(node->type == RL_SUBSHELL);
+
+    struct ctx child_ctx = *ctx;
+    child_ctx.alloc_list = NULL;
+    child_ctx.loop_jump = NULL;
+    child_ctx.st = symtab_clone(ctx->st);
+
+    jmp_buf exit_buff;
+    volatile int jmpval;
+    jmpval = setjmp(exit_buff);
+    if (jmpval != 0)
+        ;
+    else
+    {
+        child_ctx.exit_jump = &exit_buff;
+
+        rl_exec_compound_list(&child_ctx, node->child);
+    }
+
+    symtab_free(child_ctx.st);
+    return *ctx->exit_status;
+}
+
 int rl_exec_shell_cmd(const struct ctx *ctx, struct rl_exectree *node)
 {
     assert(node && node->child && node->type == RL_SHELL_CMD);
@@ -120,6 +152,8 @@ int rl_exec_shell_cmd(const struct ctx *ctx, struct rl_exectree *node)
         node->attr.cmd.status = rl_exec_until(ctx, node->child);
     else if (type == RL_CASE)
         node->attr.cmd.status = rl_exec_case(ctx, node->child);
+    else if (type == RL_SUBSHELL)
+        node->attr.cmd.status = __exec_subshell(ctx, node->child);
 
     for (int i = 0; i < 3; i++)
     {
