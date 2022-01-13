@@ -779,6 +779,26 @@ test_simple_cmd("foo() { bar() { echo foobar; }; echo yes; }", empty_stdout=True
                 empty_stderr=True, status=0)
 test_simple_cmd("foo() {\n\n\n\n\n\n\n\nbar() { echo foobar; }\n\n\n\necho yes; }", empty_stdout=True,
                 empty_stderr=True, status=0)
+test_simple_cmd("foo() { echo hello world; }; foo",
+                stdout=b"hello world\n", empty_stderr=True, status=0)
+test_simple_cmd("foo() { echo hello world; }; unset -f foo; foo",
+                empty_stdout=True, empty_stderr=False, status=127)
+test_simple_cmd("foo() { bar() { echo hello world; } }; bar",
+                empty_stdout=True, empty_stderr=False, status=127)
+test_simple_cmd("foo() { bar() { echo hello world; } }; foo",
+                empty_stdout=True, empty_stderr=True, status=0)
+test_simple_cmd("foo() { bar() { echo hello world; } }; foo;bar",
+                stdout=b"hello world\n", empty_stderr=True, status=0)
+test_simple_cmd("foo() { echo $1 $2; }; foo A B",
+                stdout=b"A B\n", empty_stderr=True, status=0)
+test_simple_cmd("foo() { unset -f foo; echo done; }; foo",
+                stdout=b"done\n", empty_stderr=True, status=0)
+test_simple_cmd("hon() { exit 42; }; hon",
+                empty_stdout=True, empty_stderr=True, status=42)
+test_simple_cmd("hon() { break; }; for i in a b c d; do  hon; echo yolo; done",
+                stdout=b"yolo\nyolo\nyolo\nyolo\n", empty_stderr=True, status=0)
+test_simple_cmd("hihi() { echo 42sh > " + test_dir + "/mytest; }; hihi; cat " + test_dir + "/mytest",
+                stdout=b"42sh\n", empty_stderr=True, status=0)
 
 
 new_section("case", "Case")

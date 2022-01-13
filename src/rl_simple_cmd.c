@@ -167,16 +167,39 @@ int rl_exec_simple_cmd(const struct ctx *ctx, struct rl_exectree *node)
     __push_args(ctx, node->child, args);
     list_push(args, NULL);
 
+    struct kvpair *kv;
+
     // Run command (if any)
     if (args->size > 1)
     {
+        // Create a child context to store arguments list
+        // This is needed to execute builtins or functions
+        CTX_CHILD_FOR_LIST(ctx, child_ctx, args)
+
+        // Builtin
         if ((blt = builtin_find(args->data[0])))
         {
-            // Create a child context to store arguments list
-            CTX_CHILD_FOR_LIST(ctx, child_ctx, args)
-
             node->attr.cmd.status = blt(&child_ctx, args->data);
         }
+
+        // Function
+        else if ((kv = symtab_lookup(ctx->st, args->data[0], KV_FUNC)) != NULL)
+        {
+            child_ctx.loop_jump = NULL;
+            child_ctx.program_args = args->data;
+            child_ctx.program_args_count = args->size;
+
+            // We need to clone the function because the function entry in the
+            // symtable could change while executing the function (be changed or
+            // deleted)
+            struct rl_exectree *func = rl_exectree_clone(kv->value.func);
+
+            CTX_CHILD_FOR_EXECTREE(&child_ctx, child2_ctx, func);
+            node->attr.cmd.status = rl_exec_shell_cmd(&child2_ctx, func);
+            rl_exectree_free(func);
+        }
+
+        // Standard command
         else
         {
             node->attr.cmd.pid = fork();

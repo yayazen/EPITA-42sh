@@ -64,6 +64,10 @@ struct rl_exectree
     struct rl_exectree *sibling;
 };
 
+#define __rl_exectree_has_word(type)                                           \
+    (type == RL_WORD || type == RL_ASSIGN_WORD || type == RL_FOR               \
+     || type == RL_CASE)
+
 /**
  * \brief create a new exec node with a predefined type.
  */
@@ -95,6 +99,33 @@ static inline struct rl_exectree *rl_exectree_new(int rltype)
 }
 
 /**
+ * @brief Clone an exec node recursively
+ *
+ * @param src The source node to clone
+ * @return The cloned node
+ */
+static inline struct rl_exectree *
+rl_exectree_clone(const struct rl_exectree *src)
+{
+    if (!src)
+        return NULL;
+
+    struct rl_exectree *clone = rl_exectree_new(src->type);
+
+    memcpy(&clone->attr, &src->attr, sizeof(union attr));
+
+    if (__rl_exectree_has_word(src->type) && src->attr.word)
+        clone->attr.word = strdup(src->attr.word);
+    else if (src->type == RL_REDIRECTION && src->attr.redir.file)
+        clone->attr.redir.file = strdup(src->attr.redir.file);
+
+    clone->child = rl_exectree_clone(src->child);
+    clone->sibling = rl_exectree_clone(src->sibling);
+
+    return clone;
+}
+
+/**
  * \brief free the AST recursively.
  */
 static inline void rl_exectree_free(struct rl_exectree *node)
@@ -104,11 +135,11 @@ static inline void rl_exectree_free(struct rl_exectree *node)
     rl_exectree_free(node->child);
     rl_exectree_free(node->sibling);
 
-    if ((node->type == RL_WORD || node->type == RL_ASSIGN_WORD
-         || node->type == RL_FOR || node->type == RL_CASE)
-        && node->attr.word)
+    if (__rl_exectree_has_word(node->type) && node->attr.word)
         free(node->attr.word);
     else if (node->type == RL_REDIRECTION && node->attr.redir.file)
         free(node->attr.redir.file);
     free(node);
 }
+
+#undef __rl_exectree_has_word

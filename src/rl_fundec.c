@@ -1,6 +1,7 @@
 #include <assert.h>
 
 #include "constants.h"
+#include "ctx.h"
 #include "rule.h"
 #include "token.h"
 
@@ -68,6 +69,11 @@ int rl_fundec(struct rl_state *s)
 int rl_exec_fundec(const struct ctx *ctx, struct rl_exectree *node)
 {
     assert(ctx && node);
-    // TODO : save the function
+    assert(node->type == RL_FUNDEC);
+
+    // Add the function to the symtable
+    symtab_add(ctx->st, node->child->attr.word, KV_FUNC,
+               rl_exectree_clone(node->child->sibling));
+
     return 0;
 }
