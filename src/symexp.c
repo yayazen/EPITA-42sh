@@ -154,60 +154,64 @@ static int __exp_single_char(const struct ctx *ctx, struct list *dest,
 }
 
 #define QUIT_DOLLARD_MODE                                                      \
-    if (mode & EXP_DOLLAR)                                                     \
+    if (s.mode & EXP_DOLLAR)                                                   \
     {                                                                          \
-        mode &= ~EXP_DOLLAR;                                                   \
-        vec_pushstr(&expvec, __search_sym(ctx, key, exp_buff));                \
+        s.mode &= ~EXP_DOLLAR;                                                 \
+        vec_pushstr(&s.expvec, __search_sym(s.ctx, s.key, s.exp_buff));        \
     }
 
-void symexp_word(const struct ctx *ctx, const char *word, struct list *dest)
+void symexp_word(const struct ctx *ctx, const char *w, struct list *dest)
 {
-    struct vec expvec;
-    vec_init(&expvec);
+    struct symexp_state s = {
+        .ctx = ctx,
+        .word = w,
+        .dest = dest,
+        .mode = 0,
+        .i = 0,
+    };
+    vec_init(&s.expvec);
+    memset(s.key, 0, 100);
 
-    int mode = 0;
-    int i = 0;
-    char key[100] = { '\0' };
-    char exp_buff[10]; // some special variables needs to write somewhere
-    char c;
-    while ((c = *word++) != '\0')
+    while ((s.c = *s.word++) != '\0')
     {
         /* enter / leave simple-double quote mode */
-        if ((!(mode & DOUBLE_QUOTE) && c == '\'')
-            || (!(mode & SINGLE_QUOTE) && c == '"'))
+        if ((!(s.mode & DOUBLE_QUOTE) && s.c == '\'')
+            || (!(s.mode & SINGLE_QUOTE) && s.c == '"'))
         {
-            mode ^= c == '\'' ? SINGLE_QUOTE : DOUBLE_QUOTE;
-            mode |= HAD_A_QUOTE;
+            s.mode ^= s.c == '\'' ? SINGLE_QUOTE : DOUBLE_QUOTE;
+            s.mode |= HAD_A_QUOTE;
             QUIT_DOLLARD_MODE;
         }
 
         /* Switch to dollar */
-        else if (!(mode & SINGLE_QUOTE) && c == '$'
-                 && (!(mode & EXP_DOLLAR) || i != 0))
+        else if (!(s.mode & SINGLE_QUOTE) && s.c == '$'
+                 && (!(s.mode & EXP_DOLLAR) || s.i != 0))
         {
             QUIT_DOLLARD_MODE;
-            i = 0;
-            mode |= EXP_DOLLAR;
+            s.i = 0;
+            s.mode |= EXP_DOLLAR;
         }
 
         /* Quit dollar mode & Search for symbol */
-        else if (mode & EXP_DOLLAR && (c == ' ' || c == '}' || c == ')'))
+        else if (s.mode & EXP_DOLLAR
+                 && (s.c == ' ' || s.c == '}' || s.c == ')'))
         {
             QUIT_DOLLARD_MODE;
         }
 
         /* Command substitution */
-        else if (mode & EXP_DOLLAR && i == 0 && c == '(' && *word != ')')
+        else if (s.mode & EXP_DOLLAR && s.i == 0 && s.c == '('
+                 && *s.word != ')')
         {
             // Parser section
-            struct rl_state s = RL_DEFAULT_STATE;
+            struct rl_state ps = RL_DEFAULT_STATE;
 
             // Allocate memory
-            s.cs = cstream_string_create(word - 1);
-            vec_init(&s.word);
-            vec_init(&s.buffered_word);
+            ps.cs = cstream_string_create(s.word - 1);
+            vec_init(&ps.word);
+            vec_init(&ps.buffered_word);
 
-            if (rl_subshell(&s) == true)
+            if (rl_subshell(&ps) == true)
             {
                 int pipefd[2];
                 assert(pipe(pipefd) == 0);
@@ -219,18 +223,18 @@ void symexp_word(const struct ctx *ctx, const char *word, struct list *dest)
                 dup2(pipefd[1], STDOUT_FILENO);
                 close(pipefd[1]);
 
-                rl_exec_subshell(ctx, s.node);
+                rl_exec_subshell(ctx, ps.node);
 
                 // Rollback redirect
                 dup2(savefd, STDOUT_FILENO);
                 close(savefd);
 
-                struct cstream *s =
+                struct cstream *cs =
                     cstream_file_create(fdopen(pipefd[0], "r"), true);
 
                 int c;
                 bool reset = false;
-                while (cstream_pop(s, &c) == NO_ERROR && c != EOF)
+                while (cstream_pop(cs, &c) == NO_ERROR && c != EOF)
                 {
                     if (c == ' ' || c == '\n')
                     {
@@ -238,102 +242,102 @@ void symexp_word(const struct ctx *ctx, const char *word, struct list *dest)
                         continue;
                     }
 
-                    if (reset && expvec.size > 0)
+                    if (reset && s.expvec.size > 0)
                     {
-                        reset = false;
-                        if (mode & DOUBLE_QUOTE)
-                            vec_push(&expvec, ' ');
+                        if (s.mode & DOUBLE_QUOTE)
+                            vec_push(&s.expvec, ' ');
                         else
                         {
-                            list_push(dest, strdup(vec_cstring(&expvec)));
-                            vec_reset(&expvec);
+                            list_push(dest, strdup(vec_cstring(&s.expvec)));
+                            vec_reset(&s.expvec);
                         }
                     }
+                    reset = false;
 
-                    vec_push(&expvec, c);
+                    vec_push(&s.expvec, c);
                 }
 
-                cstream_free(s);
+                cstream_free(cs);
             }
             else
             {
                 fprintf(stderr, PACKAGE " : rule mismatch or unimplemented");
             }
 
-            word = cstream_string_str(s.cs) - 1;
-            if (*word == ')' && *(word + 1) == '\0')
-                word++;
+            s.word = cstream_string_str(ps.cs) - 1;
+            if (*s.word == ')' && *(s.word + 1) == '\0')
+                s.word++;
 
             // Free parser
-            cstream_free(s.cs);
-            rl_exectree_free(s.node);
-            vec_destroy(&s.word);
-            vec_destroy(&s.buffered_word);
+            cstream_free(ps.cs);
+            rl_exectree_free(ps.node);
+            vec_destroy(&ps.word);
+            vec_destroy(&ps.buffered_word);
 
             QUIT_DOLLARD_MODE
         }
 
         /* Escape characters */
-        else if (c == '\\' && *word)
+        else if (s.c == '\\' && *s.word)
         {
             QUIT_DOLLARD_MODE
-            if (*word == '\\'
-                || (!(mode & DOUBLE_QUOTE) && !(mode & SINGLE_QUOTE))
-                || (mode & DOUBLE_QUOTE
-                    && (*word == '"' || *word == '`' || *word == '\n')))
+            if (*s.word == '\\'
+                || (!(s.mode & DOUBLE_QUOTE) && !(s.mode & SINGLE_QUOTE))
+                || (s.mode & DOUBLE_QUOTE
+                    && (*s.word == '"' || *s.word == '`' || *s.word == '\n')))
             {
-                if (*word != '\n')
+                if (*s.word != '\n')
                 {
-                    vec_push(&expvec, *word);
+                    vec_push(&s.expvec, *s.word);
                 }
-                word++;
+                s.word++;
             }
             else
             {
-                vec_push(&expvec, '\\');
+                vec_push(&s.expvec, '\\');
             }
         }
 
         /* In symbol acquisition */
-        else if (!(mode & SINGLE_QUOTE) && (mode & EXP_DOLLAR))
+        else if (!(s.mode & SINGLE_QUOTE) && (s.mode & EXP_DOLLAR))
         {
-            if (c == '(' || c == '{')
+            if (s.c == '(' || s.c == '{')
                 continue;
 
             // special case : shell arguments
-            if (__is_int(key) && !__is_digit(c))
+            if (__is_int(s.key) && !__is_digit(s.c))
             {
-                word--;
+                s.word--;
                 QUIT_DOLLARD_MODE
             }
 
             // default case
             else
             {
-                key[i++] = c;
-                key[i] = '\0';
+                s.key[s.i++] = s.c;
+                s.key[s.i] = '\0';
             }
 
             // Special variable with a single character
-            struct __single_char_args a = { .c = c, .mode = mode };
-            if (i == 1 && __exp_single_char(ctx, dest, &expvec, &a))
+            struct __single_char_args a = { .c = s.c, .mode = s.mode };
+            if (s.i == 1 && __exp_single_char(ctx, dest, &s.expvec, &a))
             {
-                mode &= ~EXP_DOLLAR;
+                s.mode &= ~EXP_DOLLAR;
             }
         }
 
         else
         {
-            vec_push(&expvec, c);
+            vec_push(&s.expvec, s.c);
         }
     }
 
     QUIT_DOLLARD_MODE;
 
-    if (expvec.size > 0 || mode & HAD_A_QUOTE)
-        list_push(dest, strdup(vec_cstring(&expvec)));
+    if (s.expvec.size > 0 || s.mode & HAD_A_QUOTE)
+        list_push(dest, strdup(vec_cstring(&s.expvec)));
 
-    vec_destroy(&expvec);
+    vec_destroy(&s.expvec);
 }
 
 char *symexp_word_single_result(const struct ctx *ctx, const char *word)
