@@ -18,12 +18,6 @@
 
 #define __is_digit(c) (c >= '0' && c <= '9')
 
-struct __single_char_args
-{
-    char c;
-    int mode;
-};
-
 /** \brief Check if a given string is an integer or not */
 static bool __is_int(const char *val)
 {
@@ -39,36 +33,36 @@ static bool __is_int(const char *val)
  * \param ctx Execution context
  * \param key The key to search
  */
-static char *__search_sym(const struct ctx *ctx, const char *key, char *buff)
+static char *__search_sym(struct symexp_state *s)
 {
     // Check in program arguments
-    if (__is_int(key))
+    if (__is_int(s->key))
     {
-        int index = atoi(key);
-        if (index < ctx->program_args_count)
+        int index = atoi(s->key);
+        if (index < s->ctx->program_args_count)
         {
-            return ctx->program_args[index];
+            return s->ctx->program_args[index];
         }
     }
 
     // $RANDOM => random number
-    if (!strcmp(key, "RANDOM"))
+    if (!strcmp(s->key, "RANDOM"))
     {
         // 2^15 please read for an explanation of upperbound limit
         // news://news.epita.fr:119/spf5s2$nus$1@inn-7884769fdd-pjdl8.cri.epita.fr
-        sprintf(buff, "%d", rand() % 32768);
-        return buff;
+        sprintf(s->exp_buff, "%d", rand() % 32768);
+        return s->exp_buff;
     }
 
     // $UID
-    if (!strcmp(key, "UID"))
+    if (!strcmp(s->key, "UID"))
     {
-        sprintf(buff, "%d", getuid());
-        return buff;
+        sprintf(s->exp_buff, "%d", getuid());
+        return s->exp_buff;
     }
 
     // Search in symbols table
-    struct kvpair *kv = symtab_lookup(ctx->st, key, KV_WORD);
+    struct kvpair *kv = symtab_lookup(s->ctx->st, s->key, KV_WORD);
     if (kv && kv->type == KV_WORD)
     {
         return kv->value.word.word;
@@ -78,74 +72,73 @@ static char *__search_sym(const struct ctx *ctx, const char *key, char *buff)
 }
 
 /** \brief Perform $@ expansion */
-static void __exp_args_array(const struct ctx *ctx, struct list *dest,
-                             struct vec *vec)
+static void __exp_args_array(struct symexp_state *s)
 {
-    if (ctx->program_args_count < 2)
+    if (s->ctx->program_args_count < 2)
         return;
 
     // Handle first arguments
-    vec_pushstr(vec, ctx->program_args[1]);
+    vec_pushstr(&s->expvec, s->ctx->program_args[1]);
 
-    if (ctx->program_args_count == 2)
+    if (s->ctx->program_args_count == 2)
         return;
 
-    list_push(dest, strdup(vec_cstring(vec)));
-    vec_reset(vec);
+    list_push(s->dest, strdup(vec_cstring(&s->expvec)));
+    vec_reset(&s->expvec);
 
     // Handles arguments "in the middle"
-    for (int i = 2; i < ctx->program_args_count - 1; i++)
-        list_push(dest, strdup(ctx->program_args[i]));
+    for (int i = 2; i < s->ctx->program_args_count - 1; i++)
+        list_push(s->dest, strdup(s->ctx->program_args[i]));
 
     // Handle last argument
-    vec_pushstr(vec, ctx->program_args[ctx->program_args_count - 1]);
+    vec_pushstr(&s->expvec,
+                s->ctx->program_args[s->ctx->program_args_count - 1]);
 }
 
 /** \brief expand special variable with a single character */
-static int __exp_single_char(const struct ctx *ctx, struct list *dest,
-                             struct vec *vec, struct __single_char_args *a)
+static int __exp_single_char(struct symexp_state *s)
 {
     char buff[10];
 
-    switch (a->c)
+    switch (s->c)
     {
     // $@ => program arguments as an array
     case '@':
-        __exp_args_array(ctx, dest, vec);
+        __exp_args_array(s);
         return true;
 
     // $* => program arguments as a simple list
     case '*':
-        if (a->mode & DOUBLE_QUOTE)
-            for (int i = 1; i < ctx->program_args_count; i++)
+        if (s->mode & DOUBLE_QUOTE)
+            for (int i = 1; i < s->ctx->program_args_count; i++)
             {
                 if (i > 1)
-                    vec_push(vec, ' ');
-                vec_pushstr(vec, ctx->program_args[i]);
+                    vec_push(&s->expvec, ' ');
+                vec_pushstr(&s->expvec, s->ctx->program_args[i]);
             }
         else
-            __exp_args_array(ctx, dest, vec);
+            __exp_args_array(s);
         return true;
 
     // $? => last exit status
     case '?':
-        sprintf(buff, "%d", *ctx->exit_status);
-        vec_pushstr(vec, buff);
+        sprintf(buff, "%d", *s->ctx->exit_status);
+        vec_pushstr(&s->expvec, buff);
         return true;
 
     // $$ => current process id
     case '$':
         sprintf(buff, "%d", getpid());
-        vec_pushstr(vec, buff);
+        vec_pushstr(&s->expvec, buff);
         return true;
 
     // $# => number of arguments
     case '#':
         sprintf(buff, "%d",
-                ctx->flags & MODE_INPUT || ctx->program_args_count == 0
-                    ? ctx->program_args_count
-                    : ctx->program_args_count - 1);
-        vec_pushstr(vec, buff);
+                s->ctx->flags & MODE_INPUT || s->ctx->program_args_count == 0
+                    ? s->ctx->program_args_count
+                    : s->ctx->program_args_count - 1);
+        vec_pushstr(&s->expvec, buff);
         return true;
 
     default:
@@ -153,12 +146,14 @@ static int __exp_single_char(const struct ctx *ctx, struct list *dest,
     }
 }
 
-#define QUIT_DOLLARD_MODE                                                      \
-    if (s.mode & EXP_DOLLAR)                                                   \
-    {                                                                          \
-        s.mode &= ~EXP_DOLLAR;                                                 \
-        vec_pushstr(&s.expvec, __search_sym(s.ctx, s.key, s.exp_buff));        \
+void quit_dollard_mode(struct symexp_state *s)
+{
+    if (s->mode & EXP_DOLLAR)
+    {
+        s->mode &= ~EXP_DOLLAR;
+        vec_pushstr(&s->expvec, __search_sym(s));
     }
+}
 
 void symexp_word(const struct ctx *ctx, const char *w, struct list *dest)
 {
@@ -180,14 +175,14 @@ void symexp_word(const struct ctx *ctx, const char *w, struct list *dest)
         {
             s.mode ^= s.c == '\'' ? SINGLE_QUOTE : DOUBLE_QUOTE;
             s.mode |= HAD_A_QUOTE;
-            QUIT_DOLLARD_MODE;
+            quit_dollard_mode(&s);
         }
 
         /* Switch to dollar */
         else if (!(s.mode & SINGLE_QUOTE) && s.c == '$'
                  && (!(s.mode & EXP_DOLLAR) || s.i != 0))
         {
-            QUIT_DOLLARD_MODE;
+            quit_dollard_mode(&s);
             s.i = 0;
             s.mode |= EXP_DOLLAR;
         }
@@ -196,7 +191,7 @@ void symexp_word(const struct ctx *ctx, const char *w, struct list *dest)
         else if (s.mode & EXP_DOLLAR
                  && (s.c == ' ' || s.c == '}' || s.c == ')'))
         {
-            QUIT_DOLLARD_MODE;
+            quit_dollard_mode(&s);
         }
 
         /* Command substitution */
@@ -274,13 +269,13 @@ void symexp_word(const struct ctx *ctx, const char *w, struct list *dest)
             vec_destroy(&ps.word);
             vec_destroy(&ps.buffered_word);
 
-            QUIT_DOLLARD_MODE
+            quit_dollard_mode(&s);
         }
 
         /* Escape characters */
         else if (s.c == '\\' && *s.word)
         {
-            QUIT_DOLLARD_MODE
+            quit_dollard_mode(&s);
             if (*s.word == '\\'
                 || (!(s.mode & DOUBLE_QUOTE) && !(s.mode & SINGLE_QUOTE))
                 || (s.mode & DOUBLE_QUOTE
@@ -308,7 +303,7 @@ void symexp_word(const struct ctx *ctx, const char *w, struct list *dest)
             if (__is_int(s.key) && !__is_digit(s.c))
             {
                 s.word--;
-                QUIT_DOLLARD_MODE
+                quit_dollard_mode(&s);
             }
 
             // default case
@@ -319,8 +314,7 @@ void symexp_word(const struct ctx *ctx, const char *w, struct list *dest)
             }
 
             // Special variable with a single character
-            struct __single_char_args a = { .c = s.c, .mode = s.mode };
-            if (s.i == 1 && __exp_single_char(ctx, dest, &s.expvec, &a))
+            if (s.i == 1 && __exp_single_char(&s))
             {
                 s.mode &= ~EXP_DOLLAR;
             }
@@ -332,7 +326,7 @@ void symexp_word(const struct ctx *ctx, const char *w, struct list *dest)
         }
     }
 
-    QUIT_DOLLARD_MODE;
+    quit_dollard_mode(&s);
 
     if (s.expvec.size > 0 || s.mode & HAD_A_QUOTE)
         list_push(dest, strdup(vec_cstring(&s.expvec)));
