@@ -25,23 +25,9 @@ int rl_shell_cmd(struct rl_state *s)
         }
         s->flag &= ~PARSER_LINE_START;
     }
-    /* '(' compound_list ')' */
-    else if (rl_accept(s, T_LPAR) == true)
-    {
-        s->flag |= PARSER_LINE_START;
-        if (rl_compound_list(s) <= 0 || rl_expect(s, T_RPAR) <= 0)
-        {
-            rl_exectree_free(s->node);
-            s->node = NULL;
-            return -s->err;
-        }
-        s->flag &= ~PARSER_LINE_START;
-
-        // Encapsulate the command
-        struct rl_exectree *child = rl_exectree_new(RL_SUBSHELL);
-        child->child = s->node;
-        s->node = child;
-    }
+    /* subshell */
+    else if (rl_subshell(s) == true)
+        ;
 
     /* rule_if */
     else if (rl_if_clause(s) == true)
@@ -93,31 +79,6 @@ static inline int __redirect(int oldfd, int newfd, int closefd)
     return 0;
 }
 
-static int __exec_subshell(const struct ctx *ctx, struct rl_exectree *node)
-{
-    assert(node->type == RL_SUBSHELL);
-
-    struct ctx child_ctx = *ctx;
-    child_ctx.alloc_list = NULL;
-    child_ctx.loop_jump = NULL;
-    child_ctx.st = symtab_clone(ctx->st);
-
-    jmp_buf exit_buff;
-    volatile int jmpval;
-    jmpval = setjmp(exit_buff);
-    if (jmpval != 0)
-        ;
-    else
-    {
-        child_ctx.exit_jump = &exit_buff;
-
-        rl_exec_compound_list(&child_ctx, node->child);
-    }
-
-    symtab_free(child_ctx.st);
-    return *ctx->exit_status;
-}
-
 int rl_exec_shell_cmd(const struct ctx *ctx, struct rl_exectree *node)
 {
     assert(node && node->child && node->type == RL_SHELL_CMD);
@@ -153,7 +114,7 @@ int rl_exec_shell_cmd(const struct ctx *ctx, struct rl_exectree *node)
     else if (type == RL_CASE)
         node->attr.cmd.status = rl_exec_case(ctx, node->child);
     else if (type == RL_SUBSHELL)
-        node->attr.cmd.status = __exec_subshell(ctx, node->child);
+        node->attr.cmd.status = rl_exec_subshell(ctx, node->child);
 
     for (int i = 0; i < 3; i++)
     {

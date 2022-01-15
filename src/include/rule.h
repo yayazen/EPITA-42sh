@@ -90,6 +90,10 @@ int rl_exec_list(const struct ctx *ctx, struct rl_exectree *s);
 int rl_shell_cmd(struct rl_state *s);
 int rl_exec_shell_cmd(const struct ctx *ctx, struct rl_exectree *s);
 
+/** \brief subshell: compound_list */
+int rl_subshell(struct rl_state *s);
+int rl_exec_subshell(const struct ctx *ctx, struct rl_exectree *node);
+
 /* if_clause: If compound_list Then compound_list [else_clause] Fi */
 int rl_if_clause(struct rl_state *s);
 int rl_exec_if_clause(const struct ctx *ctx, struct rl_exectree *s);

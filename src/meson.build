@@ -42,6 +42,7 @@ all_sources += files(
     'rl_case.c',
     'rl_case_clause.c',
     'rl_case_item.c',
+    'rl_subshell.c',
 
     'builtins.c',
     'bi_echo.c',

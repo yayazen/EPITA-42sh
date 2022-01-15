@@ -73,5 +73,10 @@ struct cstream *cstream_file_create(FILE *file, bool fclose_on_free);
  */
 struct cstream *cstream_string_create(const char *str);
 
+/**
+ * \brief Get remaining string in a cstring stream
+ */
+const char *cstream_string_str(struct cstream *cstream);
+
 /** \brief Creates a stream which read user input with readline */
 struct cstream *cstream_readline_create();

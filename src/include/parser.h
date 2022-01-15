@@ -20,6 +20,9 @@ struct parser_args
     char **program_args;
 };
 
+/** \brief print debug ast */
+void print_debug_ast(struct rl_exectree *node);
+
 /*!
  * \brief parser entry function
  * \param args Arguments passed to parser

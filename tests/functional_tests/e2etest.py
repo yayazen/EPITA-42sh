@@ -941,6 +941,14 @@ test_simple_cmd("case i in a echo yes ;; esac",
                 empty_stdout=True, empty_stderr=False, status=2)
 
 
+new_section("cmdsubstition", "Commands substitions")
+test_simple_cmd("for i in $(seq 1 3); do echo $i; done",
+                stdout=b"1\n2\n3\n", empty_stderr=True, status=0)
+test_simple_cmd("for i in \"$(seq 1 3)\"; do echo $i; done",
+                stdout=b"1 2 3\n", empty_stderr=True, status=0)
+test_simple_cmd("echo a$(seq 1 3)b;",
+                stdout=b"a1 2 3b\n", empty_stderr=True, status=0)
+
 new_section("subshell", "Subshell")
 test_simple_cmd("(exit 42;); echo $?", stdout=b"42\n",
                 empty_stderr=True, status=0)

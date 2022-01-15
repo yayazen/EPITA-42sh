@@ -1,10 +1,14 @@
+
 #include "symexp.h"
 
+#include <assert.h>
+#include <fcntl.h>
 #include <stdlib.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <utils/vec.h>
 
+#include "parser.h"
 #include "symtab.h"
 
 #define EXP_DOLLAR (1 << 0)
@@ -190,6 +194,83 @@ void symexp_word(const struct ctx *ctx, const char *word, struct list *dest)
         else if (mode & EXP_DOLLAR && (c == ' ' || c == '}' || c == ')'))
         {
             QUIT_DOLLARD_MODE;
+        }
+
+        /* Command substitution */
+        else if (mode & EXP_DOLLAR && i == 0 && c == '(' && *word != ')')
+        {
+            // Parser section
+            struct rl_state s = RL_DEFAULT_STATE;
+
+            // Allocate memory
+            s.cs = cstream_string_create(word - 1);
+            vec_init(&s.word);
+            vec_init(&s.buffered_word);
+
+            if (rl_subshell(&s) == true)
+            {
+                int pipefd[2];
+                assert(pipe(pipefd) == 0);
+
+                // Redirect stdout before execution
+                fcntl(pipefd[0], F_SETFD, FD_CLOEXEC);
+                int savefd = dup(STDOUT_FILENO);
+                fcntl(savefd, F_SETFD, FD_CLOEXEC);
+                dup2(pipefd[1], STDOUT_FILENO);
+                close(pipefd[1]);
+
+                rl_exec_subshell(ctx, s.node);
+
+                // Rollback redirect
+                dup2(savefd, STDOUT_FILENO);
+                close(savefd);
+
+                struct cstream *s =
+                    cstream_file_create(fdopen(pipefd[0], "r"), true);
+
+                int c;
+                bool reset = false;
+                while (cstream_pop(s, &c) == NO_ERROR && c != EOF)
+                {
+                    if (c == ' ' || c == '\n')
+                    {
+                        reset = true;
+                        continue;
+                    }
+
+                    if (reset && expvec.size > 0)
+                    {
+                        reset = false;
+                        if (mode & DOUBLE_QUOTE)
+                            vec_push(&expvec, ' ');
+                        else
+                        {
+                            list_push(dest, strdup(vec_cstring(&expvec)));
+                            vec_reset(&expvec);
+                        }
+                    }
+
+                    vec_push(&expvec, c);
+                }
+
+                cstream_free(s);
+            }
+            else
+            {
+                fprintf(stderr, PACKAGE " : rule mismatch or unimplemented");
+            }
+
+            word = cstream_string_str(s.cs) - 1;
+            if (*word == ')' && *(word + 1) == '\0')
+                word++;
+
+            // Free parser
+            cstream_free(s.cs);
+            rl_exectree_free(s.node);
+            vec_destroy(&s.word);
+            vec_destroy(&s.buffered_word);
+
+            QUIT_DOLLARD_MODE
         }
 
         /* Escape characters */

@@ -83,7 +83,7 @@ __attribute__((unused)) static void __dbg_ast_aux(struct rl_exectree *node)
     }
 }
 
-__attribute__((unused)) static void __dbg_ast(struct rl_exectree *node)
+void print_debug_ast(struct rl_exectree *node)
 {
     if (!node)
         return;
@@ -127,7 +127,7 @@ int parser(const struct parser_args *args)
     else if (rl_input(&s) == true)
     {
         if (args->flags & OPT_PRINT_AST)
-            __dbg_ast(s.node);
+            print_debug_ast(s.node);
 
         /* Do not both print & execute tree at the same time */
         if (args->flags & OPT_PRINT_AST_DOT)

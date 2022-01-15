@@ -45,3 +45,9 @@ struct cstream *cstream_string_create(const char *str)
     cstream->str = str;
     return &cstream->base;
 }
+
+const char *cstream_string_str(struct cstream *cstream_base)
+{
+    struct cstream_string *cstream = (struct cstream_string *)cstream_base;
+    return cstream->str;
+}
