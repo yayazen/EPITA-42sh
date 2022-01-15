@@ -155,6 +155,103 @@ void quit_dollard_mode(struct symexp_state *s)
     }
 }
 
+/** \brief perform command subsitution expansion */
+static void __exp_cmd_substitution(struct symexp_state *s)
+{
+    // Parser section
+    struct rl_state ps = RL_DEFAULT_STATE;
+
+    // Allocate memory
+    ps.cs = cstream_string_create(s->word - 1);
+    vec_init(&ps.word);
+    vec_init(&ps.buffered_word);
+
+    if (rl_subshell(&ps) == true)
+    {
+        int pipefd[2];
+        assert(pipe(pipefd) == 0);
+
+        // Redirect stdout before execution
+        fcntl(pipefd[0], F_SETFD, FD_CLOEXEC);
+        int savefd = dup(STDOUT_FILENO);
+        fcntl(savefd, F_SETFD, FD_CLOEXEC);
+        dup2(pipefd[1], STDOUT_FILENO);
+        close(pipefd[1]);
+
+        rl_exec_subshell(s->ctx, ps.node);
+
+        // Rollback redirect
+        dup2(savefd, STDOUT_FILENO);
+        close(savefd);
+
+        struct cstream *cs = cstream_file_create(fdopen(pipefd[0], "r"), true);
+
+        int c;
+        bool reset = false;
+        while (cstream_pop(cs, &c) == NO_ERROR && c != EOF)
+        {
+            if (c == ' ' || c == '\n')
+            {
+                reset = true;
+                continue;
+            }
+
+            if (reset && s->expvec.size > 0)
+            {
+                if (s->mode & DOUBLE_QUOTE)
+                    vec_push(&s->expvec, ' ');
+                else
+                {
+                    list_push(s->dest, strdup(vec_cstring(&s->expvec)));
+                    vec_reset(&s->expvec);
+                }
+            }
+            reset = false;
+
+            vec_push(&s->expvec, c);
+        }
+
+        cstream_free(cs);
+    }
+    else
+    {
+        fprintf(stderr, PACKAGE " : rule mismatch or unimplemented");
+    }
+
+    s->word = cstream_string_str(ps.cs) - 1;
+    if (*s->word == ')' && *(s->word + 1) == '\0')
+        s->word++;
+
+    // Free parser
+    cstream_free(ps.cs);
+    rl_exectree_free(ps.node);
+    vec_destroy(&ps.word);
+    vec_destroy(&ps.buffered_word);
+
+    quit_dollard_mode(s);
+}
+
+/** \brief expand escape character */
+static void __expand_escape_character(struct symexp_state *s)
+{
+    quit_dollard_mode(s);
+    if (*s->word == '\\'
+        || (!(s->mode & DOUBLE_QUOTE) && !(s->mode & SINGLE_QUOTE))
+        || (s->mode & DOUBLE_QUOTE
+            && (*s->word == '"' || *s->word == '`' || *s->word == '\n')))
+    {
+        if (*s->word != '\n')
+        {
+            vec_push(&s->expvec, *s->word);
+        }
+        s->word++;
+    }
+    else
+    {
+        vec_push(&s->expvec, '\\');
+    }
+}
+
 void symexp_word(const struct ctx *ctx, const char *w, struct list *dest)
 {
     struct symexp_state s = {
@@ -198,99 +295,13 @@ void symexp_word(const struct ctx *ctx, const char *w, struct list *dest)
         else if (s.mode & EXP_DOLLAR && s.i == 0 && s.c == '('
                  && *s.word != ')')
         {
-            // Parser section
-            struct rl_state ps = RL_DEFAULT_STATE;
-
-            // Allocate memory
-            ps.cs = cstream_string_create(s.word - 1);
-            vec_init(&ps.word);
-            vec_init(&ps.buffered_word);
-
-            if (rl_subshell(&ps) == true)
-            {
-                int pipefd[2];
-                assert(pipe(pipefd) == 0);
-
-                // Redirect stdout before execution
-                fcntl(pipefd[0], F_SETFD, FD_CLOEXEC);
-                int savefd = dup(STDOUT_FILENO);
-                fcntl(savefd, F_SETFD, FD_CLOEXEC);
-                dup2(pipefd[1], STDOUT_FILENO);
-                close(pipefd[1]);
-
-                rl_exec_subshell(ctx, ps.node);
-
-                // Rollback redirect
-                dup2(savefd, STDOUT_FILENO);
-                close(savefd);
-
-                struct cstream *cs =
-                    cstream_file_create(fdopen(pipefd[0], "r"), true);
-
-                int c;
-                bool reset = false;
-                while (cstream_pop(cs, &c) == NO_ERROR && c != EOF)
-                {
-                    if (c == ' ' || c == '\n')
-                    {
-                        reset = true;
-                        continue;
-                    }
-
-                    if (reset && s.expvec.size > 0)
-                    {
-                        if (s.mode & DOUBLE_QUOTE)
-                            vec_push(&s.expvec, ' ');
-                        else
-                        {
-                            list_push(dest, strdup(vec_cstring(&s.expvec)));
-                            vec_reset(&s.expvec);
-                        }
-                    }
-                    reset = false;
-
-                    vec_push(&s.expvec, c);
-                }
-
-                cstream_free(cs);
-            }
-            else
-            {
-                fprintf(stderr, PACKAGE " : rule mismatch or unimplemented");
-            }
-
-            s.word = cstream_string_str(ps.cs) - 1;
-            if (*s.word == ')' && *(s.word + 1) == '\0')
-                s.word++;
-
-            // Free parser
-            cstream_free(ps.cs);
-            rl_exectree_free(ps.node);
-            vec_destroy(&ps.word);
-            vec_destroy(&ps.buffered_word);
-
-            quit_dollard_mode(&s);
+            __exp_cmd_substitution(&s);
         }
 
         /* Escape characters */
         else if (s.c == '\\' && *s.word)
         {
-            quit_dollard_mode(&s);
-            if (*s.word == '\\'
-                || (!(s.mode & DOUBLE_QUOTE) && !(s.mode & SINGLE_QUOTE))
-                || (s.mode & DOUBLE_QUOTE
-                    && (*s.word == '"' || *s.word == '`' || *s.word == '\n')))
-            {
-                if (*s.word != '\n')
-                {
-                    vec_push(&s.expvec, *s.word);
-                }
-                s.word++;
-            }
-            else
-            {
-                vec_push(&s.expvec, '\\');
-            }
+            __expand_escape_character(&s);
         }
 
         /* In symbol acquisition */
