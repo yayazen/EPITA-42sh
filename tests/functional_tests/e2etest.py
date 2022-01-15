@@ -962,6 +962,10 @@ test_simple_cmd("for i in a b; do (break;); echo $i; done",
                 stdout=b"a\nb\n", empty_stderr=True, status=0)
 test_simple_cmd("a=b; (unset a); echo $a", stdout=b"b\n",
                 empty_stderr=True, status=0)
+test_simple_cmd("echo $({ echo yes; })",
+                stdout=b"yes\n", empty_stderr=True, status=0)
+test_simple_cmd("A=a;echo $(A=b;echo $A;)$A;",
+                stdout=b"ba\n", empty_stderr=True, status=0)
 
 
 new_section("invalid_cmd", "Invalid commands")

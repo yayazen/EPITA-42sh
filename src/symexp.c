@@ -165,6 +165,7 @@ static void __exp_cmd_substitution(struct symexp_state *s)
     ps.cs = cstream_string_create(s->word - 1);
     vec_init(&ps.word);
     vec_init(&ps.buffered_word);
+    ps.flag |= LEX_CMDSTART;
 
     if (rl_subshell(&ps) == true)
     {

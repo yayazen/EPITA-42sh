@@ -11,7 +11,7 @@ int rl_subshell(struct rl_state *s)
     if (rl_accept(s, T_LPAR) != true)
         return -s->err;
 
-    s->flag |= PARSER_LINE_START;
+    s->flag |= PARSER_LINE_START | LEX_CMDSTART;
     /* compound_list ')' */
     if (rl_compound_list(s) <= 0 || rl_expect(s, T_RPAR) <= 0)
     {
