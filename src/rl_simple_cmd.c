@@ -187,7 +187,7 @@ int rl_exec_simple_cmd(const struct ctx *ctx, struct rl_exectree *node)
         {
             child_ctx.loop_jump = NULL;
             child_ctx.program_args = args->data;
-            child_ctx.program_args_count = args->size;
+            child_ctx.program_args_count = args->size - 1;
 
             // We need to clone the function because the function entry in the
             // symtable could change while executing the function (be changed or
@@ -195,6 +195,7 @@ int rl_exec_simple_cmd(const struct ctx *ctx, struct rl_exectree *node)
             struct rl_exectree *func = rl_exectree_clone(kv->value.func);
 
             CTX_CHILD_FOR_EXECTREE(&child_ctx, child2_ctx, func);
+            child2_ctx.flags |= IN_FUNCTION;
             node->attr.cmd.status = rl_exec_shell_cmd(&child2_ctx, func);
             rl_exectree_free(func);
         }

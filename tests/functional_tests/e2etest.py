@@ -799,6 +799,8 @@ test_simple_cmd("hon() { break; }; for i in a b c d; do  hon; echo yolo; done",
                 stdout=b"yolo\nyolo\nyolo\nyolo\n", empty_stderr=True, status=0)
 test_simple_cmd("hihi() { echo 42sh > " + test_dir + "/mytest; }; hihi; cat " + test_dir + "/mytest",
                 stdout=b"42sh\n", empty_stderr=True, status=0)
+test_simple_cmd("test() { echo $#; }; test; test a; test a b",
+                stdout=b"0\n1\n2\n", empty_stderr=True, status=0)
 
 
 new_section("case", "Case")

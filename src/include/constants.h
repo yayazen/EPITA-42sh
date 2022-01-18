@@ -41,24 +41,29 @@ enum
     MODE_INPUT = 1 << 6,
 
     /**
+     * \brief executing inside a function
+     */
+    IN_FUNCTION = 1 << 7,
+
+    /**
      * \brief executing commands specified as argument
      */
-    IS_INTERACTIVE = 1 << 7,
+    IS_INTERACTIVE = 1 << 8,
 
     /**
      * \brief specify if a token shall be collected from the lexer
      */
-    LEX_COLLECT = 1 << 8,
+    LEX_COLLECT = 1 << 9,
 
     /**
      * \brief specify if the next token is the first of a command
      */
-    LEX_CMDSTART = 1 << 9,
+    LEX_CMDSTART = 1 << 10,
 
     /**
      * \brief specify if the next token is the first of a command
      */
-    PARSER_LINE_START = 1 << 10
+    PARSER_LINE_START = 1 << 11
 };
 
 enum

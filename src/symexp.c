@@ -135,7 +135,9 @@ static int __exp_single_char(struct symexp_state *s)
     // $# => number of arguments
     case '#':
         sprintf(buff, "%d",
-                s->ctx->flags & MODE_INPUT || s->ctx->program_args_count == 0
+                !(s->ctx->flags & IN_FUNCTION)
+                        && (s->ctx->flags & MODE_INPUT
+                            || s->ctx->program_args_count == 0)
                     ? s->ctx->program_args_count
                     : s->ctx->program_args_count - 1);
         vec_pushstr(&s->expvec, buff);
