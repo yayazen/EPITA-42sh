@@ -481,6 +481,13 @@ test_simple_cmd(
     empty_stderr=True,
     status=0
 )
+# bad_redirections_pipes
+test_simple_cmd(
+    cmd="{ { echo yes; echo no} | echo } | > ",
+    empty_stdout=True,
+    empty_stderr=False,
+    status=2
+)
 
 
 def postcheck():
