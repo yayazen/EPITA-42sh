@@ -41,6 +41,7 @@ int rl_pipeline(struct rl_state *s)
 
         child->sibling = s->node;
         child = child->sibling;
+        s->node = NULL;
     }
 
     s->node = node;
