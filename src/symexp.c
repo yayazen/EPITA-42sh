@@ -153,7 +153,12 @@ void quit_dollard_mode(struct symexp_state *s)
     if (s->mode & EXP_DOLLAR)
     {
         s->mode &= ~EXP_DOLLAR;
-        vec_pushstr(&s->expvec, __search_sym(s));
+
+        if (s->i == 0)
+            vec_push(&s->expvec, '$');
+
+        else
+            vec_pushstr(&s->expvec, __search_sym(s));
     }
 }
 
@@ -231,7 +236,7 @@ static void __exp_cmd_substitution(struct symexp_state *s)
     vec_destroy(&ps.word);
     vec_destroy(&ps.buffered_word);
 
-    quit_dollard_mode(s);
+    s->mode &= ~EXP_DOLLAR;
 }
 
 /** \brief expand escape character */

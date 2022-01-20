@@ -272,6 +272,8 @@ if shell_to_use() != "dash":
                     stdout=b"2\n", empty_stderr=True, status=0)
     test_simple_cmd("{ echo $UID; id -u; } | uniq | wc -l",
                     stdout=b"1\n", empty_stderr=True, status=0)
+test_simple_cmd("echo $", stdout=b"$\n", empty_stderr=True, status=0)
+test_simple_cmd("echo $'yes'", stdout=b"$yes\n", empty_stderr=True, status=0)
 
 
 new_section("varassign", "Variables assignments...")
