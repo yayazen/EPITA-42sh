@@ -4,6 +4,8 @@
 
 #include "symtab.h"
 
+/** \brief Argument passed to the function in charge of running the parser &
+executing the built tree.**/
 struct parser_args
 {
     /** \brief stream structure used for parser invocation */
