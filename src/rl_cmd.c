@@ -6,7 +6,21 @@
 int rl_cmd(struct rl_state *s)
 {
     s->flag |= LEX_CMDSTART;
-    return rl_shell_cmd(s) || rl_fundec(s) || rl_simple_cmd(s);
+    s->node = NULL;
+    int res = rl_shell_cmd(s);
+
+    if (res == false)
+        res = rl_fundec(s);
+
+    if (res == false)
+        res = rl_simple_cmd(s);
+
+    if (res <= 0)
+    {
+        rl_exectree_free(s->node);
+        s->node = NULL;
+    }
+    return res;
 }
 
 int rl_exec_cmd(const struct ctx *ctx, struct rl_exectree *node)

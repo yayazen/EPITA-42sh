@@ -33,7 +33,15 @@ int rl_pipeline(struct rl_state *s)
         while (rl_accept(s, T_LF) == true)
             ;
 
-        if (rl_cmd(s) <= 0)
+        int res = rl_cmd(s);
+        if (res < 0)
+        {
+            rl_exectree_free(s->node);
+            rl_exectree_free(node);
+
+            return -s->err;
+        }
+        else if (res == false)
         {
             s->err = s->err != NO_ERROR ? s->err : PARSER_ERROR;
             break;
@@ -41,7 +49,6 @@ int rl_pipeline(struct rl_state *s)
 
         child->sibling = s->node;
         child = child->sibling;
-        s->node = NULL;
     }
 
     s->node = node;

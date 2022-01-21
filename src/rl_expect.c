@@ -20,11 +20,14 @@ static const char *__token_str(int token)
 int rl_expect(struct rl_state *s, int token)
 {
     int rc = rl_accept(s, token);
+
     if (rc <= 0)
+    {
         fprintf(stderr,
                 "42sh: syntax error near unexpected token <%s> (\"%s\") "
                 "expected <%s>\n",
                 __token_str(s->token), vec_cstring(&s->word),
                 __token_str(token));
+    }
     return rc;
 }

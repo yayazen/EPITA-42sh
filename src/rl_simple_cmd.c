@@ -29,10 +29,17 @@ int rl_simple_cmd(struct rl_state *s)
     s->flag |= LEX_CMDSTART;
 
     /* prefix* */
-    while (rl_prefix(s) == true)
+    int res;
+    while ((res = rl_prefix(s)) == true)
     {
         *childptr = s->node;
         childptr = &(*childptr)->sibling;
+    }
+
+    if (res < 0)
+    {
+        rl_exectree_free(node);
+        return -s->err;
     }
 
     /* element */
