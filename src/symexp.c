@@ -17,18 +17,6 @@
 #define DOUBLE_QUOTE (1 << 3)
 #define HAD_A_QUOTE (1 << 4)
 
-#define __is_digit(c) (c >= '0' && c <= '9')
-
-/** \brief Check if a given string is an integer or not */
-static bool __is_int(const char *val)
-{
-    if (!val || !*val)
-        return false;
-    while (*val && __is_digit(*val))
-        val++;
-    return *val == '\0';
-}
-
 /**
  * \brief Search for a symbol in symbol table & environment variables
  * \param ctx Execution context
@@ -37,7 +25,7 @@ static bool __is_int(const char *val)
 static char *__search_sym(struct symexp_state *s)
 {
     // Check in program arguments
-    if (__is_int(s->key))
+    if (is_int(s->key))
     {
         int index = atoi(s->key);
         if (index < s->ctx->program_args_count)
@@ -174,6 +162,39 @@ static char *__convert_substitution(const char *input_str)
     return temp_str;
 }
 
+/** \brief read a stream and split its content into a list */
+static void __read_stream_into_list(int fd, struct vec *expvec, int mode,
+                                    struct list *dest)
+{
+    struct cstream *cs = cstream_file_create(fdopen(fd, "r"), true);
+    int c;
+    bool reset = false;
+    while (cstream_pop(cs, &c) == NO_ERROR && c != EOF)
+    {
+        if (c == ' ' || c == '\n')
+        {
+            reset = true;
+            continue;
+        }
+
+        if (reset && expvec->size > 0)
+        {
+            if (mode & DOUBLE_QUOTE)
+                vec_push(expvec, ' ');
+            else
+            {
+                list_push(dest, strdup(vec_cstring(expvec)));
+                vec_reset(expvec);
+            }
+        }
+        reset = false;
+
+        vec_push(expvec, c);
+    }
+
+    cstream_free(cs);
+}
+
 /** \brief perform command subsitution expansion */
 static void __exp_cmd_substitution(struct symexp_state *s)
 {
@@ -226,34 +247,7 @@ static void __exp_cmd_substitution(struct symexp_state *s)
         dup2(savefd, STDOUT_FILENO);
         close(savefd);
 
-        struct cstream *cs = cstream_file_create(fdopen(pipefd[0], "r"), true);
-
-        int c;
-        bool reset = false;
-        while (cstream_pop(cs, &c) == NO_ERROR && c != EOF)
-        {
-            if (c == ' ' || c == '\n')
-            {
-                reset = true;
-                continue;
-            }
-
-            if (reset && s->expvec.size > 0)
-            {
-                if (s->mode & DOUBLE_QUOTE)
-                    vec_push(&s->expvec, ' ');
-                else
-                {
-                    list_push(s->dest, strdup(vec_cstring(&s->expvec)));
-                    vec_reset(&s->expvec);
-                }
-            }
-            reset = false;
-
-            vec_push(&s->expvec, c);
-        }
-
-        cstream_free(cs);
+        __read_stream_into_list(pipefd[0], &s->expvec, s->mode, s->dest);
     }
     else
     {
@@ -364,7 +358,7 @@ void symexp_word(const struct ctx *ctx, const char *w, struct list *dest)
                 continue;
 
             // special case : shell arguments
-            if (__is_int(s.key) && !__is_digit(s.c))
+            if (is_int(s.key) && !is_digit(s.c))
             {
                 s.word--;
                 quit_dollard_mode(&s);
