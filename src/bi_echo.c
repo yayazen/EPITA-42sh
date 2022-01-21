@@ -1,3 +1,14 @@
+/**
+ * \file bi_echo.c
+ * \brief `echo` builtin implementation
+ *
+ * This builtin is not compliant with the POSIX standard
+ *
+ * This builtin accept the following parameters:
+ * * `-n` : inhibit new lines
+ * * `-e` : interpret `/n`, `//` and `\t`
+ */
+
 #include <assert.h>
 
 #include "builtins.h"

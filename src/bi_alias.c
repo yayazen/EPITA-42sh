@@ -1,3 +1,10 @@
+/**
+ * \file bi_alias.c
+ * \brief `alias` builtin implementation
+ *
+ * This builtin save new aliases inside symbols table, as `KV_ALIAS`
+ */
+
 #include <assert.h>
 
 #include "builtins.h"

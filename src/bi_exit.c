@@ -1,3 +1,14 @@
+/**
+ * \file bi_exit.c
+ * \brief `exit` builtin implementation
+ *
+ * This builtin perform the following tasks:
+ * * Check for exit status. If the exit status fail to validate, an error is
+ * printed on `stderr` and the builtin exits with status 2
+ * * Free memory allocated on the heap during the execution of the AST
+ * * Peform a non local goto to the jump referenced in `ctx->exit_jump` (it
+ * generally targets the `parse` function)
+ */
 #include <setjmp.h>
 
 #include "builtins.h"

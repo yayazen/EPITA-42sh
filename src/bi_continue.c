@@ -1,3 +1,13 @@
+/**
+ * \file bi_continue.c
+ * \brief `continue` & `break` builtins implementation
+ *
+ * This builtin does the following things:
+ * * Free allocated memory in the heap between current execution context and
+ * target loop context
+ * * Perform a non-local goto using the standard `longjmp` function
+ */
+
 #include <setjmp.h>
 
 #include "builtins.h"
