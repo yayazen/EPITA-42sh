@@ -169,7 +169,9 @@ static void __exp_cmd_substitution(struct symexp_state *s)
     struct rl_state ps = RL_DEFAULT_STATE;
 
     // Allocate memory
-    ps.cs = cstream_string_create(s->word - 1);
+    const char *input_str = s->word;
+
+    ps.cs = cstream_string_create(input_str - 1);
     vec_init(&ps.word);
     vec_init(&ps.buffered_word);
     ps.flag |= LEX_CMDSTART;
@@ -226,8 +228,8 @@ static void __exp_cmd_substitution(struct symexp_state *s)
         fprintf(stderr, PACKAGE " : rule mismatch or unimplemented");
     }
 
-    s->word = cstream_string_str(ps.cs) - 1;
-    if (*s->word == ')' && *(s->word + 1) == '\0')
+    s->word = s->word + (cstream_string_str(ps.cs) - input_str - 1);
+    if ((*s->word == ')' || *s->word == '`') && *(s->word + 1) == '\0')
         s->word++;
 
     // Free parser
@@ -299,10 +301,17 @@ void symexp_word(const struct ctx *ctx, const char *w, struct list *dest)
             quit_dollard_mode(&s);
         }
 
-        /* Command substitution */
+        /* Command substitution '$(' cmd ')' */
         else if (s.mode & EXP_DOLLAR && s.i == 0 && s.c == '('
                  && *s.word != ')')
         {
+            __exp_cmd_substitution(&s);
+        }
+
+        /* Command subsitution '`' cdm '`' */
+        else if (!(s.mode & SINGLE_QUOTE) && s.c == '`')
+        {
+            quit_dollard_mode(&s);
             __exp_cmd_substitution(&s);
         }
 
