@@ -959,6 +959,10 @@ test_simple_cmd("for i in \"$(seq 1 3)\"; do echo $i; done",
                 stdout=b"1 2 3\n", empty_stderr=True, status=0)
 test_simple_cmd("echo a$(seq 1 3)b;",
                 stdout=b"a1 2 3b\n", empty_stderr=True, status=0)
+test_simple_cmd("echo $()", stdout=b"\n", empty_stderr=True, status=0)
+test_simple_cmd("echo ``", stdout=b"\n", empty_stderr=True, status=0)
+test_simple_cmd("echo a`uname`b", stdout=b"aLinuxb\n", empty_stderr=True, status=0)
+test_simple_cmd("echo `echo `echo sakebon` `", stdout=b"echo sakebon\n", empty_stderr=True, status=0)
 
 new_section("subshell", "Subshell")
 test_simple_cmd("(exit 42;); echo $?", stdout=b"42\n",

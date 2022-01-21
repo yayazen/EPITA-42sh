@@ -162,6 +162,17 @@ void quit_dollard_mode(struct symexp_state *s)
     }
 }
 
+/** \brief turn "`...`" into "(...)" */
+static char *__convert_substitution(const char *input_str)
+{
+    char *temp_str = strdup(input_str);
+    temp_str[0] = '(';
+    char *end = strchr(temp_str + 1, '`');
+    if (end)
+        *end = ')';
+    return temp_str;
+}
+
 /** \brief perform command subsitution expansion */
 static void __exp_cmd_substitution(struct symexp_state *s)
 {
@@ -170,6 +181,14 @@ static void __exp_cmd_substitution(struct symexp_state *s)
 
     // Allocate memory
     const char *input_str = s->word - 1;
+    char *temp_str = NULL;
+
+    // Handle the case of '`' cmd '`'
+    if (*input_str == '`')
+    {
+        temp_str = __convert_substitution(input_str);
+        input_str = temp_str;
+    }
 
     ps.cs = cstream_string_create(input_str);
     vec_init(&ps.word);
@@ -237,6 +256,9 @@ static void __exp_cmd_substitution(struct symexp_state *s)
     rl_exectree_free(ps.node);
     vec_destroy(&ps.word);
     vec_destroy(&ps.buffered_word);
+
+    if (temp_str)
+        free(temp_str);
 
     s->mode &= ~EXP_DOLLAR;
 }
