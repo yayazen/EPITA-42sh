@@ -169,9 +169,9 @@ static void __exp_cmd_substitution(struct symexp_state *s)
     struct rl_state ps = RL_DEFAULT_STATE;
 
     // Allocate memory
-    const char *input_str = s->word;
+    const char *input_str = s->word - 1;
 
-    ps.cs = cstream_string_create(input_str - 1);
+    ps.cs = cstream_string_create(input_str);
     vec_init(&ps.word);
     vec_init(&ps.buffered_word);
     ps.flag |= LEX_CMDSTART;
@@ -228,7 +228,7 @@ static void __exp_cmd_substitution(struct symexp_state *s)
         fprintf(stderr, PACKAGE " : rule mismatch or unimplemented");
     }
 
-    s->word = s->word + (cstream_string_str(ps.cs) - input_str - 1);
+    s->word = s->word + (cstream_string_str(ps.cs) - input_str - 2);
     if ((*s->word == ')' || *s->word == '`') && *(s->word + 1) == '\0')
         s->word++;
 
