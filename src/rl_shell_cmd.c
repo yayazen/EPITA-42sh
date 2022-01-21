@@ -96,7 +96,7 @@ int rl_exec_shell_cmd(const struct ctx *ctx, struct rl_exectree *node)
     struct rl_exectree *redirs_node = node->child->sibling;
     while (redirs_node)
     {
-        assert(rl_exec_redirection(redirs_node) == NO_ERROR);
+        assert(rl_exec_redirection(ctx, redirs_node) == NO_ERROR);
         redirs_node = redirs_node->sibling;
     }
 

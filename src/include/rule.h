@@ -141,7 +141,7 @@ int rl_exec_pipeline(const struct ctx *ctx, struct rl_exectree *node);
  * | [IONUMBER] '<>' WORD
  */
 int rl_redirection(struct rl_state *s);
-int rl_exec_redirection(struct rl_exectree *node);
+int rl_exec_redirection(const struct ctx *ctx, struct rl_exectree *node);
 
 /*   ASSIGNEMENT_WORD
  * | redirection
