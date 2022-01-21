@@ -24,9 +24,13 @@
 #define LEX_MODE_PARAM_EXP (1 << 6)
 #define LEX_MODE_ARITH_EXP (1 << 7)
 
+#define LEX_WORD_BREAK                                                         \
+    ((!mode || (mode == LEX_MODE_DOLLAR && c != '(' && c != ')'))              \
+     && TOKEN_DELIM(c))
+
 /**
  * \brief  move `stream` to the next non-blank character
- * \param  a cstream
+ * \param  cs a cstream
  */
 static inline struct cstream *__eatwhitespaces(struct cstream *cs)
 {
@@ -38,6 +42,8 @@ static inline struct cstream *__eatwhitespaces(struct cstream *cs)
 
 /**
  * \brief set mode for the lexer depending on `c`
+ * \param c the character processed by the lexer
+ * \param mode the current mode for the lexer
  */
 static inline int __lexmode(int c, int mode)
 {
@@ -64,92 +70,105 @@ static inline int __lexmode(int c, int mode)
              || (c == '}' && mode & LEX_MODE_PARAM_EXP))
         mode ^= LEX_MODE_PARAM_EXP;
 
-    else if (c == '$' && !(mode & LEX_MODE_SQUOTE))
+    else if (c == '$' && !(mode & (LEX_MODE_SQUOTE | LEX_MODE_DOLLAR)))
         return mode | LEX_MODE_DOLLAR;
 
     return mode & ~LEX_MODE_DOLLAR;
 }
 
-static inline int __evalword(struct rl_state *rls)
+/**
+ * \brief  Evaluate a T_WORD to the appropriate DEFAULT TOKEN
+ * \param rls The current parsing state
+ */
+static inline void __evalword(struct rl_state *rls)
 {
     int c;
-    if ((rls->err = cstream_peek(rls->cs, &c)) != NO_ERROR)
-        return rls->err;
+    if (rls->token != T_WORD || cstream_peek(rls->cs, &c) != NO_ERROR)
+        return;
 
-    if (rls->token != T_WORD)
-        return rls->err;
-    else if (rls->word.size == 1 && DIGIT(rls->word.data[0])
-             && (c == '<' || c == '>'))
+    if (rls->word.size == 1 && DIGIT(rls->word.data[0])
+        && (c == '<' || c == '>'))
         rls->token = T_IONUMBER;
     else if (rls->flag & LEX_CMDSTART && strchr(vec_cstring(&rls->word), '='))
         rls->token = T_ASSIGN_WORD;
+}
+
+/**
+ * \brief Collect a token recursively w.r.t the mode
+ */
+static int __lexaux(struct rl_state *rls, int mode)
+{
+    int state = DFA_ENTRY_STATE;
+    int c;
+    while (rls->token != T_LF
+           && (rls->err = cstream_peek(rls->cs, &c)) == NO_ERROR && c != EOF)
+    {
+        state = DFA(c, state);
+
+        if (state == DFA_ERR_STATE || rls->token == T_WORD)
+        {
+            if (rls->token == T_EOF)
+                rls->token = T_WORD;
+
+            if (TOKEN_TYPE(rls->token) == SPECIAL || LEX_WORD_BREAK)
+                break;
+
+            rls->token = T_WORD;
+            state = DFA_ENTRY_STATE;
+        }
+        else if (DFA_TERM(state))
+        {
+            rls->token = DFA_TOKEN(state);
+
+            if (TOKEN_TYPE(rls->token) == KEYWORD
+                && !(rls->flag & LEX_CMDSTART))
+                rls->token = T_WORD;
+        }
+
+        vec_push(&rls->word, c);
+        rls->cs->line_start = !mode && !(rls->flag & PARSER_LINE_START);
+        if ((rls->err = cstream_pop(rls->cs, &c)) != NO_ERROR)
+            break;
+
+        int sub = __lexmode(c, mode);
+        if (sub != mode && (mode ^ sub) != LEX_MODE_DOLLAR)
+        {
+            if (!sub || __lexaux(rls, (mode ^ sub) & ~LEX_MODE_DOLLAR))
+                break;
+        }
+
+        if (sub & LEX_MODE_DOLLAR)
+            mode |= LEX_MODE_DOLLAR;
+        else
+            mode &= ~LEX_MODE_DOLLAR;
+    }
+
+    if (c == EOF)
+    {
+        c = cstream_pop(rls->cs, &c);
+        if (rls->token == T_EOF && rls->word.size > 0)
+            rls->token = T_WORD;
+        if (mode & ~LEX_MODE_DOLLAR)
+        {
+            rls->err = LEXER_ERROR;
+            rls->cs->line_start = true;
+        }
+    }
 
     return rls->err;
 }
 
-/* Recursively collect a token */
-static int __lexaux(struct rl_state *rls, int state, int mode)
-{
-    int c;
-    if ((rls->err = cstream_peek(rls->cs, &c)) != NO_ERROR || c == EOF)
-    {
-        if (rls->token == T_EOF && rls->word.size > 0)
-            rls->token = T_WORD;
-        return rls->err;
-    }
-
-    state = DFA(c, state);
-
-    if (state == DFA_ERR_STATE || rls->token == T_WORD)
-    {
-        if (rls->token == T_EOF)
-            rls->token = T_WORD;
-
-        if (TOKEN_TYPE(rls->token) == SPECIAL || (!mode && TOKEN_DELIM(c)))
-            return rls->err;
-
-        rls->token = T_WORD;
-        state = DFA_ENTRY_STATE;
-    }
-    else if (DFA_TERM(state))
-    {
-        rls->token = DFA_TOKEN(state);
-
-        if (TOKEN_TYPE(rls->token) == KEYWORD && !(rls->flag & LEX_CMDSTART))
-            rls->token = T_WORD;
-    }
-
-    vec_push(&rls->word, c);
-    rls->cs->line_start = !mode && !(rls->flag & PARSER_LINE_START);
-
-    if ((rls->err = cstream_pop(rls->cs, &c)) != NO_ERROR || rls->token == T_LF)
-        return rls->err;
-
-    if (__lexmode(c, mode) != mode)
-    {
-        /* lexer is leaving a mode */
-        if (!__lexmode(c, mode))
-            return rls->err;
-
-        /* lexer is entering a new sub mode */
-        __lexaux(rls, state, __lexmode(c, mode & LEX_MODE_DOLLAR));
-
-        if (mode & LEX_MODE_DOLLAR)
-            return rls->err;
-    }
-
-    return __lexaux(rls, state, mode);
-}
-
+/**
+ * \brief Read a new token from the stream `rls->cs` a store it in `rls->token`
+ * \param rls the current parsing state
+ */
 int lexer(struct rl_state *rls)
 {
     __eatwhitespaces(rls->cs);
     vec_reset(&rls->word);
     rls->token = T_EOF;
-
-    rls->err = __lexaux(rls, DFA_ENTRY_STATE, 0);
-    if (rls->token == T_WORD)
+    __lexaux(rls, 0);
+    if (rls->err == NO_ERROR && rls->token == T_WORD)
         __evalword(rls);
-
     return rls->err;
 }

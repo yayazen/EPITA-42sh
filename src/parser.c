@@ -11,6 +11,9 @@
 #include "stdio.h"
 #include "token.h"
 
+#define PARSER_SYN_ERR "syntax error: unterminated string sequence"
+#define PARSER_SEM_ERR "semantic error: undefined grammar rule"
+
 __attribute__((unused)) static void __dbg_type(struct rl_state *s)
 {
     if (!(s->flag & OPT_DEBUG))
@@ -161,7 +164,10 @@ int parser(const struct parser_args *args)
     }
     else
     {
-        fprintf(stderr, PACKAGE ": rule mismatch or unimplemented\n");
+        if (s.err == LEXER_ERROR)
+            fprintf(stderr, PACKAGE ": " PARSER_SYN_ERR "\n");
+        else
+            fprintf(stderr, PACKAGE ": " PARSER_SEM_ERR "\n");
         *args->exit_status = 2;
 
         // If we are not in interactive mode, a grammar error should provoke
@@ -176,6 +182,6 @@ int parser(const struct parser_args *args)
 
     if (s.err != PARSER_ERROR && s.token == T_EOF)
         return REACHED_EOF;
-
-    return (s.err != NO_ERROR) ? PARSER_ERROR : NO_ERROR;
+    return (s.err != NO_ERROR && s.err != LEXER_ERROR) ? PARSER_ERROR
+                                                       : NO_ERROR;
 }
