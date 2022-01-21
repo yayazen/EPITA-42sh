@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <utils/strings.h>
 #include <utils/vec.h>
 
 #include "parser.h"
@@ -190,11 +191,23 @@ static void __exp_cmd_substitution(struct symexp_state *s)
         input_str = temp_str;
     }
 
+    // Initialize streams
     ps.cs = cstream_string_create(input_str);
     vec_init(&ps.word);
     vec_init(&ps.buffered_word);
     ps.flag |= LEX_CMDSTART;
 
+    // Check if subshell is empty
+    if (*ltrim(input_str + 1) == ')')
+    {
+        int c;
+        while (cstream_pop(ps.cs, &c) == NO_ERROR && c != ')')
+            ;
+        goto after_exec_substitution;
+    }
+
+    // Attempt to parse substring. In case of success, execute it in subshell
+    // environment
     if (rl_subshell(&ps) == true)
     {
         int pipefd[2];
@@ -246,6 +259,8 @@ static void __exp_cmd_substitution(struct symexp_state *s)
     {
         fprintf(stderr, PACKAGE " : rule mismatch or unimplemented");
     }
+
+after_exec_substitution:
 
     s->word = s->word + (cstream_string_str(ps.cs) - input_str - 2);
     if ((*s->word == ')' || *s->word == '`') && *(s->word + 1) == '\0')
@@ -324,8 +339,7 @@ void symexp_word(const struct ctx *ctx, const char *w, struct list *dest)
         }
 
         /* Command substitution '$(' cmd ')' */
-        else if (s.mode & EXP_DOLLAR && s.i == 0 && s.c == '('
-                 && *s.word != ')')
+        else if (s.mode & EXP_DOLLAR && s.i == 0 && s.c == '(')
         {
             __exp_cmd_substitution(&s);
         }
