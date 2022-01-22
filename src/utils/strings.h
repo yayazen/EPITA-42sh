@@ -1,3 +1,8 @@
+/**
+ * \file strings.h
+ * \brief Basic string utilities
+ */
+
 #pragma once
 
 /** \brief Check if a given character is a digit or not */

@@ -1,7 +1,13 @@
+/**
+ * \file token.c
+ * \brief Base tokens functions implementation
+ */
+
 #include "token.h"
 
 #include <assert.h>
 
+/** \brief Check token validity */
 static inline int __check_token(register int key)
 {
     return 0 <= key && key < TOKEN_COUNT;

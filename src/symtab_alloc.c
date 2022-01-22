@@ -1,3 +1,8 @@
+/**
+ * \file symtab_alloc.c
+ * \brief Symbols table allocation functions implementation
+ */
+
 #include <assert.h>
 #include <stddef.h>
 #include <stdint.h>

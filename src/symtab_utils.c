@@ -1,3 +1,13 @@
+/**
+ * \file symtab_utils.c
+ * \brief Symtab miscellanous functions
+ *
+ * * Print symtab content for debugging purpose (you can type `export` in the
+ * shell to get its current content)
+ * * Copy all environment variables in symbols table
+ * * Clone the symtab
+ */
+
 #include <assert.h>
 #include <string.h>
 

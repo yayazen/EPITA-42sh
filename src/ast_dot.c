@@ -1,3 +1,8 @@
+/**
+ * \file ast_dot.c
+ * \brief AST Dot debug printer implementation
+ */
+
 #include "ast_dot.h"
 
 #include <assert.h>
@@ -6,6 +11,7 @@
 #include "rule.h"
 #include "token.h"
 
+/** \brief recursive ast dot print function*/
 static int __aux_ast_dot(struct rl_exectree *node, int p, int c)
 {
     if (!node)

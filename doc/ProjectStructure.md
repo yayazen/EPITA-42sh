@@ -5,6 +5,7 @@ Here is a quick description of the organisation of the repository:
 * `doc`: contains some documentation material information & doxyfile configuration
 * `.gitlab-ci.yml`: contains our Gitlab pipelines. We modified the given file to add a few pipelines to execute functional & unit tests and check for coding style
 * `src`: contains the source code
+  * `42sh.c`: contains the `main` function & commands parser
   * `token.c`: contains the list of tokens used by the lexer
   * `lexer*.c`: contains files related to the lexer. The lexer is globally a recursive DFA.
   * `rl_*.c`: contains the rules for the parsing & the execution of the program. We decided to implement a recursive descent parser for this project.

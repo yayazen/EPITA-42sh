@@ -1,3 +1,10 @@
+/**
+ * \file symexp.c
+ * \brief Symbols expansion implementation.
+ *
+ * This file contains a lot of dirty code. I was really tired when I wrote it,
+ * so I just made sure my code was working. I did not care of the rest. Sorry.
+ */
 
 #include "symexp.h"
 

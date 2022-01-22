@@ -1,3 +1,8 @@
+/**
+ * \file lexer.c
+ * \brief Lexer implementation
+ */
+
 #include "lexer.h"
 
 #include <assert.h>

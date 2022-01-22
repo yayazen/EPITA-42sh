@@ -1,3 +1,8 @@
+/**
+ * \file 42sh.c
+ * \brief Main function of the program & command parser.
+ */
+
 #include <errno.h>
 #include <getopt.h>
 #include <io/cstream.h>

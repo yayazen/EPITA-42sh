@@ -1,8 +1,13 @@
+/**
+ * \file symtab_ops.c
+ * \brief Some symtab operations (add / query / remove from symtab)
+ */
+
 #include <assert.h>
 
 #include "symtab.h"
 
-/* Jenkins's one_at_a_time hash */
+/** \brief Jenkins's one_at_a_time hash */
 static inline uint32_t __hash(const char *key)
 {
     uint32_t hkey = 0;
@@ -21,7 +26,7 @@ static inline uint32_t __hash(const char *key)
     return hkey;
 }
 
-/* change the value of a key-value pair */
+/** \brief change the value of a key-value pair */
 static inline void __setkv(struct kvpair *kv, int type, void *value)
 {
     // Clean previous content

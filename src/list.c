@@ -1,3 +1,8 @@
+/**
+ * \file list.c
+ * \brief Strings list implementation
+ */
+
 #include "list.h"
 
 #include <assert.h>

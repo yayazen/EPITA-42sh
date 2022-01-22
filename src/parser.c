@@ -1,3 +1,8 @@
+/**
+ * \file parser.c
+ * \brief Parser implementation. This file contains also a basic AST printer
+ */
+
 #include "parser.h"
 
 #include <io/cstream.h>
@@ -14,6 +19,7 @@
 #define PARSER_SYN_ERR "syntax error: unterminated string sequence"
 #define PARSER_SEM_ERR "semantic error: undefined grammar rule"
 
+/** \brief show AST node type */
 __attribute__((unused)) static void __dbg_type(struct rl_state *s)
 {
     if (!(s->flag & OPT_DEBUG))
@@ -44,6 +50,7 @@ __attribute__((unused)) static void __dbg_type(struct rl_state *s)
         printf(" | ['%s']\n", vec_cstring(&s->word));
 }
 
+/** \brief recursively print AST structure */
 __attribute__((unused)) static void __dbg_ast_aux(struct rl_exectree *node)
 {
     if (!node)

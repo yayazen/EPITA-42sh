@@ -1,3 +1,8 @@
+/**
+ * \file builtins.c
+ * \brief General builtin implementation functions
+ */
+
 #include "builtins.h"
 
 #include "string.h"

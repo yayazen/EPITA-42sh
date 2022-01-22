@@ -1,3 +1,7 @@
+/**
+ * \file lexer_dfa.c
+ * \brief Our Lexer auxiliary DFA
+ */
 #include <assert.h>
 
 #include "lexer.h"
