@@ -55,11 +55,11 @@ static char **__parse_mode(char **seek, int *mode)
         while (*pos && !stop)
         {
             if (*pos == 'n')
-                *mode |= INHIBIT_NEWLINE;
+                add_modes |= INHIBIT_NEWLINE;
             else if (*pos == 'e')
-                *mode |= INTERPRET_SPACERS;
+                add_modes |= INTERPRET_SPACERS;
             else if (*pos == 'E')
-                *mode |= INHIBIT_BACKSLASH_INTERPRETATION;
+                add_modes |= INHIBIT_BACKSLASH_INTERPRETATION;
             else
                 stop = true;
 
