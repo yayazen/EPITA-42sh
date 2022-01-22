@@ -45,7 +45,7 @@ static char **__parse_mode(char **seek, int *mode)
     bool stop = false;
     while (*seek && !stop)
     {
-        if (*seek[0] != '-')
+        if (seek[0][0] != '-' || seek[0][1] == '\0')
             break;
 
         int add_modes = 0;

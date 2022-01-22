@@ -301,6 +301,8 @@ else:
     test_simple_cmd("echo -e '\\n'", b"\n\n", b"", 0)
     test_simple_cmd("echo -b bibi", b"-b bibi\n", b"", 0)
     test_simple_cmd("echo -E \\\\\\\\", b"\\\\\n")
+    test_simple_cmd("echo - -e yop", stdout=b"- -e yop\n",
+                    empty_stderr=True, status=0)
 
     # These tests are problematic
     test_simple_cmd("echo -n h\\\\tello", b"h\\tello", b"", 0)
