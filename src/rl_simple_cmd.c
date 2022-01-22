@@ -89,7 +89,7 @@ static inline void __push_args(const struct ctx *ctx, struct rl_exectree *arg,
             symexp_word(ctx, arg->attr.word, l);
         }
         else if (arg->type == RL_REDIRECTION)
-            assert(rl_exec_redirection(arg) == NO_ERROR);
+            assert(rl_exec_redirection(ctx, arg) == NO_ERROR);
         else if (arg->type == RL_ASSIGN_WORD)
         {
             ; /* used later */

@@ -1,4 +1,4 @@
-## EPITA-42sh
+## 42sh
 
 Code has been packaged with meson/ninja.
 
@@ -8,10 +8,6 @@ Code has been packaged with meson/ninja.
 * libreadline.so.6
 * libasan.so.6
 
-On Ubuntu 20.04, run the following command to install dependencies:
-```bash
-sudo apt install meson libreadline-dev
-```
 
 ### Building from source
 ```bash
@@ -46,19 +42,21 @@ meson install
 meson uninstall
 ```
 
+### Run functional test
+It is possible to run functional tests against both `dash` and `42sh`:
+```bash
+# Test on dash
+tests/run_tests dash
+
+# Test on 42sh
+tests/run_tests build/42sh
+```
+
+### Coding style check
+It is possible to check compliance with Epita's coding style using the following command (Ubuntu / Debian only). On the first run, a binary will be downloaded from Pierre Hubert's server:
+```bash
+tests/check_coding_style
+```
+
 ### Resources
 **42sh Grammar** --> [docs/42sh-grammar.md](doc/42sh-grammar.md)
-
-
-
-### Install Meson from Github releases page
-1. Open https://github.com/mesonbuild/meson/releases
-2. Download the latest release int the `.tar.gz` format
-3. Decompress the archive somewhere in your computer
-4. Create a symlink in a directory of your path to the `meson.py` file
-
-### Install Criterion on Ubuntu
-If you have Ubuntu 18.04 or Ubuntu 20.04, you may not have a `libcriterion` package in your distribution package manager. As a workaround, you may download and install manually these two packages:
-
-* http://ppa.launchpad.net/snaipewastaken/ppa/ubuntu/pool/main/c/criterion/criterion-dev_2.3.2-6-ubuntu1~cosmic1_amd64.deb
-* http://ppa.launchpad.net/snaipewastaken/ppa/ubuntu/pool/main/c/criterion/criterion_2.3.2-6-ubuntu1~cosmic1_amd64.deb

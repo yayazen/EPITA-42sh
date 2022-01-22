@@ -299,6 +299,8 @@ else:
     test_simple_cmd("echo '\\n'", b"\\n\n", b"", 0)
     test_simple_cmd("echo -n '\\n'", b"\\n", b"", 0)
     test_simple_cmd("echo -e '\\n'", b"\n\n", b"", 0)
+    test_simple_cmd("echo -b bibi", b"-b bibi\n", b"", 0)
+    test_simple_cmd("echo -E \\\\\\\\", b"\\\\\n")
 
     # These tests are problematic
     test_simple_cmd("echo -n h\\\\tello", b"h\\tello", b"", 0)
@@ -509,6 +511,8 @@ test_simple_cmd("echo yes > "+test_dir+"/afile; cat "+test_dir + "/afile /nonexi
                 empty_stdout=True,
                 validate_status=lambda s: s != 0,
                 additional_checks=postcheck)
+test_simple_cmd(f"DEST={test_dir}/atestshi;echo yes > $DEST; echo a; cat {test_dir}/atestshi",
+                stdout=b"a\nyes\n", empty_stderr=True, status=0)
 
 
 new_section("until", "Until loops")
@@ -965,6 +969,12 @@ test_simple_cmd("for i in \"$(seq 1 3)\"; do echo $i; done",
                 stdout=b"1 2 3\n", empty_stderr=True, status=0)
 test_simple_cmd("echo a$(seq 1 3)b;",
                 stdout=b"a1 2 3b\n", empty_stderr=True, status=0)
+test_simple_cmd("echo $()", stdout=b"\n", empty_stderr=True, status=0)
+test_simple_cmd("echo ``", stdout=b"\n", empty_stderr=True, status=0)
+test_simple_cmd("echo a`uname`b", stdout=b"aLinuxb\n",
+                empty_stderr=True, status=0)
+test_simple_cmd("echo `echo `echo sakebon` `",
+                stdout=b"echo sakebon\n", empty_stderr=True, status=0)
 
 new_section("subshell", "Subshell")
 test_simple_cmd("(exit 42;); echo $?", stdout=b"42\n",
@@ -993,6 +1003,10 @@ test_simple_cmd("if true; then ", b"", empty_stderr=False,
 test_simple_cmd("{ { { { { ls; } } } }", b"", empty_stderr=False,
                 validate_status=lambda x: x != 0)
 
+
+new_section("given_tests", "Given tests")
+test_simple_cmd(f"echo 'echo \"Hello World\"' > '{test_dir}/var=val'\nchmod +x {test_dir}/var=val\nexport PATH=$PATH:{test_dir}\nvar=val\necho hi${{var}}hi",
+                stdout=b"hivalhi\n", empty_stderr=True, status=0)
 
 # Clean environment
 new_section(None, "Clean test environment")

@@ -1,9 +1,14 @@
+/**
+ * \file builtins.h
+ * \brief Builtins functions map access
+ */
+
 #pragma once
 
 #include "symtab.h"
 
 /**
- * \brief Builtin prototype
+ * \brief Builtins functions prototype
  */
 typedef int (*builtin_def)(const struct ctx *ctx, char **args);
 

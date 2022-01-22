@@ -1,3 +1,17 @@
+/**
+ * \file bi_cd.c
+ * \brief `cd` builtin implementation
+ *
+ * This builtin does the following things:
+ *
+ * * Expand path given as parameter
+ * * Use the standard `chdir` function to effectively change currently active
+ * directory
+ * * Save new directory and new old directory in environement variable using
+ * `setenv`
+ * * Update the symbol table accordingly (values `PWD` and `OLDPWD`)
+ */
+
 #include <assert.h>
 #include <linux/limits.h>
 #include <stdio.h>

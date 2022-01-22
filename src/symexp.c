@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <utils/strings.h>
 #include <utils/vec.h>
 
 #include "parser.h"
@@ -16,18 +17,6 @@
 #define DOUBLE_QUOTE (1 << 3)
 #define HAD_A_QUOTE (1 << 4)
 
-#define __is_digit(c) (c >= '0' && c <= '9')
-
-/** \brief Check if a given string is an integer or not */
-static bool __is_int(const char *val)
-{
-    if (!val || !*val)
-        return false;
-    while (*val && __is_digit(*val))
-        val++;
-    return *val == '\0';
-}
-
 /**
  * \brief Search for a symbol in symbol table & environment variables
  * \param ctx Execution context
@@ -36,7 +25,7 @@ static bool __is_int(const char *val)
 static char *__search_sym(struct symexp_state *s)
 {
     // Check in program arguments
-    if (__is_int(s->key))
+    if (is_int(s->key))
     {
         int index = atoi(s->key);
         if (index < s->ctx->program_args_count)
@@ -162,6 +151,50 @@ void quit_dollard_mode(struct symexp_state *s)
     }
 }
 
+/** \brief turn "`...`" into "(...)" */
+static char *__convert_substitution(const char *input_str)
+{
+    char *temp_str = strdup(input_str);
+    temp_str[0] = '(';
+    char *end = strchr(temp_str + 1, '`');
+    if (end)
+        *end = ')';
+    return temp_str;
+}
+
+/** \brief read a stream and split its content into a list */
+static void __read_stream_into_list(int fd, struct vec *expvec, int mode,
+                                    struct list *dest)
+{
+    struct cstream *cs = cstream_file_create(fdopen(fd, "r"), true);
+    int c;
+    bool reset = false;
+    while (cstream_pop(cs, &c) == NO_ERROR && c != EOF)
+    {
+        if (c == ' ' || c == '\n')
+        {
+            reset = true;
+            continue;
+        }
+
+        if (reset && expvec->size > 0)
+        {
+            if (mode & DOUBLE_QUOTE)
+                vec_push(expvec, ' ');
+            else
+            {
+                list_push(dest, strdup(vec_cstring(expvec)));
+                vec_reset(expvec);
+            }
+        }
+        reset = false;
+
+        vec_push(expvec, c);
+    }
+
+    cstream_free(cs);
+}
+
 /** \brief perform command subsitution expansion */
 static void __exp_cmd_substitution(struct symexp_state *s)
 {
@@ -169,11 +202,33 @@ static void __exp_cmd_substitution(struct symexp_state *s)
     struct rl_state ps = RL_DEFAULT_STATE;
 
     // Allocate memory
-    ps.cs = cstream_string_create(s->word - 1);
+    const char *input_str = s->word - 1;
+    char *temp_str = NULL;
+
+    // Handle the case of '`' cmd '`'
+    if (*input_str == '`')
+    {
+        temp_str = __convert_substitution(input_str);
+        input_str = temp_str;
+    }
+
+    // Initialize streams
+    ps.cs = cstream_string_create(input_str);
     vec_init(&ps.word);
     vec_init(&ps.buffered_word);
     ps.flag |= LEX_CMDSTART;
 
+    // Check if subshell is empty
+    if (*ltrim(input_str + 1) == ')')
+    {
+        int c;
+        while (cstream_pop(ps.cs, &c) == NO_ERROR && c != ')')
+            ;
+        goto after_exec_substitution;
+    }
+
+    // Attempt to parse substring. In case of success, execute it in subshell
+    // environment
     if (rl_subshell(&ps) == true)
     {
         int pipefd[2];
@@ -192,42 +247,17 @@ static void __exp_cmd_substitution(struct symexp_state *s)
         dup2(savefd, STDOUT_FILENO);
         close(savefd);
 
-        struct cstream *cs = cstream_file_create(fdopen(pipefd[0], "r"), true);
-
-        int c;
-        bool reset = false;
-        while (cstream_pop(cs, &c) == NO_ERROR && c != EOF)
-        {
-            if (c == ' ' || c == '\n')
-            {
-                reset = true;
-                continue;
-            }
-
-            if (reset && s->expvec.size > 0)
-            {
-                if (s->mode & DOUBLE_QUOTE)
-                    vec_push(&s->expvec, ' ');
-                else
-                {
-                    list_push(s->dest, strdup(vec_cstring(&s->expvec)));
-                    vec_reset(&s->expvec);
-                }
-            }
-            reset = false;
-
-            vec_push(&s->expvec, c);
-        }
-
-        cstream_free(cs);
+        __read_stream_into_list(pipefd[0], &s->expvec, s->mode, s->dest);
     }
     else
     {
         fprintf(stderr, PACKAGE " : rule mismatch or unimplemented");
     }
 
-    s->word = cstream_string_str(ps.cs) - 1;
-    if (*s->word == ')' && *(s->word + 1) == '\0')
+after_exec_substitution:
+
+    s->word = s->word + (cstream_string_str(ps.cs) - input_str - 2);
+    if ((*s->word == ')' || *s->word == '`') && *(s->word + 1) == '\0')
         s->word++;
 
     // Free parser
@@ -235,6 +265,9 @@ static void __exp_cmd_substitution(struct symexp_state *s)
     rl_exectree_free(ps.node);
     vec_destroy(&ps.word);
     vec_destroy(&ps.buffered_word);
+
+    if (temp_str)
+        free(temp_str);
 
     s->mode &= ~EXP_DOLLAR;
 }
@@ -299,10 +332,16 @@ void symexp_word(const struct ctx *ctx, const char *w, struct list *dest)
             quit_dollard_mode(&s);
         }
 
-        /* Command substitution */
-        else if (s.mode & EXP_DOLLAR && s.i == 0 && s.c == '('
-                 && *s.word != ')')
+        /* Command substitution '$(' cmd ')' */
+        else if (s.mode & EXP_DOLLAR && s.i == 0 && s.c == '(')
         {
+            __exp_cmd_substitution(&s);
+        }
+
+        /* Command subsitution '`' cdm '`' */
+        else if (!(s.mode & SINGLE_QUOTE) && s.c == '`')
+        {
+            quit_dollard_mode(&s);
             __exp_cmd_substitution(&s);
         }
 
@@ -319,7 +358,7 @@ void symexp_word(const struct ctx *ctx, const char *w, struct list *dest)
                 continue;
 
             // special case : shell arguments
-            if (__is_int(s.key) && !__is_digit(s.c))
+            if (is_int(s.key) && !is_digit(s.c))
             {
                 s.word--;
                 quit_dollard_mode(&s);

@@ -1,3 +1,14 @@
+/**
+ * \file bi_source.c
+ * \brief `.` builtin implementation
+ *
+ * This builtin calls a new parser & lexer on a file referenced as argument to
+ * this function.
+ *
+ * If no slash is specified, the source file is searched in the PATH variable.
+ *
+ * If the source file can not be found, the shell is aboarded.
+ */
 #define _POSIX_C_SOURCE 200809L
 
 #include <assert.h>

@@ -1,3 +1,12 @@
+/**
+ * \file bi_unalias.c
+ * \brief `unalias` builtin implementation
+ *
+ * This builtin only communicate with the symbols table.
+ *
+ * This builtin search for entries in symbols table with `KV_ALIAS` type and
+ * delete them if they could be found
+ */
 #include <assert.h>
 
 #include "builtins.h"

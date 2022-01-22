@@ -1,3 +1,14 @@
+/**
+ * \file bi_echo.c
+ * \brief `echo` builtin implementation
+ *
+ * This builtin is not compliant with the POSIX standard
+ *
+ * This builtin accept the following parameters:
+ * * `-n` : inhibit new lines
+ * * `-e` : interpret `/n`, `//` and `\t`
+ */
+
 #include <assert.h>
 
 #include "builtins.h"
@@ -13,9 +24,14 @@ enum
     INHIBIT_NEWLINE = 1 << 0,
 
     /**
-     * \n -e option
+     * \brief -e option
      */
-    INTERPRET_SPACERS = 1 << 1
+    INTERPRET_SPACERS = 1 << 1,
+
+    /**
+     * \brief -E option
+     */
+    INHIBIT_BACKSLASH_INTERPRETATION = 1 << 2,
 };
 
 /**
@@ -26,18 +42,35 @@ enum
  */
 static char **__parse_mode(char **seek, int *mode)
 {
-    while (*seek)
+    bool stop = false;
+    while (*seek && !stop)
     {
-        if (!strcmp(*seek, "-ne") || !strcmp(*seek, "-en"))
-            *mode |= INHIBIT_NEWLINE | INTERPRET_SPACERS;
-        else if (!strcmp(*seek, "-n"))
-            *mode |= INHIBIT_NEWLINE;
-        else if (!strcmp(*seek, "-e"))
-            *mode |= INTERPRET_SPACERS;
-        else
+        if (*seek[0] != '-')
             break;
 
-        seek++;
+        int add_modes = 0;
+
+        char *pos = (*seek) + 1;
+
+        while (*pos && !stop)
+        {
+            if (*pos == 'n')
+                *mode |= INHIBIT_NEWLINE;
+            else if (*pos == 'e')
+                *mode |= INTERPRET_SPACERS;
+            else if (*pos == 'E')
+                *mode |= INHIBIT_BACKSLASH_INTERPRETATION;
+            else
+                stop = true;
+
+            pos++;
+        }
+
+        if (!stop)
+        {
+            *mode |= add_modes;
+            seek++;
+        }
     }
 
     return seek;
@@ -113,7 +146,8 @@ int bi_echo(const struct ctx *ctx, char **args)
         if (!first)
             printf(" ");
 
-        if (mode & INTERPRET_SPACERS)
+        if (mode & INTERPRET_SPACERS
+            && !(mode & INHIBIT_BACKSLASH_INTERPRETATION))
         {
             char *s = strdup(*seek);
             __interpret_escapes(s);

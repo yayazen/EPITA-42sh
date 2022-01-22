@@ -7,6 +7,7 @@
 #include <utils/vec.h>
 
 #include "rule.h"
+#include "symexp.h"
 #include "token.h"
 
 #define DEFAULT_MODE S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH
@@ -88,13 +89,17 @@ static inline int __redirect(int oldfd, int newfd, int closefd)
     return 0;
 }
 
-int rl_exec_redirection(struct rl_exectree *node)
+int rl_exec_redirection(const struct ctx *ctx, struct rl_exectree *node)
 {
     assert(node && node->type == RL_REDIRECTION);
 
     struct attr_redir *redir = &node->attr.redir;
     if (redir->ionumber > 2)
         return NO_ERROR;
+
+    char *expfile = redir->file != NULL
+        ? symexp_word_single_result(ctx, redir->file)
+        : NULL;
 
     int flags = 0;
     int fd = -1;
@@ -117,18 +122,20 @@ int rl_exec_redirection(struct rl_exectree *node)
 
     /* >& | <& => reuse file descriptors */
     else if (redir->token == T_GREATAND || redir->token == T_LESSAND)
-        fd = atoi(redir->file);
+        fd = atoi(expfile);
 
     /* unsupported case */
     else
         assert(0);
 
-    fd = fd > 0 ? fd : open(redir->file, flags, DEFAULT_MODE);
+    fd = fd > 0 ? fd : open(expfile, flags, DEFAULT_MODE);
     if (fd == -1
         || __redirect(fd, redir->ionumber, flags == 0 ? false : true) != 0)
     {
+        free(expfile);
         return EXECUTION_ERROR;
     }
 
+    free(expfile);
     return NO_ERROR;
 }

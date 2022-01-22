@@ -1,3 +1,14 @@
+/**
+ * \file bi_export.c
+ * \brief `export` builtin implementation
+ *
+ * This builtin only communicate with the symbols table. NO CALL TO `setenv` ARE
+ * MADE THROUGH THIS BUILTIN.
+ *
+ * If called with no argument, this builtin simply call the `symtab_print`
+ * function for debugging purposes.
+ */
+
 #include <assert.h>
 
 #include "builtins.h"

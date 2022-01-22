@@ -14,36 +14,41 @@
 #    define CAST_AST(a) a
 #endif
 
+/** \brief AST portion that holds execution information of a command */
 struct attr_cmd
 {
     int status;
-    /* store node exec pid */
+    /** \brief store node exec pid */
     pid_t pid;
-    /* file descriptors to replace STDIN, STDOUT and STDERR */
+    /** \brief file descriptors to replace STDIN, STDOUT and STDERR */
     int fd[3];
-    /* execution arguments */
+    /** \brief execution arguments */
     char **argv;
 };
 
+/** \brief AST pipeline specific attributes */
 struct attr_pipeline
 {
-    /* AND_OR operator */
+    /** \brief AND_OR operator */
     int and_or_op;
 
+    /** \brief negate the return code of this portion of the pipeline */
     int negate;
     int fd[2];
 };
 
+/** \brief AST specific features to handle redirections in commands */
 struct attr_redir
 {
-    /* redirection token */
+    /** \brief redirection token */
     int token;
-    /* left side ionumber */
+    /** \brief left side ionumber */
     int ionumber;
-    /* right side file */
+    /** \brief right side file */
     char *file;
 };
 
+/** \brief variable part of the AST node */
 union attr
 {
     char *word;
@@ -52,15 +57,16 @@ union attr
     struct attr_pipeline pipe;
 };
 
+/** \brief Single node of the AST tree */
 struct rl_exectree
 {
-    /* the node rule type */
+    /** \brief the node rule type */
     int type;
-    /* attributes for execution */
+    /** \brief attributes for execution */
     union attr attr;
-    /* left-child */
+    /** \brief left-child */
     struct rl_exectree *child;
-    /* right-sibling */
+    /** \brief right-sibling */
     struct rl_exectree *sibling;
 };
 

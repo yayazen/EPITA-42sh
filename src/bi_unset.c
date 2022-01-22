@@ -1,3 +1,11 @@
+/**
+ * \file bi_unset.c
+ * \brief `unset` builtin implementation
+ *
+ * This builtin only communicate with the symbols table.
+ *
+ * The `-f` argument allows to delete function instead of word variables.
+ */
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
