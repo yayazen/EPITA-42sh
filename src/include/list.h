@@ -1,3 +1,8 @@
+/**
+ * \file list.h
+ * \brief Dynamically sized and expandable list of strings.
+ */
+
 #pragma once
 
 /** \brief stores a list of strings */

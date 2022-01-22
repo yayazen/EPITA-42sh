@@ -1,3 +1,9 @@
+/**
+ * \file rule.h
+ * \brief Parser rules function definition. This file also contains the
+ * functions used to execute the AST.
+ */
+
 #pragma once
 
 #include <io/cstream.h>

@@ -1,3 +1,7 @@
+/**
+ * \file lexer.h
+ * \brief The lexer of the shell.
+ */
 #pragma once
 
 #include "rule.h"

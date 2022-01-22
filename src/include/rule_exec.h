@@ -1,3 +1,8 @@
+/**
+ * \file rule_exec.h
+ * \brief Our execution tree, eg. our AST
+ */
+
 #pragma once
 
 #include <sys/types.h>

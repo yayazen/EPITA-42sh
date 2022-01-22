@@ -1,3 +1,11 @@
+/**
+ * \file constants.h
+ * \brief Projet constants. These constants are used in the whole project,
+ * especially as flags.
+ *
+ * These constants must all have a distinct value.
+ */
+
 #pragma once
 
 #define PACKAGE "42sh"

@@ -1,3 +1,8 @@
+/**
+ * \file symtab.h
+ * \brief Symbols table. Contains functions, alias and words
+ */
+
 #pragma once
 
 #include <stddef.h>
@@ -12,8 +17,10 @@ enum
     KV_ALIAS,
 };
 
+/** \brief a single word information */
 struct symword
 {
+    /** \brief The word itself, as OWNING pointer */
     char *word;
 
     /** \brief Only for word tokens. Specify whether these tokens
@@ -21,30 +28,45 @@ struct symword
     bool exported;
 };
 
+/** \brief unions of different symbols that can be stored in the symtable */
 union symval
 {
+    /** \brief word for alias and word (variables) */
     struct symword word;
+
+    /** \brief execution tree in case of function */
     struct rl_exectree *func;
 };
 
 /** \brief hold a key-value pair */
 struct kvpair
 {
+    /** \brief type of value */
     int type;
 
+    /** \brief hashed key */
     uint32_t hkey;
+
+    /** \brief the key itself */
     char *key;
 
+    /** \brief the associated value */
     union symval value;
 
+    /** \brief a pointer on the next key-value pair with the same hash, or NULL
+     * if there are none */
     struct kvpair *next;
 };
 
 /** \brief hash table structure */
 struct symtab
 {
+    /** \brief The capacity of this symbols table */
     size_t capacity;
+    /** \brief Space actually used in this symbols table */
     size_t size;
+
+    /** \brief pointer on key-value pairs storage location */
     struct kvpair **data;
 };
 

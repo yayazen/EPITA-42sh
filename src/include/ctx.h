@@ -1,3 +1,24 @@
+/**
+ * \file ctx.h
+ * \brief AST Execution context.
+ *
+ * The context managed in this file is used to:
+ *
+ * * Store a reference to the symbols table
+ * * Store some flags (about execution mode / interactivness)
+ * * Give access to program / Function arguments
+ * * Store `exit`, `continue` and `break` jump destinations
+ * * Give reference to memory to free in case of jump.
+ *
+ * Some functions / macros are provided to create child context based on parent
+ * context. The parent and child context MUST be stored on the stack and **NOT**
+ * on the heap.
+ *
+ * Context are specified as `const` program arguments thus, a new child context
+ * must be created each time an execution node needs to modify the context for
+ * its children.
+ */
+
 #pragma once
 
 #include <setjmp.h>
@@ -18,7 +39,7 @@ enum
     JMP_BREAK
 };
 
-/** \brief loop jump */
+/** \brief context loop jump */
 struct ctx_jmp
 {
     /** \brief next jump */
@@ -33,7 +54,11 @@ struct ctx_jmp
 
 enum ctx_alloc_type
 {
+    /** \brief the allocation referenced by this node is a list of strings */
     ALLOC_LIST,
+
+    /** \brief the allocation referenced by this node is an execution tree (a
+       function for example) */
     ALLOC_EXECTREE,
 };
 

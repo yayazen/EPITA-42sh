@@ -1,3 +1,9 @@
+/**
+ * \file symexp.h
+ * \brief Symbols (variables, simple quotes, double quotes, commands
+ * substitution) expansion function
+ */
+
 #pragma once
 
 #include <utils/vec.h>

@@ -1,3 +1,8 @@
+/**
+ * \file parser.h
+ * \brief Our parser & AST executor root function.
+ */
+
 #pragma once
 
 #include <io/cstream.h>
