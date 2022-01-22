@@ -69,7 +69,7 @@ test_simple_cmd("echo 'a\nb\nc'", b"a\nb\nc\n", b"", 0)
 test_simple_cmd("echo '$HAPPY_42SH'", b"$HAPPY_42SH\n", b"",
                 0, env={"HAPPY_42SH": "I love 42sh"})
 # weak_quoting3
-'''FIXME: YANIS
+
 test_simple_cmd(
     cmd="echo 'toto''",
     empty_stdout=True,
@@ -78,7 +78,6 @@ test_simple_cmd(
 )
 
 test_simple_cmd("echo '\\''", empty_stdout=True, empty_stderr=False, status=2)
-'''
 test_simple_cmd("echo '\\'", stdout=b"\\\n", empty_stderr=True, status=0)
 test_simple_cmd("echo '\\`'", stdout=b"\\`\n", empty_stderr=True, status=0)
 test_simple_cmd("echo '\\\\'", stdout=b"\\\n", empty_stderr=True, status=0)
@@ -102,10 +101,17 @@ test_simple_cmd("echo \"$HAPPY_42SH$NONEXISTING_VAR\"", b"I love 42sh\n", b"",
 test_simple_cmd("echo \"hop hop hop\"", b"hop hop hop\n", b"", 0)
 test_simple_cmd("XXXX=ABCD; echo \"$XXXX\"", b"ABCD\n", b"", 0)
 # strong_quoting3
-'''FIXME: YANIS
 test_simple_cmd("echo \"toto\"\"", empty_stdout=True,
                 empty_stderr=False, status=2)
-'''
+# backquote_command_substitution
+test_simple_cmd("echo ` echo toto", empty_stdout=True,
+                empty_stderr=False, status=2)
+# backquote_command_substitution2
+test_simple_cmd("echo `", empty_stdout=True, empty_stderr=False, status=2)
+# parenthesis_command_substitution
+test_simple_cmd("echo $(uname", empty_stdout=True,
+                empty_stderr=False, status=2)
+
 test_simple_cmd("echo \"\\'\"", stdout=b"\\'\n", empty_stderr=True, status=0)
 test_simple_cmd("echo \"\\\"\"", stdout=b"\"\n", empty_stderr=True, status=0)
 test_simple_cmd("echo \"\\`\"", stdout=b"`\n", empty_stderr=True, status=0)
